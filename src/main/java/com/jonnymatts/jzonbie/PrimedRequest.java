@@ -8,6 +8,7 @@ import static java.lang.String.format;
 public class PrimedRequest {
 
     private Map<String, String> headers;
+    private String method;
     private Map<String, Object> body;
     private Map<String, String> basicAuth;
 
@@ -17,6 +18,14 @@ public class PrimedRequest {
 
     public void setHeaders(Map<String, String> headers) {
         this.headers = headers;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public Map<String, Object> getBody() {

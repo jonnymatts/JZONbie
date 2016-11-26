@@ -39,6 +39,10 @@ public class ZombieRequestHandler implements RequestHandler {
         final PrimedRequest primedRequest = primingRequest.getPrimedRequest();
         final PrimedResponse primedResponse = primingRequest.getPrimedResponse();
 
+        if(primedRequest.getMethod() == null) {
+            primedRequest.setMethod(request.requestMethod());
+        }
+
         final PrimingKey primingKey = new PrimingKey(request.pathInfo(), primedRequest);
 
         primingContext.put(primingKey, primedResponse);

@@ -37,7 +37,11 @@ public class ZombieRequestHandlerTest {
 
     @Mock private Response response;
 
-    @Fixture private PrimingRequest primingRequest;
+    @Mock private PrimingRequest primingRequest;
+
+    @Mock private PrimedRequest primedRequest;
+
+    @Mock private PrimedResponse primedResponse;
 
     @Fixture private String primingRequestString;
 
@@ -46,6 +50,9 @@ public class ZombieRequestHandlerTest {
     @Before
     public void setUp() throws Exception {
         zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper);
+
+        when(primingRequest.getPrimedRequest()).thenReturn(primedRequest);
+        when(primingRequest.getPrimedResponse()).thenReturn(primedResponse);
     }
 
     @Test
@@ -61,6 +68,20 @@ public class ZombieRequestHandlerTest {
 
         verify(primingContext).put(new PrimingKey(request.pathInfo(), primingRequest.getPrimedRequest()), primingRequest.getPrimedResponse());
         verify(response).status(CREATED_201);
+    }
+
+    @Test
+    public void handleUsesRequestMethodAsPrimingRequestMethodIfNotPresentInPrimedRequest() throws JsonProcessingException {
+        when(request.pathInfo()).thenReturn("path");
+        when(request.requestMethod()).thenReturn("POST");
+        when(request.headers("zombie")).thenReturn("priming");
+        when(primedRequest.getMethod()).thenReturn(null);
+        when(jsonDeserializer.deserialize(request, PrimingRequest.class)).thenReturn(primingRequest);
+        when(objectMapper.writeValueAsString(primingRequest)).thenReturn(primingRequestString);
+
+        zombieRequestHandler.handle(request, response);
+
+        verify(primedRequest).setMethod(request.requestMethod());
     }
 
     @Test
