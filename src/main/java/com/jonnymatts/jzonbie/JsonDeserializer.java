@@ -34,7 +34,7 @@ public class JsonDeserializer {
 
     public Map<String, Object> deserialize(String s) {
         try {
-            return objectMapper.readValue(s, new TypeReference<Map<String, String>>() {});
+            return objectMapper.readValue(s, new TypeReference<Map<String, Object>>() {});
         } catch (IOException e) {
             throw new DeserializationException("Error deserializing to map", e);
         }

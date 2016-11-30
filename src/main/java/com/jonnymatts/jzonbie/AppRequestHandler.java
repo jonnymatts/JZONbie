@@ -8,6 +8,7 @@ import spark.Request;
 import spark.Response;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 public class AppRequestHandler implements RequestHandler {
@@ -46,7 +47,10 @@ public class AppRequestHandler implements RequestHandler {
 
     private void primeResponse(Response response, PrimedResponse r) throws JsonProcessingException {
         response.status(r.getStatusCode());
-        r.getHeaders().entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
+
+        final Map<String, String> headers = r.getHeaders();
+
+        if(headers != null) headers.entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
     }
 
     private String errorResponse(Response response) {

@@ -17,6 +17,7 @@ public class PrimingKeyFactory {
 
     public PrimingKey create(Request request) {
         final Map<String, Object> primedRequestMap = new HashMap<String, Object>(){{
+            put("method", request.requestMethod());
             put("body", jsonDeserializer.deserialize(request.body()));
             put("headers", request.headers().stream()
                     .collect(
