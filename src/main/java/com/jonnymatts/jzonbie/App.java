@@ -1,6 +1,5 @@
 package com.jonnymatts.jzonbie;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -28,10 +27,10 @@ public class App {
     public static void main(String[] args) {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final JsonDeserializer jsonDeserializer = new JsonDeserializer(objectMapper);
-        final Multimap<PrimingKey, PrimedResponse> primingContext = LinkedListMultimap.create();
-        final PrimingKeyFactory primingKeyFactory = new PrimingKeyFactory(jsonDeserializer);
+        final Multimap<PrimedRequest, PrimedResponse> primingContext = LinkedListMultimap.create();
+        final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(jsonDeserializer);
 
-        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, primingKeyFactory, objectMapper);
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, primedRequestFactory, objectMapper);
 
         final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper);
 

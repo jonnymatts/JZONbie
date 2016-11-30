@@ -28,9 +28,9 @@ public class AppRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<PrimingKey, PrimedResponse> primingContext;
+    @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
 
-    @Mock private PrimingKeyFactory primingKeyFactory;
+    @Mock private PrimedRequestFactory primedRequestFactory;
 
     @Mock private ObjectMapper objectMapper;
 
@@ -40,7 +40,7 @@ public class AppRequestHandlerTest {
 
     @Fixture private PrimingRequest primingRequest;
 
-    @Fixture private PrimingKey primingKey;
+    @Fixture private PrimedRequest primedRequest;
 
     @Fixture private String path;
 
@@ -50,15 +50,15 @@ public class AppRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        appRequestHandler = new AppRequestHandler(primingContext, primingKeyFactory, objectMapper);
+        appRequestHandler = new AppRequestHandler(primingContext, primedRequestFactory, objectMapper);
     }
 
     @Test
     public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
         final PrimedResponse primedResponse = primingRequest.getPrimedResponse();
 
-        when(primingKeyFactory.create(request)).thenReturn(primingKey);
-        when(primingContext.get(primingKey))
+        when(primedRequestFactory.create(request)).thenReturn(primedRequest);
+        when(primingContext.get(primedRequest))
                 .thenReturn(singletonList(primedResponse));
         when(objectMapper.writeValueAsString(primedResponse.getBody())).thenReturn(responseString);
 
@@ -69,7 +69,7 @@ public class AppRequestHandlerTest {
         verify(response).status(primedResponse.getStatusCode());
         primedResponse.getHeaders().entrySet()
                 .forEach(entry -> verify(response).header(entry.getKey(), entry.getValue()));
-        verify(primingContext).remove(primingKey, primedResponse);
+        verify(primingContext).remove(primedRequest, primedResponse);
     }
 
     @Test
@@ -78,8 +78,8 @@ public class AppRequestHandlerTest {
 
         primedResponse.setHeaders(null);
 
-        when(primingKeyFactory.create(request)).thenReturn(primingKey);
-        when(primingContext.get(primingKey))
+        when(primedRequestFactory.create(request)).thenReturn(primedRequest);
+        when(primingContext.get(primedRequest))
                 .thenReturn(singletonList(primedResponse));
         when(objectMapper.writeValueAsString(primedResponse.getBody())).thenReturn(responseString);
 
@@ -88,7 +88,7 @@ public class AppRequestHandlerTest {
         assertThat(got).isEqualTo(responseString);
 
         verify(response).status(primedResponse.getStatusCode());
-        verify(primingContext).remove(primingKey, primedResponse);
+        verify(primingContext).remove(primedRequest, primedResponse);
         verifyNoMoreInteractions(response);
     }
 }

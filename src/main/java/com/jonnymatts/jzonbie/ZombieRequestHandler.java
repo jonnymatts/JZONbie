@@ -11,11 +11,11 @@ import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 
 public class ZombieRequestHandler implements RequestHandler {
 
-    private final Multimap<PrimingKey, PrimedResponse> primingContext;
+    private final Multimap<PrimedRequest, PrimedResponse> primingContext;
     private final JsonDeserializer jsonDeserializer;
     private final ObjectMapper objectMapper;
 
-    public ZombieRequestHandler(Multimap<PrimingKey, PrimedResponse> primingContext,
+    public ZombieRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
                                 JsonDeserializer jsonDeserializer, ObjectMapper objectMapper) {
         this.primingContext = primingContext;
         this.jsonDeserializer = jsonDeserializer;
@@ -43,9 +43,11 @@ public class ZombieRequestHandler implements RequestHandler {
             primedRequest.setMethod(request.requestMethod());
         }
 
-        final PrimingKey primingKey = new PrimingKey(request.pathInfo(), primedRequest);
+        if(primedRequest.getPath() == null) {
+            primedRequest.setPath(request.pathInfo());
+        }
 
-        primingContext.put(primingKey, primedResponse);
+        primingContext.put(primedRequest, primedResponse);
 
         response.status(CREATED_201);
 

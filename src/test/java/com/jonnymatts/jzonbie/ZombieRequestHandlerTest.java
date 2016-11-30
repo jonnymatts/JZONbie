@@ -27,7 +27,7 @@ public class ZombieRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<PrimingKey, PrimedResponse> primingContext;
+    @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
 
     @Mock private JsonDeserializer jsonDeserializer;
 
@@ -66,7 +66,7 @@ public class ZombieRequestHandlerTest {
 
         assertThat(got).isEqualTo(primingRequestString);
 
-        verify(primingContext).put(new PrimingKey(request.pathInfo(), primingRequest.getPrimedRequest()), primingRequest.getPrimedResponse());
+        verify(primingContext).put(primingRequest.getPrimedRequest(), primingRequest.getPrimedResponse());
         verify(response).status(CREATED_201);
     }
 
@@ -82,6 +82,20 @@ public class ZombieRequestHandlerTest {
         zombieRequestHandler.handle(request, response);
 
         verify(primedRequest).setMethod(request.requestMethod());
+    }
+
+    @Test
+    public void handleUsesRequestPathAsPrimingRequestPathIfNotPresentInPrimedRequest() throws JsonProcessingException {
+        when(request.pathInfo()).thenReturn("path");
+        when(request.requestMethod()).thenReturn("POST");
+        when(request.headers("zombie")).thenReturn("priming");
+        when(primedRequest.getPath()).thenReturn(null);
+        when(jsonDeserializer.deserialize(request, PrimingRequest.class)).thenReturn(primingRequest);
+        when(objectMapper.writeValueAsString(primingRequest)).thenReturn(primingRequestString);
+
+        zombieRequestHandler.handle(request, response);
+
+        verify(primedRequest).setPath(request.pathInfo());
     }
 
     @Test

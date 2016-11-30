@@ -1,16 +1,32 @@
 package com.jonnymatts.jzonbie;
 
 import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 
 public class PrimedRequest {
 
+    private String path;
     private Map<String, String> headers;
     private String method;
     private Map<String, Object> body;
     private Map<String, String> basicAuth;
+
+    public PrimedRequest() {
+        this.headers = new HashMap<>();
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     public Map<String, String> getHeaders() {
         return headers;
@@ -74,11 +90,17 @@ public class PrimedRequest {
 
         PrimedRequest that = (PrimedRequest) o;
 
+        if (path != null ? !path.equals(that.path) : that.path != null) return false;
+        if (method != null ? !method.equals(that.method) : that.method != null) return false;
         return body != null ? body.equals(that.body) : that.body == null;
+
     }
 
     @Override
     public int hashCode() {
-        return body != null ? body.hashCode() : 0;
+        int result = path != null ? path.hashCode() : 0;
+        result = 31 * result + (method != null ? method.hashCode() : 0);
+        result = 31 * result + (body != null ? body.hashCode() : 0);
+        return result;
     }
 }

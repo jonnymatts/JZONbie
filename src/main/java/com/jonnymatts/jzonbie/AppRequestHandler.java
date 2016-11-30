@@ -13,23 +13,23 @@ import java.util.Optional;
 
 public class AppRequestHandler implements RequestHandler {
 
-    private final Multimap<PrimingKey, PrimedResponse> primingContext;
-    private final PrimingKeyFactory primingKeyFactory;
+    private final Multimap<PrimedRequest, PrimedResponse> primingContext;
+    private final PrimedRequestFactory primedRequestFactory;
     private final ObjectMapper objectMapper;
 
-    public AppRequestHandler(Multimap<PrimingKey, PrimedResponse> primingContext,
-                             PrimingKeyFactory primingKeyFactory,
+    public AppRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
+                             PrimedRequestFactory primedRequestFactory,
                              ObjectMapper objectMapper) {
         this.primingContext = primingContext;
-        this.primingKeyFactory = primingKeyFactory;
+        this.primedRequestFactory = primedRequestFactory;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public String handle(Request request, Response response) throws JsonProcessingException {
-        final PrimingKey primingKey = primingKeyFactory.create(request);
+        final PrimedRequest primedRequest = primedRequestFactory.create(request);
 
-        final Collection<PrimedResponse> primedResponses = primingContext.get(primingKey);
+        final Collection<PrimedResponse> primedResponses = primingContext.get(primedRequest);
         final Optional<PrimedResponse> primedResponseOpt = primedResponses.stream().findFirst();
 
         if(!primedResponseOpt.isPresent()) {
@@ -40,7 +40,7 @@ public class AppRequestHandler implements RequestHandler {
 
         primeResponse(response, primedResponse);
 
-        primingContext.remove(primingKey, primedResponse);
+        primingContext.remove(primedRequest, primedResponse);
 
         return objectMapper.writeValueAsString(primedResponse.getBody());
     }
