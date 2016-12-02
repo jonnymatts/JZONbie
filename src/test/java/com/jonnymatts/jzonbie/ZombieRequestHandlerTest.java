@@ -15,8 +15,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import spark.Request;
 import spark.Response;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
+import static org.eclipse.jetty.http.HttpStatus.OK_200;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,6 +36,8 @@ public class ZombieRequestHandlerTest {
 
     @Mock private ObjectMapper objectMapper;
 
+    @Mock private PrimedRequestsFactory primedRequestsFactory;
+
     @Mock private Request request;
 
     @Mock private Response response;
@@ -43,13 +48,15 @@ public class ZombieRequestHandlerTest {
 
     @Mock private PrimedResponse primedResponse;
 
+    @Fixture private List<PrimedRequests> primedRequests;
+
     @Fixture private String primingRequestString;
 
     private ZombieRequestHandler zombieRequestHandler;
 
     @Before
     public void setUp() throws Exception {
-        zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper);
+        zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper, primedRequestsFactory);
 
         when(primingRequest.getPrimedRequest()).thenReturn(primedRequest);
         when(primingRequest.getPrimedResponse()).thenReturn(primedResponse);
@@ -96,6 +103,20 @@ public class ZombieRequestHandlerTest {
         zombieRequestHandler.handle(request, response);
 
         verify(primedRequest).setPath(request.pathInfo());
+    }
+
+    @Test
+    public void handleReturnsPrimingContextMappingsIfZombieHeaderHasListValue() throws JsonProcessingException {
+        when(request.headers("zombie")).thenReturn("list");
+        when(primedRequestsFactory.create(primingContext)).thenReturn(primedRequests);
+        when(objectMapper.writeValueAsString(primedRequests)).thenReturn(primingRequestString);
+
+        final String got = zombieRequestHandler.handle(request, response);
+
+        assertThat(got).isEqualTo(primingRequestString);
+
+        verify(response).status(OK_200);
+        verify(response).header("Content-Type", "application/json");
     }
 
     @Test

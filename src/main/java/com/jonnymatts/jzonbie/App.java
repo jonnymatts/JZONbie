@@ -29,10 +29,11 @@ public class App {
         final JsonDeserializer jsonDeserializer = new JsonDeserializer(objectMapper);
         final Multimap<PrimedRequest, PrimedResponse> primingContext = LinkedListMultimap.create();
         final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(jsonDeserializer);
+        final PrimedRequestsFactory primedRequestsFactory = new PrimedRequestsFactory();
 
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, primedRequestFactory, objectMapper);
 
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper, primedRequestsFactory);
 
         new App(appRequestHandler, zombieRequestHandler);
 

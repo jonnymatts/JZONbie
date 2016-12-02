@@ -6,20 +6,27 @@ import com.google.common.collect.Multimap;
 import spark.Request;
 import spark.Response;
 
+import java.util.List;
+
 import static java.lang.String.format;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
+import static org.eclipse.jetty.http.HttpStatus.OK_200;
 
 public class ZombieRequestHandler implements RequestHandler {
 
     private final Multimap<PrimedRequest, PrimedResponse> primingContext;
     private final JsonDeserializer jsonDeserializer;
     private final ObjectMapper objectMapper;
+    private final PrimedRequestsFactory primedRequestsFactory;
 
     public ZombieRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
-                                JsonDeserializer jsonDeserializer, ObjectMapper objectMapper) {
+                                JsonDeserializer jsonDeserializer,
+                                ObjectMapper objectMapper,
+                                PrimedRequestsFactory primedRequestsFactory) {
         this.primingContext = primingContext;
         this.jsonDeserializer = jsonDeserializer;
         this.objectMapper = objectMapper;
+        this.primedRequestsFactory = primedRequestsFactory;
     }
 
     @Override
@@ -29,6 +36,8 @@ public class ZombieRequestHandler implements RequestHandler {
         switch(zombieHeaderValue) {
             case "priming":
                 return handlePrimingRequest(request, response);
+            case "list":
+                return handleListRequest(response);
             default:
                 throw new RuntimeException(format("Unknown zombie method: %s", zombieHeaderValue));
         }
@@ -52,5 +61,11 @@ public class ZombieRequestHandler implements RequestHandler {
         response.status(CREATED_201);
 
         return objectMapper.writeValueAsString(primingRequest);
+    }
+
+    private String handleListRequest(Response response) throws JsonProcessingException {
+        response.status(OK_200);
+        response.header("Content-Type", "application/json");
+        return objectMapper.writeValueAsString(primedRequestsFactory.create(primingContext));
     }
 }
