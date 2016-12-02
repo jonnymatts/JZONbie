@@ -1,9 +1,13 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.requests;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.PrimedRequest;
+import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
+import com.jonnymatts.jzonbie.model.PrimedResponse;
+import com.jonnymatts.jzonbie.model.JZONbieRequest;
 import spark.Request;
 import spark.Response;
 
@@ -15,12 +19,12 @@ import java.util.Optional;
 public class AppRequestHandler implements RequestHandler {
 
     private final Multimap<PrimedRequest, PrimedResponse> primingContext;
-    private final List<PrimingRequest> callHistory;
+    private final List<JZONbieRequest> callHistory;
     private final PrimedRequestFactory primedRequestFactory;
     private final ObjectMapper objectMapper;
 
     public AppRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
-                             List<PrimingRequest> callHistory,
+                             List<JZONbieRequest> callHistory,
                              PrimedRequestFactory primedRequestFactory,
                              ObjectMapper objectMapper) {
         this.primingContext = primingContext;
@@ -46,7 +50,7 @@ public class AppRequestHandler implements RequestHandler {
 
         primingContext.remove(primedRequest, primedResponse);
 
-        callHistory.add(new PrimingRequest(primedRequest, primedResponse));
+        callHistory.add(new JZONbieRequest(primedRequest, primedResponse));
 
         return objectMapper.writeValueAsString(primedResponse.getBody());
     }

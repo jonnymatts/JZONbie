@@ -1,7 +1,8 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.util.Deserializer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class PrimedRequestFactoryTest {
 
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
-    @Mock private JsonDeserializer jsonDeserializer;
+    @Mock private Deserializer deserializer;
 
     @Mock private Request request;
 
@@ -34,12 +35,12 @@ public class PrimedRequestFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        primedRequestFactory = new PrimedRequestFactory(jsonDeserializer);
+        primedRequestFactory = new PrimedRequestFactory(deserializer);
     }
 
     @Test
     public void createForRequest() throws Exception {
-        when(jsonDeserializer.deserialize(anyMap(), eq(PrimedRequest.class))).thenReturn(primedRequest);
+        when(deserializer.deserialize(anyMap(), eq(PrimedRequest.class))).thenReturn(primedRequest);
 
         final PrimedRequest got = primedRequestFactory.create(request);
 

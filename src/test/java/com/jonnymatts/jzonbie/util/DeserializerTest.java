@@ -1,6 +1,7 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.model.JZONbieRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JsonDeserializerTest {
+public class DeserializerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
@@ -24,31 +25,31 @@ public class JsonDeserializerTest {
 
     @Mock private ObjectMapper objectMapper;
 
-    @Mock private PrimingRequest primingRequest;
+    @Mock private JZONbieRequest JZONbieRequest;
 
-    private JsonDeserializer jsonDeserializer;
+    private Deserializer deserializer;
 
     @Before
     public void setUp() throws Exception {
-        jsonDeserializer = new JsonDeserializer(objectMapper);
+        deserializer = new Deserializer(objectMapper);
     }
 
     @Test
     public void deserializeReturnsPrimingRequestSuccessfully() throws IOException {
-        when(objectMapper.readValue(request.body(), PrimingRequest.class)).thenReturn(primingRequest);
+        when(objectMapper.readValue(request.body(), JZONbieRequest.class)).thenReturn(JZONbieRequest);
 
-        final PrimingRequest got = jsonDeserializer.deserialize(request, PrimingRequest.class);
+        final JZONbieRequest got = deserializer.deserialize(request, JZONbieRequest.class);
 
-        assertThat(got).isEqualTo(primingRequest);
+        assertThat(got).isEqualTo(JZONbieRequest);
     }
 
     @Test
     public void deserializeThrowsDeserializationExceptionIfObjectMapperThrowsIOException() throws Exception {
-        when(objectMapper.readValue(request.body(), PrimingRequest.class)).thenThrow(new IOException());
+        when(objectMapper.readValue(request.body(), JZONbieRequest.class)).thenThrow(new IOException());
 
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage("Error deserializing");
 
-        jsonDeserializer.deserialize(request, PrimingRequest.class);
+        deserializer.deserialize(request, JZONbieRequest.class);
     }
 }

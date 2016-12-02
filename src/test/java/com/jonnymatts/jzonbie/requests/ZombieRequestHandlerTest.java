@@ -1,10 +1,12 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.util.Deserializer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,25 +34,25 @@ public class ZombieRequestHandlerTest {
 
     @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
 
-    @Mock private JsonDeserializer jsonDeserializer;
+    @Mock private Deserializer deserializer;
 
     @Mock private ObjectMapper objectMapper;
 
-    @Mock private PrimedRequestsFactory primedRequestsFactory;
+    @Mock private PrimedMappingFactory primedMappingFactory;
 
     @Mock private Request request;
 
     @Mock private Response response;
 
-    @Mock private PrimingRequest primingRequest;
+    @Mock private JZONbieRequest JZONbieRequest;
 
     @Mock private PrimedRequest primedRequest;
 
     @Mock private PrimedResponse primedResponse;
 
-    @Fixture private List<PrimingRequest> callHistory;
+    @Fixture private List<JZONbieRequest> callHistory;
 
-    @Fixture private List<PrimedRequests> primedRequests;
+    @Fixture private List<PrimedMapping> primedRequests;
 
     @Fixture private String primingRequestString;
 
@@ -58,24 +60,24 @@ public class ZombieRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, jsonDeserializer, objectMapper, primedRequestsFactory);
+        zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, objectMapper, primedMappingFactory);
 
-        when(primingRequest.getPrimedRequest()).thenReturn(primedRequest);
-        when(primingRequest.getPrimedResponse()).thenReturn(primedResponse);
+        when(JZONbieRequest.getPrimedRequest()).thenReturn(primedRequest);
+        when(JZONbieRequest.getPrimedResponse()).thenReturn(primedResponse);
     }
 
     @Test
     public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
         when(request.pathInfo()).thenReturn("path");
         when(request.headers("zombie")).thenReturn("priming");
-        when(jsonDeserializer.deserialize(request, PrimingRequest.class)).thenReturn(primingRequest);
-        when(objectMapper.writeValueAsString(primingRequest)).thenReturn(primingRequestString);
+        when(deserializer.deserialize(request, JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(objectMapper.writeValueAsString(JZONbieRequest)).thenReturn(primingRequestString);
 
         final String got = zombieRequestHandler.handle(request, response);
 
         assertThat(got).isEqualTo(primingRequestString);
 
-        verify(primingContext).put(primingRequest.getPrimedRequest(), primingRequest.getPrimedResponse());
+        verify(primingContext).put(JZONbieRequest.getPrimedRequest(), JZONbieRequest.getPrimedResponse());
         verify(response).status(CREATED_201);
     }
 
@@ -85,8 +87,8 @@ public class ZombieRequestHandlerTest {
         when(request.requestMethod()).thenReturn("POST");
         when(request.headers("zombie")).thenReturn("priming");
         when(primedRequest.getMethod()).thenReturn(null);
-        when(jsonDeserializer.deserialize(request, PrimingRequest.class)).thenReturn(primingRequest);
-        when(objectMapper.writeValueAsString(primingRequest)).thenReturn(primingRequestString);
+        when(deserializer.deserialize(request, JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(objectMapper.writeValueAsString(JZONbieRequest)).thenReturn(primingRequestString);
 
         zombieRequestHandler.handle(request, response);
 
@@ -99,8 +101,8 @@ public class ZombieRequestHandlerTest {
         when(request.requestMethod()).thenReturn("POST");
         when(request.headers("zombie")).thenReturn("priming");
         when(primedRequest.getPath()).thenReturn(null);
-        when(jsonDeserializer.deserialize(request, PrimingRequest.class)).thenReturn(primingRequest);
-        when(objectMapper.writeValueAsString(primingRequest)).thenReturn(primingRequestString);
+        when(deserializer.deserialize(request, JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(objectMapper.writeValueAsString(JZONbieRequest)).thenReturn(primingRequestString);
 
         zombieRequestHandler.handle(request, response);
 
@@ -110,7 +112,7 @@ public class ZombieRequestHandlerTest {
     @Test
     public void handleReturnsPrimingContextMappingsIfZombieHeaderHasListValue() throws JsonProcessingException {
         when(request.headers("zombie")).thenReturn("list");
-        when(primedRequestsFactory.create(primingContext)).thenReturn(primedRequests);
+        when(primedMappingFactory.create(primingContext)).thenReturn(primedRequests);
         when(objectMapper.writeValueAsString(primedRequests)).thenReturn(primingRequestString);
 
         final String got = zombieRequestHandler.handle(request, response);

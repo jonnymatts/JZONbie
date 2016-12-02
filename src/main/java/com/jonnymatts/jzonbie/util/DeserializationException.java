@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.util;
 
 public class DeserializationException extends RuntimeException {
 

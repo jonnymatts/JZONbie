@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import com.google.common.collect.Multimap;
 
@@ -9,11 +9,11 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
-public class PrimedRequestsFactory {
-    public List<PrimedRequests> create(Multimap<PrimedRequest, PrimedResponse> primingContext) {
+public class PrimedMappingFactory {
+    public List<PrimedMapping> create(Multimap<PrimedRequest, PrimedResponse> primingContext) {
         final Map<PrimedRequest, Collection<PrimedResponse>> map = primingContext.asMap();
         return map.entrySet().stream()
-                .map(entry -> new PrimedRequests(entry.getKey(), new ArrayList<PrimedResponse>(entry.getValue())))
+                .map(entry -> new PrimedMapping(entry.getKey(), new ArrayList<PrimedResponse>(entry.getValue())))
                 .collect(toList());
     }
 }

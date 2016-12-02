@@ -1,7 +1,8 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.model.PrimedRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

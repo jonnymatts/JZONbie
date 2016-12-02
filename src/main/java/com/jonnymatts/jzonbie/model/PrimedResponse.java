@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import java.util.Map;
 

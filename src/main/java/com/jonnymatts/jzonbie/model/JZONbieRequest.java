@@ -1,8 +1,8 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PrimingRequest {
+public class JZONbieRequest {
 
     @JsonProperty("request")
     private PrimedRequest primedRequest;
@@ -10,9 +10,9 @@ public class PrimingRequest {
     @JsonProperty("response")
     private PrimedResponse primedResponse;
 
-    public PrimingRequest() {}
+    public JZONbieRequest() {}
 
-    public PrimingRequest(PrimedRequest primedRequest, PrimedResponse primedResponse) {
+    public JZONbieRequest(PrimedRequest primedRequest, PrimedResponse primedResponse) {
         this.primedRequest = primedRequest;
         this.primedResponse = primedResponse;
     }
@@ -38,7 +38,7 @@ public class PrimingRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PrimingRequest that = (PrimingRequest) o;
+        JZONbieRequest that = (JZONbieRequest) o;
 
         if (primedRequest != null ? !primedRequest.equals(that.primedRequest) : that.primedRequest != null)
             return false;

@@ -1,12 +1,12 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public class PrimedRequests {
+public class PrimedMapping {
 
-    public PrimedRequests(PrimedRequest primedRequest, List<PrimedResponse> primedResponses) {
+    public PrimedMapping(PrimedRequest primedRequest, List<PrimedResponse> primedResponses) {
         this.primedRequest = primedRequest;
         this.primedResponses = primedResponses;
     }

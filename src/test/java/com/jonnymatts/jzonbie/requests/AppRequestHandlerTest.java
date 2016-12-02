@@ -1,10 +1,14 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.PrimedRequest;
+import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
+import com.jonnymatts.jzonbie.model.PrimedResponse;
+import com.jonnymatts.jzonbie.model.JZONbieRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +36,7 @@ public class AppRequestHandlerTest {
 
     @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
 
-    @Mock private List<PrimingRequest> callHistory;
+    @Mock private List<JZONbieRequest> callHistory;
 
     @Mock private PrimedRequestFactory primedRequestFactory;
 
@@ -42,7 +46,7 @@ public class AppRequestHandlerTest {
 
     @Mock private Response response;
 
-    @Fixture private PrimingRequest primingRequest;
+    @Fixture private JZONbieRequest JZONbieRequest;
 
     @Fixture private String path;
 
@@ -58,8 +62,8 @@ public class AppRequestHandlerTest {
     public void setUp() throws Exception {
         appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory, objectMapper);
 
-        primedRequest = primingRequest.getPrimedRequest();
-        primedResponse = primingRequest.getPrimedResponse();
+        primedRequest = JZONbieRequest.getPrimedRequest();
+        primedResponse = JZONbieRequest.getPrimedResponse();
 
         when(primedRequestFactory.create(request)).thenReturn(primedRequest);
         when(primingContext.get(primedRequest))
@@ -93,6 +97,6 @@ public class AppRequestHandlerTest {
     public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
         appRequestHandler.handle(request, response);
 
-        verify(callHistory).add(primingRequest);
+        verify(callHistory).add(JZONbieRequest);
     }
 }

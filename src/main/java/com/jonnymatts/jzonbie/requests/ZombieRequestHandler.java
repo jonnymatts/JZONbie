@@ -1,8 +1,13 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.model.PrimedRequest;
+import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
+import com.jonnymatts.jzonbie.model.PrimedResponse;
+import com.jonnymatts.jzonbie.model.JZONbieRequest;
 import spark.Request;
 import spark.Response;
 
@@ -15,21 +20,21 @@ import static org.eclipse.jetty.http.HttpStatus.OK_200;
 public class ZombieRequestHandler implements RequestHandler {
 
     private final Multimap<PrimedRequest, PrimedResponse> primingContext;
-    private final List<PrimingRequest> callHistory;
-    private final JsonDeserializer jsonDeserializer;
+    private final List<JZONbieRequest> callHistory;
+    private final Deserializer deserializer;
     private final ObjectMapper objectMapper;
-    private final PrimedRequestsFactory primedRequestsFactory;
+    private final PrimedMappingFactory primedMappingFactory;
 
     public ZombieRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
-                                List<PrimingRequest> callHistory,
-                                JsonDeserializer jsonDeserializer,
+                                List<JZONbieRequest> callHistory,
+                                Deserializer deserializer,
                                 ObjectMapper objectMapper,
-                                PrimedRequestsFactory primedRequestsFactory) {
+                                PrimedMappingFactory primedMappingFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
-        this.jsonDeserializer = jsonDeserializer;
+        this.deserializer = deserializer;
         this.objectMapper = objectMapper;
-        this.primedRequestsFactory = primedRequestsFactory;
+        this.primedMappingFactory = primedMappingFactory;
     }
 
     @Override
@@ -63,9 +68,9 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     private String handlePrimingRequest(Request request, Response response) throws JsonProcessingException {
-        final PrimingRequest primingRequest = jsonDeserializer.deserialize(request, PrimingRequest.class);
-        final PrimedRequest primedRequest = primingRequest.getPrimedRequest();
-        final PrimedResponse primedResponse = primingRequest.getPrimedResponse();
+        final JZONbieRequest JZONbieRequest = deserializer.deserialize(request, JZONbieRequest.class);
+        final PrimedRequest primedRequest = JZONbieRequest.getPrimedRequest();
+        final PrimedResponse primedResponse = JZONbieRequest.getPrimedResponse();
 
         if(primedRequest.getMethod() == null) {
             primedRequest.setMethod(request.requestMethod());
@@ -79,12 +84,12 @@ public class ZombieRequestHandler implements RequestHandler {
 
         response.status(CREATED_201);
 
-        return objectMapper.writeValueAsString(primingRequest);
+        return objectMapper.writeValueAsString(JZONbieRequest);
     }
 
     private String handleListRequest(Response response) throws JsonProcessingException {
         response.status(OK_200);
         response.header("Content-Type", "application/json");
-        return objectMapper.writeValueAsString(primedRequestsFactory.create(primingContext));
+        return objectMapper.writeValueAsString(primedMappingFactory.create(primingContext));
     }
 }

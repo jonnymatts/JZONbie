@@ -3,6 +3,11 @@ package com.jonnymatts.jzonbie;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.requests.AppRequestHandler;
+import com.jonnymatts.jzonbie.requests.RequestHandler;
+import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.util.Deserializer;
 import spark.Request;
 import spark.Response;
 
@@ -29,15 +34,15 @@ public class App {
 
     public static void main(String[] args) {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
-        final JsonDeserializer jsonDeserializer = new JsonDeserializer(objectMapper);
+        final Deserializer deserializer = new Deserializer(objectMapper);
         final Multimap<PrimedRequest, PrimedResponse> primingContext = LinkedListMultimap.create();
-        final List<PrimingRequest> callHistory = new ArrayList<>();
-        final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(jsonDeserializer);
-        final PrimedRequestsFactory primedRequestsFactory = new PrimedRequestsFactory();
+        final List<JZONbieRequest> callHistory = new ArrayList<>();
+        final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(deserializer);
+        final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory, objectMapper);
 
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, jsonDeserializer, objectMapper, primedRequestsFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, objectMapper, primedMappingFactory);
 
         new App(appRequestHandler, zombieRequestHandler);
 

@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PrimedRequestsFactoryTest {
+public class PrimedMappingFactoryTest {
 
     public @Rule FixtureRule fixtureRule = FixtureRule.initFixtures();
 
@@ -25,19 +25,19 @@ public class PrimedRequestsFactoryTest {
 
     private @Fixture Map<PrimedRequest, Collection<PrimedResponse>> primingContextMap;
 
-    private final PrimedRequestsFactory primedRequestsFactory = new PrimedRequestsFactory();
+    private final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
     @Test
     public void createReturnsListOfPrimedRequests() throws Exception {
         when(primingContext.asMap()).thenReturn(primingContextMap);
 
-        final List<PrimedRequests> primedRequests = primedRequestsFactory.create(primingContext);
+        final List<PrimedMapping> primedRequests = primedMappingFactory.create(primingContext);
 
         final ArrayList<Entry<PrimedRequest, Collection<PrimedResponse>>> entries = new ArrayList<>(primingContextMap.entrySet());
 
         for(int i = 0; i < primedRequests.size(); i++) {
             final Entry<PrimedRequest, Collection<PrimedResponse>> entry = entries.get(i);
-            final PrimedRequests primedRequest = primedRequests.get(i);
+            final PrimedMapping primedRequest = primedRequests.get(i);
 
             assertThat(primedRequest.getPrimedRequest()).isEqualTo(entry.getKey());
             assertThat(primedRequest.getPrimedResponses()).isEqualTo(entry.getValue());
@@ -48,7 +48,7 @@ public class PrimedRequestsFactoryTest {
     public void createReturnsEmptyListIfPrimingContextIsEmpty() throws Exception {
         when(primingContext.asMap()).thenReturn(emptyMap());
 
-        final List<PrimedRequests> primedRequests = primedRequestsFactory.create(primingContext);
+        final List<PrimedMapping> primedRequests = primedMappingFactory.create(primingContext);
 
         assertThat(primedRequests).isEmpty();
     }

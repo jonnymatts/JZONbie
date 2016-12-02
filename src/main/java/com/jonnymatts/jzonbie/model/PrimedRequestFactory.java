@@ -1,5 +1,6 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.util.Deserializer;
 import spark.Request;
 
 import java.util.HashMap;
@@ -9,17 +10,17 @@ import static java.util.stream.Collectors.toMap;
 
 public class PrimedRequestFactory {
 
-    private final JsonDeserializer jsonDeserializer;
+    private final Deserializer deserializer;
 
-    public PrimedRequestFactory(JsonDeserializer jsonDeserializer) {
-        this.jsonDeserializer = jsonDeserializer;
+    public PrimedRequestFactory(Deserializer deserializer) {
+        this.deserializer = deserializer;
     }
 
     public PrimedRequest create(Request request) {
         final Map<String, Object> primedRequestMap = new HashMap<String, Object>(){{
             put("path", request.pathInfo());
             put("method", request.requestMethod());
-            put("body", jsonDeserializer.deserialize(request.body()));
+            put("body", deserializer.deserialize(request.body()));
             put("headers", request.headers().stream()
                     .collect(
                             toMap(
@@ -29,6 +30,6 @@ public class PrimedRequestFactory {
                     ));
         }};
 
-        return jsonDeserializer.deserialize(primedRequestMap, PrimedRequest.class);
+        return deserializer.deserialize(primedRequestMap, PrimedRequest.class);
     }
 }

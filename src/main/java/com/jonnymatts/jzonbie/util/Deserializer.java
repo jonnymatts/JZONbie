@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,11 +7,11 @@ import spark.Request;
 import java.io.IOException;
 import java.util.Map;
 
-public class JsonDeserializer {
+public class Deserializer {
 
     private final ObjectMapper objectMapper;
 
-    public JsonDeserializer(ObjectMapper objectMapper) {
+    public Deserializer(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
