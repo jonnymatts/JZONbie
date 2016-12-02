@@ -15,15 +15,18 @@ import static org.eclipse.jetty.http.HttpStatus.OK_200;
 public class ZombieRequestHandler implements RequestHandler {
 
     private final Multimap<PrimedRequest, PrimedResponse> primingContext;
+    private final List<PrimingRequest> callHistory;
     private final JsonDeserializer jsonDeserializer;
     private final ObjectMapper objectMapper;
     private final PrimedRequestsFactory primedRequestsFactory;
 
     public ZombieRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
+                                List<PrimingRequest> callHistory,
                                 JsonDeserializer jsonDeserializer,
                                 ObjectMapper objectMapper,
                                 PrimedRequestsFactory primedRequestsFactory) {
         this.primingContext = primingContext;
+        this.callHistory = callHistory;
         this.jsonDeserializer = jsonDeserializer;
         this.objectMapper = objectMapper;
         this.primedRequestsFactory = primedRequestsFactory;
@@ -38,6 +41,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handlePrimingRequest(request, response);
             case "list":
                 return handleListRequest(response);
+            case "history":
+                return handleHistoryRequest(response);
             case "reset":
                 return handleResetRequest(response);
             default:
@@ -45,9 +50,15 @@ public class ZombieRequestHandler implements RequestHandler {
         }
     }
 
+    private String handleHistoryRequest(Response response) throws JsonProcessingException {
+        response.status(OK_200);
+        return objectMapper.writeValueAsString(callHistory);
+    }
+
     private String handleResetRequest(Response response) {
         response.status(OK_200);
         primingContext.clear();
+        callHistory.clear();
         return "Zombie Reset";
     }
 

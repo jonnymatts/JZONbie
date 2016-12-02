@@ -8,19 +8,23 @@ import spark.Request;
 import spark.Response;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class AppRequestHandler implements RequestHandler {
 
     private final Multimap<PrimedRequest, PrimedResponse> primingContext;
+    private final List<PrimingRequest> callHistory;
     private final PrimedRequestFactory primedRequestFactory;
     private final ObjectMapper objectMapper;
 
     public AppRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
+                             List<PrimingRequest> callHistory,
                              PrimedRequestFactory primedRequestFactory,
                              ObjectMapper objectMapper) {
         this.primingContext = primingContext;
+        this.callHistory = callHistory;
         this.primedRequestFactory = primedRequestFactory;
         this.objectMapper = objectMapper;
     }
@@ -41,6 +45,8 @@ public class AppRequestHandler implements RequestHandler {
         primeResponse(response, primedResponse);
 
         primingContext.remove(primedRequest, primedResponse);
+
+        callHistory.add(new PrimingRequest(primedRequest, primedResponse));
 
         return objectMapper.writeValueAsString(primedResponse.getBody());
     }

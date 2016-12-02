@@ -6,6 +6,9 @@ import com.google.common.collect.Multimap;
 import spark.Request;
 import spark.Response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static java.lang.String.format;
@@ -28,12 +31,13 @@ public class App {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final JsonDeserializer jsonDeserializer = new JsonDeserializer(objectMapper);
         final Multimap<PrimedRequest, PrimedResponse> primingContext = LinkedListMultimap.create();
+        final List<PrimingRequest> callHistory = new ArrayList<>();
         final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(jsonDeserializer);
         final PrimedRequestsFactory primedRequestsFactory = new PrimedRequestsFactory();
 
-        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, primedRequestFactory, objectMapper);
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory, objectMapper);
 
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper, primedRequestsFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, jsonDeserializer, objectMapper, primedRequestsFactory);
 
         new App(appRequestHandler, zombieRequestHandler);
 

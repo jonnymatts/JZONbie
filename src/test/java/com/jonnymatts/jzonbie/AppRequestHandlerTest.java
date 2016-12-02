@@ -15,6 +15,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import spark.Request;
 import spark.Response;
 
+import java.util.List;
+
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -30,6 +32,8 @@ public class AppRequestHandlerTest {
 
     @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
 
+    @Mock private List<PrimingRequest> callHistory;
+
     @Mock private PrimedRequestFactory primedRequestFactory;
 
     @Mock private ObjectMapper objectMapper;
@@ -40,28 +44,31 @@ public class AppRequestHandlerTest {
 
     @Fixture private PrimingRequest primingRequest;
 
-    @Fixture private PrimedRequest primedRequest;
-
     @Fixture private String path;
 
     @Fixture private String responseString;
 
     private AppRequestHandler appRequestHandler;
 
+    private PrimedRequest primedRequest;
+
+    private PrimedResponse primedResponse;
+
     @Before
     public void setUp() throws Exception {
-        appRequestHandler = new AppRequestHandler(primingContext, primedRequestFactory, objectMapper);
-    }
+        appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory, objectMapper);
 
-    @Test
-    public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
-        final PrimedResponse primedResponse = primingRequest.getPrimedResponse();
+        primedRequest = primingRequest.getPrimedRequest();
+        primedResponse = primingRequest.getPrimedResponse();
 
         when(primedRequestFactory.create(request)).thenReturn(primedRequest);
         when(primingContext.get(primedRequest))
                 .thenReturn(singletonList(primedResponse));
         when(objectMapper.writeValueAsString(primedResponse.getBody())).thenReturn(responseString);
+    }
 
+    @Test
+    public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
         final String got = appRequestHandler.handle(request, response);
 
         assertThat(got).isEqualTo(responseString);
@@ -74,21 +81,18 @@ public class AppRequestHandlerTest {
 
     @Test
     public void handleDoesNotAddHeadersToResponseIfPrimedResponseDoesNotHaveHeaders() throws JsonProcessingException {
-        final PrimedResponse primedResponse = primingRequest.getPrimedResponse();
-
         primedResponse.setHeaders(null);
 
-        when(primedRequestFactory.create(request)).thenReturn(primedRequest);
-        when(primingContext.get(primedRequest))
-                .thenReturn(singletonList(primedResponse));
-        when(objectMapper.writeValueAsString(primedResponse.getBody())).thenReturn(responseString);
-
-        final String got = appRequestHandler.handle(request, response);
-
-        assertThat(got).isEqualTo(responseString);
+        appRequestHandler.handle(request, response);
 
         verify(response).status(primedResponse.getStatusCode());
-        verify(primingContext).remove(primedRequest, primedResponse);
         verifyNoMoreInteractions(response);
+    }
+
+    @Test
+    public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
+        appRequestHandler.handle(request, response);
+
+        verify(callHistory).add(primingRequest);
     }
 }

@@ -48,6 +48,8 @@ public class ZombieRequestHandlerTest {
 
     @Mock private PrimedResponse primedResponse;
 
+    @Fixture private List<PrimingRequest> callHistory;
+
     @Fixture private List<PrimedRequests> primedRequests;
 
     @Fixture private String primingRequestString;
@@ -56,7 +58,7 @@ public class ZombieRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        zombieRequestHandler = new ZombieRequestHandler(primingContext, jsonDeserializer, objectMapper, primedRequestsFactory);
+        zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, jsonDeserializer, objectMapper, primedRequestsFactory);
 
         when(primingRequest.getPrimedRequest()).thenReturn(primedRequest);
         when(primingRequest.getPrimedResponse()).thenReturn(primedResponse);
@@ -120,14 +122,29 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleClearsPrimingContextMappingsIfZombieHeaderHasResetValue() throws JsonProcessingException {
+    public void handleClearsPrimingContextAndCallHistoryIfZombieHeaderHasResetValue() throws JsonProcessingException {
         when(request.headers("zombie")).thenReturn("reset");
+
+        assertThat(callHistory).isNotEmpty();
 
         final String got = zombieRequestHandler.handle(request, response);
 
         assertThat(got).isEqualTo("Zombie Reset");
+        assertThat(callHistory).isEmpty();
 
         verify(primingContext).clear();
+        verify(response).status(OK_200);
+    }
+
+    @Test
+    public void handleReturnsCallHistoryIfZombieHeaderHasHistoryValue() throws JsonProcessingException {
+        when(request.headers("zombie")).thenReturn("history");
+        when(objectMapper.writeValueAsString(callHistory)).thenReturn(primingRequestString);
+
+        final String got = zombieRequestHandler.handle(request, response);
+
+        assertThat(got).isEqualTo(primingRequestString);
+
         verify(response).status(OK_200);
     }
 
