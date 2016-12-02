@@ -9,12 +9,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -44,5 +42,14 @@ public class PrimedRequestsFactoryTest {
             assertThat(primedRequest.getPrimedRequest()).isEqualTo(entry.getKey());
             assertThat(primedRequest.getPrimedResponses()).isEqualTo(entry.getValue());
         }
+    }
+
+    @Test
+    public void createReturnsEmptyListIfPrimingContextIsEmpty() throws Exception {
+        when(primingContext.asMap()).thenReturn(emptyMap());
+
+        final List<PrimedRequests> primedRequests = primedRequestsFactory.create(primingContext);
+
+        assertThat(primedRequests).isEmpty();
     }
 }
