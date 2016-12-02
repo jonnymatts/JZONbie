@@ -38,9 +38,17 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handlePrimingRequest(request, response);
             case "list":
                 return handleListRequest(response);
+            case "reset":
+                return handleResetRequest(response);
             default:
                 throw new RuntimeException(format("Unknown zombie method: %s", zombieHeaderValue));
         }
+    }
+
+    private String handleResetRequest(Response response) {
+        response.status(OK_200);
+        primingContext.clear();
+        return "Zombie Reset";
     }
 
     private String handlePrimingRequest(Request request, Response response) throws JsonProcessingException {

@@ -120,6 +120,18 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
+    public void handleClearsPrimingContextMappingsIfZombieHeaderHasResetValue() throws JsonProcessingException {
+        when(request.headers("zombie")).thenReturn("reset");
+
+        final String got = zombieRequestHandler.handle(request, response);
+
+        assertThat(got).isEqualTo("Zombie Reset");
+
+        verify(primingContext).clear();
+        verify(response).status(OK_200);
+    }
+
+    @Test
     public void handleThrowsRuntimeExceptionIfZombieHeaderHasUnknownValue() throws JsonProcessingException {
         when(request.headers("zombie")).thenReturn("unknownValue");
 
