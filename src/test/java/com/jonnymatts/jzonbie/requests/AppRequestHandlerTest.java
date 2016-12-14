@@ -9,6 +9,8 @@ import com.jonnymatts.jzonbie.model.PrimedRequest;
 import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
 import com.jonnymatts.jzonbie.model.PrimedResponse;
 import com.jonnymatts.jzonbie.model.JZONbieRequest;
+import com.jonnymatts.jzonbie.repsonse.ErrorResponse;
+import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,8 +23,10 @@ import spark.Response;
 
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -95,5 +99,22 @@ public class AppRequestHandlerTest {
         appRequestHandler.handle(request, response);
 
         verify(callHistory).add(JZONbieRequest);
+    }
+
+    @Test
+    public void handleReturnsErrorResponseIfPrimingIsNotFound() throws Exception {
+        when(primingContext.get(primedRequest)).thenReturn(emptyList());
+
+        final Object got = appRequestHandler.handle(request, response);
+
+        assertThat(got).isInstanceOf(ErrorResponse.class);
+
+        final ErrorResponse errorResponse = (ErrorResponse)got;
+
+        assertThat(errorResponse.getMessage()).contains("No priming found");
+        assertThat(errorResponse.getRequest()).isEqualTo(primedRequest);
+
+        verify(response).status(NOT_FOUND_404);
+        verify(response).header("Content-Type", "application/json");
     }
 }

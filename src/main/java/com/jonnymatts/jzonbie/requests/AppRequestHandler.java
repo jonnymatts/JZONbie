@@ -2,12 +2,12 @@ package com.jonnymatts.jzonbie.requests;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.PrimedRequest;
 import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
 import com.jonnymatts.jzonbie.model.PrimedResponse;
 import com.jonnymatts.jzonbie.model.JZONbieRequest;
+import com.jonnymatts.jzonbie.repsonse.ErrorResponse;
 import spark.Request;
 import spark.Response;
 
@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
 
 public class AppRequestHandler implements RequestHandler {
 
@@ -38,7 +40,7 @@ public class AppRequestHandler implements RequestHandler {
         final Optional<PrimedResponse> primedResponseOpt = primedResponses.stream().findFirst();
 
         if(!primedResponseOpt.isPresent()) {
-            return errorResponse(response);
+            return errorResponse(response, primedRequest);
         }
 
         final PrimedResponse primedResponse = primedResponseOpt.get();
@@ -60,7 +62,9 @@ public class AppRequestHandler implements RequestHandler {
         if(headers != null) headers.entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
     }
 
-    private String errorResponse(Response response) {
-        return null;
+    private ErrorResponse errorResponse(Response response, PrimedRequest primedRequest) {
+        response.status(NOT_FOUND_404);
+        response.header("Content-Type", "application/json");
+        return new ErrorResponse("No priming found for request", primedRequest);
     }
 }
