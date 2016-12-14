@@ -40,8 +40,6 @@ public class AppRequestHandlerTest {
 
     @Mock private PrimedRequestFactory primedRequestFactory;
 
-    @Mock private ObjectMapper objectMapper;
-
     @Mock private Request request;
 
     @Mock private Response response;
@@ -60,7 +58,7 @@ public class AppRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory, objectMapper);
+        appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory);
 
         primedRequest = JZONbieRequest.getPrimedRequest();
         primedResponse = JZONbieRequest.getPrimedResponse();
@@ -68,14 +66,13 @@ public class AppRequestHandlerTest {
         when(primedRequestFactory.create(request)).thenReturn(primedRequest);
         when(primingContext.get(primedRequest))
                 .thenReturn(singletonList(primedResponse));
-        when(objectMapper.writeValueAsString(primedResponse.getBody())).thenReturn(responseString);
     }
 
     @Test
     public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
-        final String got = appRequestHandler.handle(request, response);
+        final Object got = appRequestHandler.handle(request, response);
 
-        assertThat(got).isEqualTo(responseString);
+        assertThat(got).isEqualTo(primedResponse.getBody());
 
         verify(response).status(primedResponse.getStatusCode());
         primedResponse.getHeaders().entrySet()

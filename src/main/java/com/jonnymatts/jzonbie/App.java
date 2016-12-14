@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.RequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.spark.JsonResponseTransformer;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import spark.Request;
 import spark.Response;
@@ -25,11 +26,14 @@ public class App {
 
     private static AppRequestHandler appRequestHandler;
     private static ZombieRequestHandler zombieRequestHandler;
+    private static JsonResponseTransformer jsonResponseTransformer;
 
     public App(AppRequestHandler appRequestHandler,
-               ZombieRequestHandler zombieRequestHandler) {
+               ZombieRequestHandler zombieRequestHandler,
+               JsonResponseTransformer jsonResponseTransformer) {
         App.appRequestHandler = appRequestHandler;
         App.zombieRequestHandler = zombieRequestHandler;
+        App.jsonResponseTransformer = jsonResponseTransformer;
     }
 
     public static void main(String[] args) {
@@ -40,11 +44,11 @@ public class App {
         final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
-        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory, objectMapper);
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
+        final JsonResponseTransformer jsonResponseTransformer = new JsonResponseTransformer(objectMapper);
 
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, objectMapper, primedMappingFactory);
-
-        new App(appRequestHandler, zombieRequestHandler);
+        new App(appRequestHandler, zombieRequestHandler, jsonResponseTransformer);
 
         init();
 
@@ -54,16 +58,16 @@ public class App {
     private static void init() {
         port(PORT);
 
-        get("*", App::handleRequest);
-        post("*", App::handleRequest);
-        patch("*", App::handleRequest);
-        put("*", App::handleRequest);
-        delete("*", App::handleRequest);
-        head("*", App::handleRequest);
-        options("*", App::handleRequest);
+        get("*", App::handleRequest, jsonResponseTransformer);
+        post("*", App::handleRequest, jsonResponseTransformer);
+        patch("*", App::handleRequest, jsonResponseTransformer);
+        put("*", App::handleRequest, jsonResponseTransformer);
+        delete("*", App::handleRequest, jsonResponseTransformer);
+        head("*", App::handleRequest, jsonResponseTransformer);
+        options("*", App::handleRequest, jsonResponseTransformer);
     }
 
-    private static String handleRequest(Request request, Response response) {
+    private static Object handleRequest(Request request, Response response) {
         final String zombieHeader = request.headers("zombie");
 
         final RequestHandler requestHandler = zombieHeader != null ?

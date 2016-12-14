@@ -6,5 +6,5 @@ import spark.Response;
 
 public interface RequestHandler {
 
-    String handle(Request request, Response response) throws JsonProcessingException;
+    Object handle(Request request, Response response) throws JsonProcessingException;
 }

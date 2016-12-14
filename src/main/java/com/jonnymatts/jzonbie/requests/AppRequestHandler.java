@@ -21,20 +21,17 @@ public class AppRequestHandler implements RequestHandler {
     private final Multimap<PrimedRequest, PrimedResponse> primingContext;
     private final List<JZONbieRequest> callHistory;
     private final PrimedRequestFactory primedRequestFactory;
-    private final ObjectMapper objectMapper;
 
     public AppRequestHandler(Multimap<PrimedRequest, PrimedResponse> primingContext,
                              List<JZONbieRequest> callHistory,
-                             PrimedRequestFactory primedRequestFactory,
-                             ObjectMapper objectMapper) {
+                             PrimedRequestFactory primedRequestFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
         this.primedRequestFactory = primedRequestFactory;
-        this.objectMapper = objectMapper;
     }
 
     @Override
-    public String handle(Request request, Response response) throws JsonProcessingException {
+    public Object handle(Request request, Response response) throws JsonProcessingException {
         final PrimedRequest primedRequest = primedRequestFactory.create(request);
 
         final Collection<PrimedResponse> primedResponses = primingContext.get(primedRequest);
@@ -52,7 +49,7 @@ public class AppRequestHandler implements RequestHandler {
 
         callHistory.add(new JZONbieRequest(primedRequest, primedResponse));
 
-        return objectMapper.writeValueAsString(primedResponse.getBody());
+        return primedResponse.getBody();
     }
 
     private void primeResponse(Response response, PrimedResponse r) throws JsonProcessingException {
