@@ -1,16 +1,18 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.google.common.collect.Multimap;
-import com.jonnymatts.jzonbie.model.PrimedRequest;
+import com.jonnymatts.jzonbie.model.ZombieRequest;
 import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
-import com.jonnymatts.jzonbie.model.PrimedResponse;
-import com.jonnymatts.jzonbie.model.JZONbieRequest;
-import com.jonnymatts.jzonbie.repsonse.ErrorResponse;
-import org.eclipse.jetty.http.HttpStatus;
+import com.jonnymatts.jzonbie.model.ZombieResponse;
+import com.jonnymatts.jzonbie.model.PrimingRequest;
+import com.jonnymatts.jzonbie.repsonse.PrimingNotFoundErrorResponse;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+import org.hamcrest.beans.HasProperty;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,6 +29,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -38,9 +42,9 @@ public class AppRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
+    @Mock private Multimap<ZombieRequest, ZombieResponse> primingContext;
 
-    @Mock private List<JZONbieRequest> callHistory;
+    @Mock private List<PrimingRequest> callHistory;
 
     @Mock private PrimedRequestFactory primedRequestFactory;
 
@@ -48,7 +52,7 @@ public class AppRequestHandlerTest {
 
     @Mock private Response response;
 
-    @Fixture private JZONbieRequest JZONbieRequest;
+    @Fixture private PrimingRequest PrimingRequest;
 
     @Fixture private String path;
 
@@ -56,41 +60,41 @@ public class AppRequestHandlerTest {
 
     private AppRequestHandler appRequestHandler;
 
-    private PrimedRequest primedRequest;
+    private ZombieRequest zombieRequest;
 
-    private PrimedResponse primedResponse;
+    private ZombieResponse zombieResponse;
 
     @Before
     public void setUp() throws Exception {
         appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory);
 
-        primedRequest = JZONbieRequest.getPrimedRequest();
-        primedResponse = JZONbieRequest.getPrimedResponse();
+        zombieRequest = PrimingRequest.getZombieRequest();
+        zombieResponse = PrimingRequest.getZombieResponse();
 
-        when(primedRequestFactory.create(request)).thenReturn(primedRequest);
-        when(primingContext.get(primedRequest))
-                .thenReturn(singletonList(primedResponse));
+        when(primedRequestFactory.create(request)).thenReturn(zombieRequest);
+        when(primingContext.get(zombieRequest))
+                .thenReturn(singletonList(zombieResponse));
     }
 
     @Test
     public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
         final Object got = appRequestHandler.handle(request, response);
 
-        assertThat(got).isEqualTo(primedResponse.getBody());
+        assertThat(got).isEqualTo(zombieResponse.getBody());
 
-        verify(response).status(primedResponse.getStatusCode());
-        primedResponse.getHeaders().entrySet()
+        verify(response).status(zombieResponse.getStatusCode());
+        zombieResponse.getHeaders().entrySet()
                 .forEach(entry -> verify(response).header(entry.getKey(), entry.getValue()));
-        verify(primingContext).remove(primedRequest, primedResponse);
+        verify(primingContext).remove(zombieRequest, zombieResponse);
     }
 
     @Test
     public void handleDoesNotAddHeadersToResponseIfPrimedResponseDoesNotHaveHeaders() throws JsonProcessingException {
-        primedResponse.setHeaders(null);
+        zombieResponse.setHeaders(null);
 
         appRequestHandler.handle(request, response);
 
-        verify(response).status(primedResponse.getStatusCode());
+        verify(response).status(zombieResponse.getStatusCode());
         verifyNoMoreInteractions(response);
     }
 
@@ -98,23 +102,16 @@ public class AppRequestHandlerTest {
     public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
         appRequestHandler.handle(request, response);
 
-        verify(callHistory).add(JZONbieRequest);
+        verify(callHistory).add(PrimingRequest);
     }
 
     @Test
     public void handleReturnsErrorResponseIfPrimingIsNotFound() throws Exception {
-        when(primingContext.get(primedRequest)).thenReturn(emptyList());
+        when(primingContext.get(zombieRequest)).thenReturn(emptyList());
 
-        final Object got = appRequestHandler.handle(request, response);
+        expectedException.expect(PrimingNotFoundException.class);
+        expectedException.expect(Matchers.hasProperty("request", equalTo(zombieRequest)));
 
-        assertThat(got).isInstanceOf(ErrorResponse.class);
-
-        final ErrorResponse errorResponse = (ErrorResponse)got;
-
-        assertThat(errorResponse.getMessage()).contains("No priming found");
-        assertThat(errorResponse.getRequest()).isEqualTo(primedRequest);
-
-        verify(response).status(NOT_FOUND_404);
-        verify(response).header("Content-Type", "application/json");
+        appRequestHandler.handle(request, response);
     }
 }

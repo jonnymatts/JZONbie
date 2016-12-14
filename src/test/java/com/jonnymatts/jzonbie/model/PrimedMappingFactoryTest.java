@@ -21,9 +21,9 @@ public class PrimedMappingFactoryTest {
 
     public @Rule FixtureRule fixtureRule = FixtureRule.initFixtures();
 
-    private @Mock Multimap<PrimedRequest, PrimedResponse> primingContext;
+    private @Mock Multimap<ZombieRequest, ZombieResponse> primingContext;
 
-    private @Fixture Map<PrimedRequest, Collection<PrimedResponse>> primingContextMap;
+    private @Fixture Map<ZombieRequest, Collection<ZombieResponse>> primingContextMap;
 
     private final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
@@ -33,14 +33,14 @@ public class PrimedMappingFactoryTest {
 
         final List<PrimedMapping> primedRequests = primedMappingFactory.create(primingContext);
 
-        final ArrayList<Entry<PrimedRequest, Collection<PrimedResponse>>> entries = new ArrayList<>(primingContextMap.entrySet());
+        final ArrayList<Entry<ZombieRequest, Collection<ZombieResponse>>> entries = new ArrayList<>(primingContextMap.entrySet());
 
         for(int i = 0; i < primedRequests.size(); i++) {
-            final Entry<PrimedRequest, Collection<PrimedResponse>> entry = entries.get(i);
+            final Entry<ZombieRequest, Collection<ZombieResponse>> entry = entries.get(i);
             final PrimedMapping primedRequest = primedRequests.get(i);
 
-            assertThat(primedRequest.getPrimedRequest()).isEqualTo(entry.getKey());
-            assertThat(primedRequest.getPrimedResponses()).isEqualTo(entry.getValue());
+            assertThat(primedRequest.getZombieRequest()).isEqualTo(entry.getKey());
+            assertThat(primedRequest.getZombieResponses()).isEqualTo(entry.getValue());
         }
     }
 

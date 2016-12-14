@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PrimedRequestFactoryTest {
+public class ZombieRequestFactoryTest {
 
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
@@ -25,7 +25,7 @@ public class PrimedRequestFactoryTest {
 
     @Mock private Request request;
 
-    @Fixture private PrimedRequest primedRequest;
+    @Fixture private ZombieRequest zombieRequest;
 
     @Fixture private String path;
 
@@ -40,10 +40,10 @@ public class PrimedRequestFactoryTest {
 
     @Test
     public void createForRequest() throws Exception {
-        when(deserializer.deserialize(anyMap(), eq(PrimedRequest.class))).thenReturn(primedRequest);
+        when(deserializer.deserialize(anyMap(), eq(ZombieRequest.class))).thenReturn(zombieRequest);
 
-        final PrimedRequest got = primedRequestFactory.create(request);
+        final ZombieRequest got = primedRequestFactory.create(request);
 
-        assertThat(got).isEqualTo(primedRequest);
+        assertThat(got).isEqualTo(zombieRequest);
     }
 }

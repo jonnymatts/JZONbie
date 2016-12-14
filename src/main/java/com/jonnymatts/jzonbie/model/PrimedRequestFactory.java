@@ -16,7 +16,7 @@ public class PrimedRequestFactory {
         this.deserializer = deserializer;
     }
 
-    public PrimedRequest create(Request request) {
+    public ZombieRequest create(Request request) {
         final Map<String, Object> primedRequestMap = new HashMap<String, Object>(){{
             put("path", request.pathInfo());
             put("method", request.requestMethod());
@@ -30,6 +30,6 @@ public class PrimedRequestFactory {
                     ));
         }};
 
-        return deserializer.deserialize(primedRequestMap, PrimedRequest.class);
+        return deserializer.deserialize(primedRequestMap, ZombieRequest.class);
     }
 }

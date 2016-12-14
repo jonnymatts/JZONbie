@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.model;
 
 import java.util.Map;
 
-public class PrimedResponse {
+public class ZombieResponse {
 
     private int statusCode;
     private Map<String, String> headers;
@@ -37,7 +37,7 @@ public class PrimedResponse {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PrimedResponse that = (PrimedResponse) o;
+        ZombieResponse that = (ZombieResponse) o;
 
         if (statusCode != that.statusCode) return false;
         if (headers != null ? !headers.equals(that.headers) : that.headers != null) return false;

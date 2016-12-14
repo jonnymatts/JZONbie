@@ -6,30 +6,30 @@ import java.util.List;
 
 public class PrimedMapping {
 
-    public PrimedMapping(PrimedRequest primedRequest, List<PrimedResponse> primedResponses) {
-        this.primedRequest = primedRequest;
-        this.primedResponses = primedResponses;
+    public PrimedMapping(ZombieRequest zombieRequest, List<ZombieResponse> zombieResponses) {
+        this.zombieRequest = zombieRequest;
+        this.zombieResponses = zombieResponses;
     }
 
     @JsonProperty("request")
-    private PrimedRequest primedRequest;
+    private ZombieRequest zombieRequest;
 
     @JsonProperty("responses")
-    private List<PrimedResponse> primedResponses;
+    private List<ZombieResponse> zombieResponses;
 
-    public PrimedRequest getPrimedRequest() {
-        return primedRequest;
+    public ZombieRequest getZombieRequest() {
+        return zombieRequest;
     }
 
-    public void setPrimedRequest(PrimedRequest primedRequest) {
-        this.primedRequest = primedRequest;
+    public void setZombieRequest(ZombieRequest zombieRequest) {
+        this.zombieRequest = zombieRequest;
     }
 
-    public List<PrimedResponse> getPrimedResponses() {
-        return primedResponses;
+    public List<ZombieResponse> getZombieResponses() {
+        return zombieResponses;
     }
 
-    public void setPrimedResponses(List<PrimedResponse> primedResponses) {
-        this.primedResponses = primedResponses;
+    public void setZombieResponses(List<ZombieResponse> zombieResponses) {
+        this.zombieResponses = zombieResponses;
     }
 }

@@ -1,7 +1,6 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.google.common.collect.Multimap;
@@ -32,7 +31,7 @@ public class ZombieRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<PrimedRequest, PrimedResponse> primingContext;
+    @Mock private Multimap<ZombieRequest, ZombieResponse> primingContext;
 
     @Mock private Deserializer deserializer;
 
@@ -42,13 +41,13 @@ public class ZombieRequestHandlerTest {
 
     @Mock private Response response;
 
-    @Mock private JZONbieRequest JZONbieRequest;
+    @Mock private PrimingRequest PrimingRequest;
 
-    @Mock private PrimedRequest primedRequest;
+    @Mock private ZombieRequest zombieRequest;
 
-    @Mock private PrimedResponse primedResponse;
+    @Mock private ZombieResponse zombieResponse;
 
-    @Fixture private List<JZONbieRequest> callHistory;
+    @Fixture private List<PrimingRequest> callHistory;
 
     @Fixture private List<PrimedMapping> primedRequests;
 
@@ -60,21 +59,21 @@ public class ZombieRequestHandlerTest {
     public void setUp() throws Exception {
         zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
 
-        when(JZONbieRequest.getPrimedRequest()).thenReturn(primedRequest);
-        when(JZONbieRequest.getPrimedResponse()).thenReturn(primedResponse);
+        when(PrimingRequest.getZombieRequest()).thenReturn(zombieRequest);
+        when(PrimingRequest.getZombieResponse()).thenReturn(zombieResponse);
     }
 
     @Test
     public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
         when(request.pathInfo()).thenReturn("path");
         when(request.headers("zombie")).thenReturn("priming");
-        when(deserializer.deserialize(request, JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(deserializer.deserialize(request, PrimingRequest.class)).thenReturn(PrimingRequest);
 
         final Object got = zombieRequestHandler.handle(request, response);
 
-        assertThat(got).isEqualTo(JZONbieRequest);
+        assertThat(got).isEqualTo(PrimingRequest);
 
-        verify(primingContext).put(JZONbieRequest.getPrimedRequest(), JZONbieRequest.getPrimedResponse());
+        verify(primingContext).put(PrimingRequest.getZombieRequest(), PrimingRequest.getZombieResponse());
         verify(response).status(CREATED_201);
     }
 
@@ -83,12 +82,12 @@ public class ZombieRequestHandlerTest {
         when(request.pathInfo()).thenReturn("path");
         when(request.requestMethod()).thenReturn("POST");
         when(request.headers("zombie")).thenReturn("priming");
-        when(primedRequest.getMethod()).thenReturn(null);
-        when(deserializer.deserialize(request, JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(zombieRequest.getMethod()).thenReturn(null);
+        when(deserializer.deserialize(request, PrimingRequest.class)).thenReturn(PrimingRequest);
 
         zombieRequestHandler.handle(request, response);
 
-        verify(primedRequest).setMethod(request.requestMethod());
+        verify(zombieRequest).setMethod(request.requestMethod());
     }
 
     @Test
@@ -96,12 +95,12 @@ public class ZombieRequestHandlerTest {
         when(request.pathInfo()).thenReturn("path");
         when(request.requestMethod()).thenReturn("POST");
         when(request.headers("zombie")).thenReturn("priming");
-        when(primedRequest.getPath()).thenReturn(null);
-        when(deserializer.deserialize(request, JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(zombieRequest.getPath()).thenReturn(null);
+        when(deserializer.deserialize(request, PrimingRequest.class)).thenReturn(PrimingRequest);
 
         zombieRequestHandler.handle(request, response);
 
-        verify(primedRequest).setPath(request.pathInfo());
+        verify(zombieRequest).setPath(request.pathInfo());
         verify(response).status(CREATED_201);
         verify(response).header("Content-Type", "application/json");
     }

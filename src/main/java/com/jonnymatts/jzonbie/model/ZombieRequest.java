@@ -6,7 +6,7 @@ import java.util.Map;
 
 import static java.lang.String.format;
 
-public class PrimedRequest {
+public class ZombieRequest {
 
     private String path;
     private Map<String, String> headers;
@@ -14,7 +14,7 @@ public class PrimedRequest {
     private Map<String, Object> body;
     private Map<String, String> basicAuth;
 
-    public PrimedRequest() {
+    public ZombieRequest() {
         this.headers = new HashMap<>();
     }
 
@@ -67,7 +67,7 @@ public class PrimedRequest {
 //        if (this == o) return true;
 //        if (o == null || getClass() != o.getClass()) return false;
 //
-//        PrimedRequest that = (PrimedRequest) o;
+//        ZombieRequest that = (ZombieRequest) o;
 //
 //        if (headers != null ? !headers.equals(that.headers) : that.headers != null) return false;
 //        return body != null ? body.equals(that.body) : that.body == null;
@@ -86,7 +86,7 @@ public class PrimedRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PrimedRequest that = (PrimedRequest) o;
+        ZombieRequest that = (ZombieRequest) o;
 
         if (path != null ? !path.equals(that.path) : that.path != null) return false;
         if (method != null ? !method.equals(that.method) : that.method != null) return false;

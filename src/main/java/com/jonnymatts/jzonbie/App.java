@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.repsonse.ErrorResponse;
+import com.jonnymatts.jzonbie.repsonse.PrimingNotFoundErrorResponse;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
+import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
 import com.jonnymatts.jzonbie.requests.RequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.spark.JsonResponseTransformer;
@@ -18,6 +21,8 @@ import java.util.List;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static java.lang.String.format;
+import static org.eclipse.jetty.http.HttpStatus.INTERNAL_SERVER_ERROR_500;
+import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
 import static spark.Spark.*;
 
 public class App {
@@ -39,8 +44,8 @@ public class App {
     public static void main(String[] args) {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final Deserializer deserializer = new Deserializer(objectMapper);
-        final Multimap<PrimedRequest, PrimedResponse> primingContext = LinkedListMultimap.create();
-        final List<JZONbieRequest> callHistory = new ArrayList<>();
+        final Multimap<ZombieRequest, ZombieResponse> primingContext = LinkedListMultimap.create();
+        final List<PrimingRequest> callHistory = new ArrayList<>();
         final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
@@ -75,8 +80,16 @@ public class App {
 
         try {
             return requestHandler.handle(request, response);
-        } catch (Exception e) {
-            return format("Error occurred: %s - %s", e.getClass().getName(), e.getMessage());
+        }
+        catch (PrimingNotFoundException e) {
+            response.status(NOT_FOUND_404);
+            response.header("Content-Type", "application/json");
+            return new PrimingNotFoundErrorResponse(e.getRequest());
+        }
+        catch (Exception e) {
+            response.status(INTERNAL_SERVER_ERROR_500);
+            response.header("Content-Type", "application/json");
+            return new ErrorResponse(format("Error occurred: %s - %s", e.getClass().getName(), e.getMessage()));
         }
     }
 }

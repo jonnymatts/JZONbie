@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jonnymatts.jzonbie.model.JZONbieRequest;
+import com.jonnymatts.jzonbie.model.PrimingRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,10 +12,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import spark.Request;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +26,7 @@ public class DeserializerTest {
 
     @Mock private ObjectMapper objectMapper;
 
-    @Mock private JZONbieRequest JZONbieRequest;
+    @Mock private PrimingRequest PrimingRequest;
 
     private Deserializer deserializer;
 
@@ -39,21 +37,21 @@ public class DeserializerTest {
 
     @Test
     public void deserializeReturnsPrimingRequestSuccessfully() throws IOException {
-        when(objectMapper.readValue(request.body(), JZONbieRequest.class)).thenReturn(JZONbieRequest);
+        when(objectMapper.readValue(request.body(), PrimingRequest.class)).thenReturn(PrimingRequest);
 
-        final JZONbieRequest got = deserializer.deserialize(request, JZONbieRequest.class);
+        final PrimingRequest got = deserializer.deserialize(request, PrimingRequest.class);
 
-        assertThat(got).isEqualTo(JZONbieRequest);
+        assertThat(got).isEqualTo(PrimingRequest);
     }
 
     @Test
     public void deserializeThrowsDeserializationExceptionIfObjectMapperThrowsIOException() throws Exception {
-        when(objectMapper.readValue(request.body(), JZONbieRequest.class)).thenThrow(new IOException());
+        when(objectMapper.readValue(request.body(), PrimingRequest.class)).thenThrow(new IOException());
 
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage("Error deserializing");
 
-        deserializer.deserialize(request, JZONbieRequest.class);
+        deserializer.deserialize(request, PrimingRequest.class);
     }
 
     @Test
