@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import spark.Request;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Deserializer {
@@ -33,6 +34,8 @@ public class Deserializer {
 
 
     public Map<String, Object> deserialize(String s) {
+        if(s == null || s.isEmpty()) return null;
+
         try {
             return objectMapper.readValue(s, new TypeReference<Map<String, Object>>() {});
         } catch (IOException e) {

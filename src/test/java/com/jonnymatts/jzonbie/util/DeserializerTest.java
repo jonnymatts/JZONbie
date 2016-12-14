@@ -12,7 +12,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import spark.Request;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -51,5 +54,19 @@ public class DeserializerTest {
         expectedException.expectMessage("Error deserializing");
 
         deserializer.deserialize(request, JZONbieRequest.class);
+    }
+
+    @Test
+    public void deserializeReturnsEmptyMapIfStringIsEmpty() {
+        final Map<String, Object> got = deserializer.deserialize("");
+
+        assertThat(got).isNull();
+    }
+
+    @Test
+    public void deserializeReturnsEmptyMapIfStringIsNull() {
+        final Map<String, Object> got = deserializer.deserialize(null);
+
+        assertThat(got).isNull();
     }
 }
