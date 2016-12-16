@@ -45,7 +45,7 @@ public class App {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final Deserializer deserializer = new Deserializer(objectMapper);
         final Multimap<ZombieRequest, ZombieResponse> primingContext = LinkedListMultimap.create();
-        final List<PrimingRequest> callHistory = new ArrayList<>();
+        final List<ZombiePriming> callHistory = new ArrayList<>();
         final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 

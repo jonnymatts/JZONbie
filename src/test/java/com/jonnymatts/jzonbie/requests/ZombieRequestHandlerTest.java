@@ -41,13 +41,13 @@ public class ZombieRequestHandlerTest {
 
     @Mock private Response response;
 
-    @Mock private PrimingRequest PrimingRequest;
+    @Mock private ZombiePriming ZombiePriming;
 
     @Mock private ZombieRequest zombieRequest;
 
     @Mock private ZombieResponse zombieResponse;
 
-    @Fixture private List<PrimingRequest> callHistory;
+    @Fixture private List<ZombiePriming> callHistory;
 
     @Fixture private List<PrimedMapping> primedRequests;
 
@@ -59,21 +59,21 @@ public class ZombieRequestHandlerTest {
     public void setUp() throws Exception {
         zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
 
-        when(PrimingRequest.getZombieRequest()).thenReturn(zombieRequest);
-        when(PrimingRequest.getZombieResponse()).thenReturn(zombieResponse);
+        when(ZombiePriming.getZombieRequest()).thenReturn(zombieRequest);
+        when(ZombiePriming.getZombieResponse()).thenReturn(zombieResponse);
     }
 
     @Test
     public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
         when(request.pathInfo()).thenReturn("path");
         when(request.headers("zombie")).thenReturn("priming");
-        when(deserializer.deserialize(request, PrimingRequest.class)).thenReturn(PrimingRequest);
+        when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(ZombiePriming);
 
         final Object got = zombieRequestHandler.handle(request, response);
 
-        assertThat(got).isEqualTo(PrimingRequest);
+        assertThat(got).isEqualTo(ZombiePriming);
 
-        verify(primingContext).put(PrimingRequest.getZombieRequest(), PrimingRequest.getZombieResponse());
+        verify(primingContext).put(ZombiePriming.getZombieRequest(), ZombiePriming.getZombieResponse());
         verify(response).status(CREATED_201);
     }
 
@@ -83,7 +83,7 @@ public class ZombieRequestHandlerTest {
         when(request.requestMethod()).thenReturn("POST");
         when(request.headers("zombie")).thenReturn("priming");
         when(zombieRequest.getMethod()).thenReturn(null);
-        when(deserializer.deserialize(request, PrimingRequest.class)).thenReturn(PrimingRequest);
+        when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(ZombiePriming);
 
         zombieRequestHandler.handle(request, response);
 
@@ -96,7 +96,7 @@ public class ZombieRequestHandlerTest {
         when(request.requestMethod()).thenReturn("POST");
         when(request.headers("zombie")).thenReturn("priming");
         when(zombieRequest.getPath()).thenReturn(null);
-        when(deserializer.deserialize(request, PrimingRequest.class)).thenReturn(PrimingRequest);
+        when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(ZombiePriming);
 
         zombieRequestHandler.handle(request, response);
 

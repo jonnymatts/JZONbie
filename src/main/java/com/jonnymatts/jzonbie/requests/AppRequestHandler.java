@@ -6,8 +6,7 @@ import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.ZombieRequest;
 import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
 import com.jonnymatts.jzonbie.model.ZombieResponse;
-import com.jonnymatts.jzonbie.model.PrimingRequest;
-import com.jonnymatts.jzonbie.repsonse.PrimingNotFoundErrorResponse;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
 import spark.Request;
 import spark.Response;
 
@@ -16,16 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
-
 public class AppRequestHandler implements RequestHandler {
 
     private final Multimap<ZombieRequest, ZombieResponse> primingContext;
-    private final List<PrimingRequest> callHistory;
+    private final List<ZombiePriming> callHistory;
     private final PrimedRequestFactory primedRequestFactory;
 
     public AppRequestHandler(Multimap<ZombieRequest, ZombieResponse> primingContext,
-                             List<PrimingRequest> callHistory,
+                             List<ZombiePriming> callHistory,
                              PrimedRequestFactory primedRequestFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
@@ -49,7 +46,7 @@ public class AppRequestHandler implements RequestHandler {
 
         primingContext.remove(zombieRequest, zombieResponse);
 
-        callHistory.add(new PrimingRequest(zombieRequest, zombieResponse));
+        callHistory.add(new ZombiePriming(zombieRequest, zombieResponse));
 
         return zombieResponse.getBody();
     }

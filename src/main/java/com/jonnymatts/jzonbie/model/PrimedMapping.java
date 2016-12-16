@@ -6,6 +6,8 @@ import java.util.List;
 
 public class PrimedMapping {
 
+    public PrimedMapping() {}
+
     public PrimedMapping(ZombieRequest zombieRequest, List<ZombieResponse> zombieResponses) {
         this.zombieRequest = zombieRequest;
         this.zombieResponses = zombieResponses;

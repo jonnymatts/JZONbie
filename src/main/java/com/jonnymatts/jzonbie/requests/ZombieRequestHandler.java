@@ -16,12 +16,12 @@ import static org.eclipse.jetty.http.HttpStatus.OK_200;
 public class ZombieRequestHandler implements RequestHandler {
 
     private final Multimap<ZombieRequest, ZombieResponse> primingContext;
-    private final List<PrimingRequest> callHistory;
+    private final List<ZombiePriming> callHistory;
     private final Deserializer deserializer;
     private final PrimedMappingFactory primedMappingFactory;
 
     public ZombieRequestHandler(Multimap<ZombieRequest, ZombieResponse> primingContext,
-                                List<PrimingRequest> callHistory,
+                                List<ZombiePriming> callHistory,
                                 Deserializer deserializer,
                                 PrimedMappingFactory primedMappingFactory) {
         this.primingContext = primingContext;
@@ -48,10 +48,10 @@ public class ZombieRequestHandler implements RequestHandler {
         }
     }
 
-    private PrimingRequest handlePrimingRequest(Request request, Response response) throws JsonProcessingException {
-        final PrimingRequest PrimingRequest = deserializer.deserialize(request, PrimingRequest.class);
-        final ZombieRequest zombieRequest = PrimingRequest.getZombieRequest();
-        final ZombieResponse zombieResponse = PrimingRequest.getZombieResponse();
+    private ZombiePriming handlePrimingRequest(Request request, Response response) throws JsonProcessingException {
+        final ZombiePriming ZombiePriming = deserializer.deserialize(request, ZombiePriming.class);
+        final ZombieRequest zombieRequest = ZombiePriming.getZombieRequest();
+        final ZombieResponse zombieResponse = ZombiePriming.getZombieResponse();
 
         if(zombieRequest.getMethod() == null) {
             zombieRequest.setMethod(request.requestMethod());
@@ -66,7 +66,7 @@ public class ZombieRequestHandler implements RequestHandler {
         response.status(CREATED_201);
         response.header("Content-Type", "application/json");
 
-        return PrimingRequest;
+        return ZombiePriming;
     }
 
     private List<PrimedMapping> handleListRequest(Response response) throws JsonProcessingException {
@@ -75,7 +75,7 @@ public class ZombieRequestHandler implements RequestHandler {
         return primedMappingFactory.create(primingContext);
     }
 
-    private List<PrimingRequest> handleHistoryRequest(Response response) throws JsonProcessingException {
+    private List<ZombiePriming> handleHistoryRequest(Response response) throws JsonProcessingException {
         response.status(OK_200);
         response.header("Content-Type", "application/json");
         return callHistory;

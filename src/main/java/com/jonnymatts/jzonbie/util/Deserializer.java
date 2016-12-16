@@ -2,11 +2,17 @@ package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import spark.Request;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class Deserializer {
 
@@ -40,6 +46,25 @@ public class Deserializer {
             return objectMapper.readValue(s, new TypeReference<Map<String, Object>>() {});
         } catch (IOException e) {
             throw new DeserializationException("Error deserializing to map", e);
+        }
+    }
+
+    public <T> T deserialize(HttpResponse response, Class<T> clazz) {
+        try {
+            final String s = EntityUtils.toString(response.getEntity());
+            return objectMapper.readValue(s, clazz);
+        } catch (IOException e) {
+            throw new DeserializationException("Error deserializing http response", e);
+        }
+    }
+
+    public <T> List<T> deserializeCollection(HttpResponse response, Class<T> clazz) {
+        try {
+            final String s = EntityUtils.toString(response.getEntity());
+            final List<Map<String, Object>> maps = objectMapper.readValue(s, new TypeReference<List<T>>() {});
+            return maps.stream().map(t -> deserialize(t, clazz)).collect(toList());
+        } catch (IOException e) {
+            throw new DeserializationException("Error deserializing http response", e);
         }
     }
 }

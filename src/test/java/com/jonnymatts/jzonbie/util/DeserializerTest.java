@@ -1,7 +1,8 @@
 package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jonnymatts.jzonbie.model.PrimingRequest;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
+import org.apache.http.HttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +27,9 @@ public class DeserializerTest {
 
     @Mock private ObjectMapper objectMapper;
 
-    @Mock private PrimingRequest PrimingRequest;
+    @Mock private ZombiePriming ZombiePriming;
+
+    @Mock private HttpResponse httpResponse;
 
     private Deserializer deserializer;
 
@@ -37,21 +40,21 @@ public class DeserializerTest {
 
     @Test
     public void deserializeReturnsPrimingRequestSuccessfully() throws IOException {
-        when(objectMapper.readValue(request.body(), PrimingRequest.class)).thenReturn(PrimingRequest);
+        when(objectMapper.readValue(request.body(), ZombiePriming.class)).thenReturn(ZombiePriming);
 
-        final PrimingRequest got = deserializer.deserialize(request, PrimingRequest.class);
+        final ZombiePriming got = deserializer.deserialize(request, ZombiePriming.class);
 
-        assertThat(got).isEqualTo(PrimingRequest);
+        assertThat(got).isEqualTo(ZombiePriming);
     }
 
     @Test
     public void deserializeThrowsDeserializationExceptionIfObjectMapperThrowsIOException() throws Exception {
-        when(objectMapper.readValue(request.body(), PrimingRequest.class)).thenThrow(new IOException());
+        when(objectMapper.readValue(request.body(), ZombiePriming.class)).thenThrow(new IOException());
 
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage("Error deserializing");
 
-        deserializer.deserialize(request, PrimingRequest.class);
+        deserializer.deserialize(request, ZombiePriming.class);
     }
 
     @Test
@@ -66,5 +69,14 @@ public class DeserializerTest {
         final Map<String, Object> got = deserializer.deserialize(null);
 
         assertThat(got).isNull();
+    }
+
+    @Test
+    public void deserializeCanDeserializeApacheHttpResponseBodySuccessfully() throws IOException {
+        when(objectMapper.readValue(request.body(), ZombiePriming.class)).thenReturn(ZombiePriming);
+
+        final ZombiePriming got = deserializer.deserialize(httpResponse, ZombiePriming.class);
+
+        assertThat(got).isEqualTo(ZombiePriming);
     }
 }

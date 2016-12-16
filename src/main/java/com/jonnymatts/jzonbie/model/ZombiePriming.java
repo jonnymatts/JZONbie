@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PrimingRequest {
+public class ZombiePriming {
 
     @JsonProperty("request")
     private ZombieRequest zombieRequest;
@@ -10,9 +10,9 @@ public class PrimingRequest {
     @JsonProperty("response")
     private ZombieResponse zombieResponse;
 
-    public PrimingRequest() {}
+    public ZombiePriming() {}
 
-    public PrimingRequest(ZombieRequest zombieRequest, ZombieResponse zombieResponse) {
+    public ZombiePriming(ZombieRequest zombieRequest, ZombieResponse zombieResponse) {
         this.zombieRequest = zombieRequest;
         this.zombieResponse = zombieResponse;
     }
@@ -38,7 +38,7 @@ public class PrimingRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        PrimingRequest that = (PrimingRequest) o;
+        ZombiePriming that = (ZombiePriming) o;
 
         if (zombieRequest != null ? !zombieRequest.equals(that.zombieRequest) : that.zombieRequest != null)
             return false;

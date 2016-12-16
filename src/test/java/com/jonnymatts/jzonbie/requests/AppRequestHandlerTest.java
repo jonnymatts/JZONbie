@@ -7,12 +7,8 @@ import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.ZombieRequest;
 import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
 import com.jonnymatts.jzonbie.model.ZombieResponse;
-import com.jonnymatts.jzonbie.model.PrimingRequest;
-import com.jonnymatts.jzonbie.repsonse.PrimingNotFoundErrorResponse;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
 import org.hamcrest.Matchers;
-import org.hamcrest.beans.HasProperty;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +24,6 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.mockito.Mockito.verify;
@@ -44,7 +39,7 @@ public class AppRequestHandlerTest {
 
     @Mock private Multimap<ZombieRequest, ZombieResponse> primingContext;
 
-    @Mock private List<PrimingRequest> callHistory;
+    @Mock private List<ZombiePriming> callHistory;
 
     @Mock private PrimedRequestFactory primedRequestFactory;
 
@@ -52,7 +47,7 @@ public class AppRequestHandlerTest {
 
     @Mock private Response response;
 
-    @Fixture private PrimingRequest PrimingRequest;
+    @Fixture private ZombiePriming ZombiePriming;
 
     @Fixture private String path;
 
@@ -68,8 +63,8 @@ public class AppRequestHandlerTest {
     public void setUp() throws Exception {
         appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory);
 
-        zombieRequest = PrimingRequest.getZombieRequest();
-        zombieResponse = PrimingRequest.getZombieResponse();
+        zombieRequest = ZombiePriming.getZombieRequest();
+        zombieResponse = ZombiePriming.getZombieResponse();
 
         when(primedRequestFactory.create(request)).thenReturn(zombieRequest);
         when(primingContext.get(zombieRequest))
@@ -102,7 +97,7 @@ public class AppRequestHandlerTest {
     public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
         appRequestHandler.handle(request, response);
 
-        verify(callHistory).add(PrimingRequest);
+        verify(callHistory).add(ZombiePriming);
     }
 
     @Test
