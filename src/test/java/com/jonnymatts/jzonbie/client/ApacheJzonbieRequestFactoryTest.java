@@ -26,7 +26,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JzonbieRequestFactoryTest {
+public class ApacheJzonbieRequestFactoryTest {
 
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
     @Rule public ExpectedException expectedException = ExpectedException.none();
@@ -38,12 +38,12 @@ public class JzonbieRequestFactoryTest {
     @Fixture private ZombieResponse zombieResponse;
     @Fixture private String entityString;
 
-    private JzonbieRequestFactory requestFactory;
+    private ApacheJzonbieRequestFactory requestFactory;
     private RuntimeException runtimeException;
 
     @Before
     public void setUp() throws Exception {
-        requestFactory = new JzonbieRequestFactory(zombieBaseUrl, objectMapper);
+        requestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
 
         runtimeException = new RuntimeException();
 

@@ -31,7 +31,7 @@ public class ApacheJzonbieHttpClientTest {
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private JzonbieRequestFactory jzonbieRequestFactory;
+    @Mock private ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
     @Mock private HttpClient httpClient;
     @Mock private Deserializer deserializer;
     @Mock private ZombieRequest zombieRequest;
@@ -45,7 +45,7 @@ public class ApacheJzonbieHttpClientTest {
 
     @Before
     public void setUp() throws Exception {
-        jzonbieHttpClient = new ApacheJzonbieHttpClient(httpClient, jzonbieRequestFactory, deserializer);
+        jzonbieHttpClient = new ApacheJzonbieHttpClient(httpClient, apacheJzonbieRequestFactory, deserializer);
         runtimeException = new RuntimeException();
     }
 
@@ -53,7 +53,7 @@ public class ApacheJzonbieHttpClientTest {
     public void primeZombieReturnsPrimingRequest() throws Exception {
         final ZombiePriming zombiePriming = new ZombiePriming();
 
-        when(jzonbieRequestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse)).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
@@ -64,7 +64,7 @@ public class ApacheJzonbieHttpClientTest {
 
     @Test
     public void primeZombieThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(jzonbieRequestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse)).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);
@@ -77,7 +77,7 @@ public class ApacheJzonbieHttpClientTest {
     public void getCurrentPrimingReturnsPrimedMappings() throws Exception {
         final List<PrimedMapping> primedMappings = emptyList();
 
-        when(jzonbieRequestFactory.createGetCurrentPrimingRequest()).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createGetCurrentPrimingRequest()).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserializeCollection(httpResponse, PrimedMapping.class)).thenReturn(primedMappings);
 
@@ -88,7 +88,7 @@ public class ApacheJzonbieHttpClientTest {
 
     @Test
     public void getCurrentPrimingThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(jzonbieRequestFactory.createGetCurrentPrimingRequest()).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createGetCurrentPrimingRequest()).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);
@@ -101,7 +101,7 @@ public class ApacheJzonbieHttpClientTest {
     public void getHistoryReturnsCallHistory() throws Exception {
         final List<ZombiePriming> zombiePrimings = emptyList();
 
-        when(jzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserializeCollection(httpResponse, ZombiePriming.class)).thenReturn(zombiePrimings);
 
@@ -112,7 +112,7 @@ public class ApacheJzonbieHttpClientTest {
 
     @Test
     public void getHistoryThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(jzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);
@@ -123,7 +123,7 @@ public class ApacheJzonbieHttpClientTest {
 
     @Test
     public void resetExecutesResetRequest() throws Exception {
-        when(jzonbieRequestFactory.createResetRequest()).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createResetRequest()).thenReturn(httpRequest);
 
         jzonbieHttpClient.reset();
 
@@ -132,7 +132,7 @@ public class ApacheJzonbieHttpClientTest {
 
     @Test
     public void resetThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(jzonbieRequestFactory.createResetRequest()).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createResetRequest()).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);

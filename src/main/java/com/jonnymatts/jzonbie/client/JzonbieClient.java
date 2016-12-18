@@ -1,12 +1,9 @@
 package com.jonnymatts.jzonbie.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.model.ZombieRequest;
 import com.jonnymatts.jzonbie.model.ZombieResponse;
-import com.jonnymatts.jzonbie.util.Deserializer;
 
 import java.util.List;
 
@@ -15,6 +12,10 @@ import static java.util.Collections.singletonMap;
 public class JzonbieClient {
 
     private final JzonbieHttpClient httpClient;
+
+    public JzonbieClient(String zombieBaseUrl) {
+        this.httpClient = new ApacheJzonbieHttpClient(zombieBaseUrl);
+    }
 
     public JzonbieClient(JzonbieHttpClient httpClient) {
         this.httpClient = httpClient;
@@ -37,10 +38,7 @@ public class JzonbieClient {
     }
 
     public static void main(String[] args) {
-        JzonbieRequestFactory jzonbieRequestFactory = new JzonbieRequestFactory("http://localhost:8080");
-        final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        Deserializer deserializer = new Deserializer(objectMapper);
-        JzonbieClient client = new JzonbieClient(new ApacheJzonbieHttpClient(jzonbieRequestFactory, deserializer));
+        JzonbieClient client = new JzonbieClient("http://localhost:8080");
 
         final ZombieRequest zombieRequest = new ZombieRequest();
         zombieRequest.setPath("/blah");

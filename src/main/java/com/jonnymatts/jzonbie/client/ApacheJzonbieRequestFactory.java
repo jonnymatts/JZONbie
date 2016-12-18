@@ -11,18 +11,18 @@ import org.apache.http.entity.StringEntity;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
-public class JzonbieRequestFactory {
+public class ApacheJzonbieRequestFactory {
 
     private final String zombieBaseUrl;
     private final ObjectMapper objectMapper;
 
-    public JzonbieRequestFactory(String zombieBaseUrl) {
+    public ApacheJzonbieRequestFactory(String zombieBaseUrl) {
         this.zombieBaseUrl = zombieBaseUrl;
         this.objectMapper = new ObjectMapper().setSerializationInclusion(NON_NULL);
     }
 
-    public JzonbieRequestFactory(String zombieBaseUrl,
-                                 ObjectMapper objectMapper) {
+    public ApacheJzonbieRequestFactory(String zombieBaseUrl,
+                                       ObjectMapper objectMapper) {
         this.zombieBaseUrl = zombieBaseUrl;
         this.objectMapper = objectMapper;
     }

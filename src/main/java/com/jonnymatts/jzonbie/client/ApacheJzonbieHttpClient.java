@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.model.ZombieRequest;
@@ -12,51 +13,54 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.util.List;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
 public class ApacheJzonbieHttpClient implements JzonbieHttpClient {
 
-    private final JzonbieRequestFactory jzonbieRequestFactory;
+    private final ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
     private final HttpClient httpClient;
     private final Deserializer deserializer;
 
-    public ApacheJzonbieHttpClient(JzonbieRequestFactory jzonbieRequestFactory,
-                                   Deserializer deserializer) {
+    public ApacheJzonbieHttpClient(String zombieBaseUrl) {
+        final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(NON_NULL);
+
+        this.apacheJzonbieRequestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
         this.httpClient = HttpClientBuilder.create().build();
-        this.jzonbieRequestFactory = jzonbieRequestFactory;
-        this.deserializer = deserializer;
+        this.deserializer = new Deserializer(objectMapper);
     }
 
     public ApacheJzonbieHttpClient(HttpClient httpClient,
-                                   JzonbieRequestFactory jzonbieRequestFactory,
+                                   ApacheJzonbieRequestFactory apacheJzonbieRequestFactory,
                                    Deserializer deserializer) {
         this.httpClient = httpClient;
-        this.jzonbieRequestFactory = jzonbieRequestFactory;
+        this.apacheJzonbieRequestFactory = apacheJzonbieRequestFactory;
         this.deserializer = deserializer;
     }
 
     @Override
     public ZombiePriming primeZombie(ZombieRequest request, ZombieResponse response) {
-        final HttpUriRequest primeZombieRequest = jzonbieRequestFactory.createPrimeZombieRequest(request, response);
+        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieRequest(request, response);
         final HttpResponse httpResponse = execute(primeZombieRequest);
         return deserializer.deserialize(httpResponse, ZombiePriming.class);
     }
 
     @Override
     public List<PrimedMapping> getCurrentPriming() {
-        final HttpUriRequest getCurrentPrimingRequest = jzonbieRequestFactory.createGetCurrentPrimingRequest();
+        final HttpUriRequest getCurrentPrimingRequest = apacheJzonbieRequestFactory.createGetCurrentPrimingRequest();
         final HttpResponse httpResponse = execute(getCurrentPrimingRequest);
         return deserializer.deserializeCollection(httpResponse, PrimedMapping.class);
     }
 
     @Override
     public List<ZombiePriming> getHistory() {
-        final HttpUriRequest getHistoryRequest = jzonbieRequestFactory.createGetHistoryRequest();
+        final HttpUriRequest getHistoryRequest = apacheJzonbieRequestFactory.createGetHistoryRequest();
         final HttpResponse httpResponse = execute(getHistoryRequest);
         return deserializer.deserializeCollection(httpResponse, ZombiePriming.class);
     }
 
     @Override
     public void reset() {
-        final HttpUriRequest resetRequest = jzonbieRequestFactory.createResetRequest();
+        final HttpUriRequest resetRequest = apacheJzonbieRequestFactory.createResetRequest();
         execute(resetRequest);
     }
 
