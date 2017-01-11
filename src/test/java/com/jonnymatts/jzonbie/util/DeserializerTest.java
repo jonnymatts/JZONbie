@@ -1,8 +1,11 @@
 package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flextrade.jfixture.annotations.Fixture;
+import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import org.apache.http.HttpResponse;
+import org.apache.http.entity.StringEntity;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,15 +24,19 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DeserializerTest {
 
+    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
+
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Mock private Request request;
 
     @Mock private ObjectMapper objectMapper;
 
-    @Mock private ZombiePriming ZombiePriming;
+    @Mock private ZombiePriming zombiePriming;
 
     @Mock private HttpResponse httpResponse;
+
+    @Fixture private String responseString;
 
     private Deserializer deserializer;
 
@@ -40,11 +47,11 @@ public class DeserializerTest {
 
     @Test
     public void deserializeReturnsPrimingRequestSuccessfully() throws IOException {
-        when(objectMapper.readValue(request.body(), ZombiePriming.class)).thenReturn(ZombiePriming);
+        when(objectMapper.readValue(request.body(), ZombiePriming.class)).thenReturn(zombiePriming);
 
         final ZombiePriming got = deserializer.deserialize(request, ZombiePriming.class);
 
-        assertThat(got).isEqualTo(ZombiePriming);
+        assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
@@ -73,10 +80,11 @@ public class DeserializerTest {
 
     @Test
     public void deserializeCanDeserializeApacheHttpResponseBodySuccessfully() throws IOException {
-        when(objectMapper.readValue(request.body(), ZombiePriming.class)).thenReturn(ZombiePriming);
+        when(httpResponse.getEntity()).thenReturn(new StringEntity(responseString));
+        when(objectMapper.readValue(responseString, ZombiePriming.class)).thenReturn(zombiePriming);
 
         final ZombiePriming got = deserializer.deserialize(httpResponse, ZombiePriming.class);
 
-        assertThat(got).isEqualTo(ZombiePriming);
+        assertThat(got).isEqualTo(zombiePriming);
     }
 }
