@@ -46,10 +46,10 @@ public class App {
         final Deserializer deserializer = new Deserializer(objectMapper);
         final Multimap<ZombieRequest, ZombieResponse> primingContext = LinkedListMultimap.create();
         final List<ZombiePriming> callHistory = new ArrayList<>();
-        final PrimedRequestFactory primedRequestFactory = new PrimedRequestFactory(deserializer);
+        final ZombieRequestFactory zombieRequestFactory = new ZombieRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
-        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory);
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, zombieRequestFactory);
         final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
         final JsonResponseTransformer jsonResponseTransformer = new JsonResponseTransformer(objectMapper);
 

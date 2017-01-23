@@ -13,6 +13,7 @@ public class ZombieRequest {
     private String method;
     private Map<String, Object> body;
     private Map<String, String> basicAuth;
+    private Map<String, String[]> queryParams;
 
     public ZombieRequest() {
         this.headers = new HashMap<>();
@@ -62,7 +63,15 @@ public class ZombieRequest {
         });
     }
 
-//    @Override
+    public Map<String, String[]> getQueryParams() {
+        return queryParams;
+    }
+
+    public void setQueryParams(Map<String, String[]> queryParams) {
+        this.queryParams = queryParams;
+    }
+
+    //    @Override
 //    public boolean equals(Object o) {
 //        if (this == o) return true;
 //        if (o == null || getClass() != o.getClass()) return false;
@@ -90,6 +99,7 @@ public class ZombieRequest {
 
         if (path != null ? !path.equals(that.path) : that.path != null) return false;
         if (method != null ? !method.equals(that.method) : that.method != null) return false;
+        if (queryParams != null ? !queryParams.equals(that.queryParams) : that.queryParams != null) return false;
         return body != null ? body.equals(that.body) : that.body == null;
 
     }
@@ -99,6 +109,7 @@ public class ZombieRequest {
         int result = path != null ? path.hashCode() : 0;
         result = 31 * result + (method != null ? method.hashCode() : 0);
         result = 31 * result + (body != null ? body.hashCode() : 0);
+        result = 31 * result + (queryParams != null ? queryParams.hashCode() : 0);
         return result;
     }
 }

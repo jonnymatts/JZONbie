@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.google.common.collect.Multimap;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.PrimedRequestFactory;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.ZombieRequest;
+import com.jonnymatts.jzonbie.model.ZombieRequestFactory;
+import com.jonnymatts.jzonbie.model.ZombieResponse;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,10 +25,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AppRequestHandlerTest {
@@ -41,7 +38,7 @@ public class AppRequestHandlerTest {
 
     @Mock private List<ZombiePriming> callHistory;
 
-    @Mock private PrimedRequestFactory primedRequestFactory;
+    @Mock private ZombieRequestFactory zombieRequestFactory;
 
     @Mock private Request request;
 
@@ -61,12 +58,12 @@ public class AppRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        appRequestHandler = new AppRequestHandler(primingContext, callHistory, primedRequestFactory);
+        appRequestHandler = new AppRequestHandler(primingContext, callHistory, zombieRequestFactory);
 
         zombieRequest = ZombiePriming.getZombieRequest();
         zombieResponse = ZombiePriming.getZombieResponse();
 
-        when(primedRequestFactory.create(request)).thenReturn(zombieRequest);
+        when(zombieRequestFactory.create(request)).thenReturn(zombieRequest);
         when(primingContext.get(zombieRequest))
                 .thenReturn(singletonList(zombieResponse));
     }
