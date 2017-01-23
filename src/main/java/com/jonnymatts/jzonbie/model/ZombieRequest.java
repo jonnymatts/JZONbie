@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonMap;
 
 public class ZombieRequest {
 
@@ -61,6 +62,10 @@ public class ZombieRequest {
             final String authValue = format("%s:%s", entry.getKey(), entry.getValue());
             headers.put("Authorization", Base64.getEncoder().encodeToString(authValue.getBytes()));
         });
+    }
+
+    public void setBasicAuth(String username, String password) {
+        setBasicAuth(singletonMap(username, password));
     }
 
     public Map<String, String[]> getQueryParams() {

@@ -30,7 +30,19 @@ public class ZombieRequestTest {
     }
 
     @Test
-    public void setBasicAuthAddsAuthorizationHeaderToHeaders() {
+    public void setBasicAuthAddsAuthorizationHeaderToHeadersWithStringInput() {
+        final String authValue = String.format("%s:%s", username, password);
+        final String encodedAuthValue = Base64.getEncoder().encodeToString(authValue.getBytes());
+
+        zombieRequest.setBasicAuth(username, password);
+
+        final Map<String, String> headers = zombieRequest.getHeaders();
+
+        assertThat(headers).containsEntry("Authorization", encodedAuthValue);
+    }
+
+    @Test
+    public void setBasicAuthAddsAuthorizationHeaderToHeadersWithMapInput() {
         final String authValue = String.format("%s:%s", username, password);
         final String encodedAuthValue = Base64.getEncoder().encodeToString(authValue.getBytes());
 
