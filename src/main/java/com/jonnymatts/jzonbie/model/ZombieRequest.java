@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.model;
 
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -14,7 +15,7 @@ public class ZombieRequest {
     private String method;
     private Map<String, Object> body;
     private Map<String, String> basicAuth;
-    private Map<String, String[]> queryParams;
+    private Map<String, List<String>> queryParams;
 
     public ZombieRequest() {
         this.headers = new HashMap<>();
@@ -68,11 +69,11 @@ public class ZombieRequest {
         setBasicAuth(singletonMap(username, password));
     }
 
-    public Map<String, String[]> getQueryParams() {
+    public Map<String, List<String>> getQueryParams() {
         return queryParams;
     }
 
-    public void setQueryParams(Map<String, String[]> queryParams) {
+    public void setQueryParams(Map<String, List<String>> queryParams) {
         this.queryParams = queryParams;
     }
 
