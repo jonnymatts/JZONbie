@@ -2,21 +2,20 @@ package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.requests.Request;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import spark.Request;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -27,18 +26,16 @@ public class ZombieRequestFactoryTest {
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
     @Mock private Deserializer deserializer;
-    @Mock(answer = Answers.RETURNS_DEEP_STUBS) private Request request;
+    @Mock private Request request;
 
     @Fixture private ZombieRequest zombieRequest;
-
     @Fixture private String path;
-
     @Fixture private String requestMethod;
-
     @Fixture private String requestBody;
 
-    private final Map<String, String[]> queryParams = singletonMap("qVar", new String[]{"qVal1", "qVal2"});
     private final Map<String, Object> bodyMap = singletonMap("var", "val");
+    private final Map<String, String> headers = singletonMap("hVar", "hVal");
+    private final Map<String, List<String>> queryParams = singletonMap("qVar", asList("qVal1", "qVal2"));
 
     private ZombieRequestFactory zombieRequestFactory;
 
@@ -53,16 +50,15 @@ public class ZombieRequestFactoryTest {
             put("path", path);
             put("method", requestMethod);
             put("body", bodyMap);
-            put("headers", singletonMap("hVar", "hVal"));
-            put("queryParams", singletonMap("qVar", asList("qVal1", "qVal2")));
+            put("headers", headers);
+            put("queryParams", queryParams);
         }};
 
-        when(request.pathInfo()).thenReturn(path);
-        when(request.requestMethod()).thenReturn(requestMethod);
-        when(request.headers()).thenReturn(singleton("hVar"));
-        when(request.headers("hVar")).thenReturn("hVal");
-        when(request.queryMap().toMap()).thenReturn(singletonMap("qVar", new String[]{"qVal1", "qVal2"}));
-        when(request.body()).thenReturn(requestBody);
+        when(request.getPath()).thenReturn(path);
+        when(request.getMethod()).thenReturn(requestMethod);
+        when(request.getHeaders()).thenReturn(headers);
+        when(request.getQueryParams()).thenReturn(this.queryParams);
+        when(request.getBody()).thenReturn(requestBody);
 
         when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
         when(deserializer.deserialize(expectedMap, ZombieRequest.class)).thenReturn(zombieRequest);

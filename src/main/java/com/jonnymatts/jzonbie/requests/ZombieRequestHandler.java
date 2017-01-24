@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.util.Deserializer;
-import spark.Request;
 import spark.Response;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class ZombieRequestHandler implements RequestHandler {
 
     @Override
     public Object handle(Request request, Response response) throws JsonProcessingException {
-        final String zombieHeaderValue = request.headers("zombie");
+        final String zombieHeaderValue = request.getHeaders().get("zombie");
 
         switch(zombieHeaderValue) {
             case "priming":
@@ -54,11 +53,11 @@ public class ZombieRequestHandler implements RequestHandler {
         final ZombieResponse zombieResponse = ZombiePriming.getZombieResponse();
 
         if(zombieRequest.getMethod() == null) {
-            zombieRequest.setMethod(request.requestMethod());
+            zombieRequest.setMethod(request.getMethod());
         }
 
         if(zombieRequest.getPath() == null) {
-            zombieRequest.setPath(request.pathInfo());
+            zombieRequest.setPath(request.getPath());
         }
 
         primingContext.put(zombieRequest, zombieResponse);

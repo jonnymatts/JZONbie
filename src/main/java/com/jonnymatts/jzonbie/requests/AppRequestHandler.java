@@ -7,7 +7,6 @@ import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.model.ZombieRequest;
 import com.jonnymatts.jzonbie.model.ZombieRequestFactory;
 import com.jonnymatts.jzonbie.model.ZombieResponse;
-import spark.Request;
 import spark.Response;
 
 import java.util.Collection;

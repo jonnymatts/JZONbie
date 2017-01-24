@@ -6,10 +6,7 @@ import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.repsonse.ErrorResponse;
 import com.jonnymatts.jzonbie.repsonse.PrimingNotFoundErrorResponse;
-import com.jonnymatts.jzonbie.requests.AppRequestHandler;
-import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
-import com.jonnymatts.jzonbie.requests.RequestHandler;
-import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.requests.*;
 import com.jonnymatts.jzonbie.spark.JsonResponseTransformer;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import spark.Request;
@@ -78,8 +75,10 @@ public class App {
         final RequestHandler requestHandler = zombieHeader != null ?
                 zombieRequestHandler : appRequestHandler;
 
+        final SparkRequest sparkRequest = new SparkRequest(request);
+
         try {
-            return requestHandler.handle(request, response);
+            return requestHandler.handle(sparkRequest, response);
         }
         catch (PrimingNotFoundException e) {
             response.status(NOT_FOUND_404);

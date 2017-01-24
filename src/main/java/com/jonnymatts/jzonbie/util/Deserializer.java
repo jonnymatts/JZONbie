@@ -2,15 +2,13 @@ package com.jonnymatts.jzonbie.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.requests.Request;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import spark.Request;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -24,7 +22,7 @@ public class Deserializer {
 
     public <T> T deserialize(Request request, Class<T> clazz) {
         try {
-            return objectMapper.readValue(request.body(), clazz);
+            return objectMapper.readValue(request.getBody(), clazz);
         } catch (IOException e) {
             throw new DeserializationException(String.format("Error deserializing %s", clazz.getSimpleName()), e);
         }

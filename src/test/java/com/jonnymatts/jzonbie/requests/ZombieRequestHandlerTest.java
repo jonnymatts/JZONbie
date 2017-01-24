@@ -13,11 +13,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import spark.Request;
 import spark.Response;
 
 import java.util.List;
 
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 import static org.eclipse.jetty.http.HttpStatus.OK_200;
@@ -65,8 +65,8 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
-        when(request.pathInfo()).thenReturn("path");
-        when(request.headers("zombie")).thenReturn("priming");
+        when(request.getPath()).thenReturn("path");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(ZombiePriming);
 
         final Object got = zombieRequestHandler.handle(request, response);
@@ -79,35 +79,35 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void handleUsesRequestMethodAsPrimingRequestMethodIfNotPresentInPrimedRequest() throws JsonProcessingException {
-        when(request.pathInfo()).thenReturn("path");
-        when(request.requestMethod()).thenReturn("POST");
-        when(request.headers("zombie")).thenReturn("priming");
+        when(request.getPath()).thenReturn("path");
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(zombieRequest.getMethod()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(ZombiePriming);
 
         zombieRequestHandler.handle(request, response);
 
-        verify(zombieRequest).setMethod(request.requestMethod());
+        verify(zombieRequest).setMethod(request.getMethod());
     }
 
     @Test
     public void handleUsesRequestPathAsPrimingRequestPathIfNotPresentInPrimedRequest() throws JsonProcessingException {
-        when(request.pathInfo()).thenReturn("path");
-        when(request.requestMethod()).thenReturn("POST");
-        when(request.headers("zombie")).thenReturn("priming");
+        when(request.getPath()).thenReturn("path");
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(zombieRequest.getPath()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(ZombiePriming);
 
         zombieRequestHandler.handle(request, response);
 
-        verify(zombieRequest).setPath(request.pathInfo());
+        verify(zombieRequest).setPath(request.getPath());
         verify(response).status(CREATED_201);
         verify(response).header("Content-Type", "application/json");
     }
 
     @Test
     public void handleReturnsPrimingContextMappingsIfZombieHeaderHasListValue() throws JsonProcessingException {
-        when(request.headers("zombie")).thenReturn("list");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "list"));
         when(primedMappingFactory.create(primingContext)).thenReturn(primedRequests);
 
         final Object got = zombieRequestHandler.handle(request, response);
@@ -120,7 +120,7 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void handleClearsPrimingContextAndCallHistoryIfZombieHeaderHasResetValue() throws JsonProcessingException {
-        when(request.headers("zombie")).thenReturn("reset");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "reset"));
 
         assertThat(callHistory).isNotEmpty();
 
@@ -135,7 +135,7 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void handleReturnsCallHistoryIfZombieHeaderHasHistoryValue() throws JsonProcessingException {
-        when(request.headers("zombie")).thenReturn("history");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "history"));
 
         final Object got = zombieRequestHandler.handle(request, response);
 
@@ -147,7 +147,7 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void handleThrowsRuntimeExceptionIfZombieHeaderHasUnknownValue() throws JsonProcessingException {
-        when(request.headers("zombie")).thenReturn("unknownValue");
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "unknownValue"));
 
         expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("unknownValue");
