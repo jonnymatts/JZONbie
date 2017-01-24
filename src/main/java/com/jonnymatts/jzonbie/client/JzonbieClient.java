@@ -1,9 +1,9 @@
 package com.jonnymatts.jzonbie.client;
 
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class JzonbieClient {
         this.httpClient = httpClient;
     }
 
-    public ZombiePriming primeZombie(ZombieRequest request, ZombieResponse response) {
+    public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
         return httpClient.primeZombie(request, response);
     }
 
@@ -40,12 +40,12 @@ public class JzonbieClient {
     public static void main(String[] args) {
         JzonbieClient client = new JzonbieClient("http://localhost:8080");
 
-        final ZombieRequest zombieRequest = new ZombieRequest();
+        final AppRequest zombieRequest = new AppRequest();
         zombieRequest.setPath("/blah");
         zombieRequest.setMethod("POST");
         zombieRequest.setBody(singletonMap("one", 1));
 
-        final ZombieResponse zombieResponse = new ZombieResponse();
+        final AppResponse zombieResponse = new AppResponse();
         zombieResponse.setStatusCode(200);
         zombieResponse.setHeaders(singletonMap("Content-Type", "application/json"));
         zombieResponse.setBody(singletonMap("message", "Well done!"));
@@ -54,7 +54,7 @@ public class JzonbieClient {
 
         final PrimedMapping mapping = currentPriming.get(0);
 
-        mapping.getZombieRequest();
+        mapping.getAppRequest();
 
         currentPriming.clear();
     }

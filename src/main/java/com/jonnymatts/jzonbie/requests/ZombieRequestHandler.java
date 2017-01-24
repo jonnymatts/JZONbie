@@ -2,10 +2,10 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
@@ -22,12 +22,12 @@ public class ZombieRequestHandler implements RequestHandler {
 
     public static final Map<String, String> JSON_HEADERS_MAP = singletonMap("Content-Type", "application/json");
 
-    private final Multimap<ZombieRequest, ZombieResponse> primingContext;
+    private final Multimap<AppRequest, AppResponse> primingContext;
     private final List<ZombiePriming> callHistory;
     private final Deserializer deserializer;
     private final PrimedMappingFactory primedMappingFactory;
 
-    public ZombieRequestHandler(Multimap<ZombieRequest, ZombieResponse> primingContext,
+    public ZombieRequestHandler(Multimap<AppRequest, AppResponse> primingContext,
                                 List<ZombiePriming> callHistory,
                                 Deserializer deserializer,
                                 PrimedMappingFactory primedMappingFactory) {
@@ -55,10 +55,10 @@ public class ZombieRequestHandler implements RequestHandler {
         }
     }
 
-    private ZResponse handlePrimingRequest(Request request) throws JsonProcessingException {
+    private ZombieResponse handlePrimingRequest(Request request) throws JsonProcessingException {
         final ZombiePriming zombiePriming = deserializer.deserialize(request, ZombiePriming.class);
-        final ZombieRequest zombieRequest = zombiePriming.getZombieRequest();
-        final ZombieResponse zombieResponse = zombiePriming.getZombieResponse();
+        final AppRequest zombieRequest = zombiePriming.getAppRequest();
+        final AppResponse zombieResponse = zombiePriming.getAppResponse();
 
         if(zombieRequest.getMethod() == null) {
             zombieRequest.setMethod(request.getMethod());
@@ -70,30 +70,30 @@ public class ZombieRequestHandler implements RequestHandler {
 
         primingContext.put(zombieRequest, zombieResponse);
 
-        return new ZResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
+        return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
 
-    private ZResponse handleListRequest() throws JsonProcessingException {
-        return new ZResponse(OK_200, JSON_HEADERS_MAP, primedMappingFactory.create(primingContext));
+    private ZombieResponse handleListRequest() throws JsonProcessingException {
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, primedMappingFactory.create(primingContext));
     }
 
-    private ZResponse handleHistoryRequest() throws JsonProcessingException {
-        return new ZResponse(OK_200, JSON_HEADERS_MAP, callHistory);
+    private ZombieResponse handleHistoryRequest() throws JsonProcessingException {
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, callHistory);
     }
 
-    private ZResponse handleResetRequest() {
+    private ZombieResponse handleResetRequest() {
         primingContext.clear();
         callHistory.clear();
-        return new ZResponse(OK_200, emptyMap(), "Zombie Reset");
+        return new ZombieResponse(OK_200, emptyMap(), "Zombie Reset");
     }
 
-    private class ZResponse implements Response {
+    private class ZombieResponse implements Response {
 
         private final int statusCode;
         private final Map<String, String> headers;
         private final Object body;
 
-        public ZResponse(int statusCode, Map<String, String> headers, Object body) {
+        public ZombieResponse(int statusCode, Map<String, String> headers, Object body) {
             this.statusCode = statusCode;
             this.headers = headers;
             this.body = body;

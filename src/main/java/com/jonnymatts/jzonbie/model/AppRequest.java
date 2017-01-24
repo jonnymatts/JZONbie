@@ -8,7 +8,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
-public class ZombieRequest {
+public class AppRequest {
 
     private String path;
     private Map<String, String> headers;
@@ -17,7 +17,7 @@ public class ZombieRequest {
     private Map<String, String> basicAuth;
     private Map<String, List<String>> queryParams;
 
-    public ZombieRequest() {
+    public AppRequest() {
         this.headers = new HashMap<>();
     }
 
@@ -101,7 +101,7 @@ public class ZombieRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ZombieRequest that = (ZombieRequest) o;
+        AppRequest that = (AppRequest) o;
 
         if (path != null ? !path.equals(that.path) : that.path != null) return false;
         if (method != null ? !method.equals(that.method) : that.method != null) return false;

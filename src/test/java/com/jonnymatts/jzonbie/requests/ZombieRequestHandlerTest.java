@@ -32,7 +32,7 @@ public class ZombieRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<ZombieRequest, ZombieResponse> primingContext;
+    @Mock private Multimap<AppRequest, AppResponse> primingContext;
 
     @Mock private Deserializer deserializer;
 
@@ -42,9 +42,9 @@ public class ZombieRequestHandlerTest {
 
     @Mock private ZombiePriming zombiePriming;
 
-    @Mock private ZombieRequest zombieRequest;
+    @Mock private AppRequest zombieRequest;
 
-    @Mock private ZombieResponse zombieResponse;
+    @Mock private AppResponse zombieResponse;
 
     @Fixture private List<ZombiePriming> callHistory;
 
@@ -56,8 +56,8 @@ public class ZombieRequestHandlerTest {
     public void setUp() throws Exception {
         zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
 
-        when(zombiePriming.getZombieRequest()).thenReturn(zombieRequest);
-        when(zombiePriming.getZombieResponse()).thenReturn(zombieResponse);
+        when(zombiePriming.getAppRequest()).thenReturn(zombieRequest);
+        when(zombiePriming.getAppResponse()).thenReturn(zombieResponse);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(zombiePriming);
 
-        verify(primingContext).put(zombiePriming.getZombieRequest(), zombiePriming.getZombieResponse());
+        verify(primingContext).put(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
     }
 
     @Test

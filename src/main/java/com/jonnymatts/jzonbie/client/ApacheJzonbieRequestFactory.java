@@ -1,10 +1,9 @@
 package com.jonnymatts.jzonbie.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
@@ -27,7 +26,7 @@ public class ApacheJzonbieRequestFactory {
         this.objectMapper = objectMapper;
     }
 
-    public HttpUriRequest createPrimeZombieRequest(ZombieRequest zombieRequest, ZombieResponse zombieResponse) {
+    public HttpUriRequest createPrimeZombieRequest(AppRequest zombieRequest, AppResponse zombieResponse) {
         final ZombiePriming zombiePriming = new ZombiePriming(zombieRequest, zombieResponse);
         try {
             return RequestBuilder.post(zombieBaseUrl)

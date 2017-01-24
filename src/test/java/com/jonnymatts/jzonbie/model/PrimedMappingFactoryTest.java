@@ -9,7 +9,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static java.util.Collections.emptyMap;
@@ -21,9 +24,9 @@ public class PrimedMappingFactoryTest {
 
     public @Rule FixtureRule fixtureRule = FixtureRule.initFixtures();
 
-    private @Mock Multimap<ZombieRequest, ZombieResponse> primingContext;
+    private @Mock Multimap<AppRequest, AppResponse> primingContext;
 
-    private @Fixture Map<ZombieRequest, Collection<ZombieResponse>> primingContextMap;
+    private @Fixture Map<AppRequest, Collection<AppResponse>> primingContextMap;
 
     private final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
@@ -33,14 +36,14 @@ public class PrimedMappingFactoryTest {
 
         final List<PrimedMapping> primedRequests = primedMappingFactory.create(primingContext);
 
-        final ArrayList<Entry<ZombieRequest, Collection<ZombieResponse>>> entries = new ArrayList<>(primingContextMap.entrySet());
+        final ArrayList<Entry<AppRequest, Collection<AppResponse>>> entries = new ArrayList<>(primingContextMap.entrySet());
 
         for(int i = 0; i < primedRequests.size(); i++) {
-            final Entry<ZombieRequest, Collection<ZombieResponse>> entry = entries.get(i);
+            final Entry<AppRequest, Collection<AppResponse>> entry = entries.get(i);
             final PrimedMapping primedRequest = primedRequests.get(i);
 
-            assertThat(primedRequest.getZombieRequest()).isEqualTo(entry.getKey());
-            assertThat(primedRequest.getZombieResponses()).isEqualTo(entry.getValue());
+            assertThat(primedRequest.getAppRequest()).isEqualTo(entry.getKey());
+            assertThat(primedRequest.getAppResponses()).isEqualTo(entry.getValue());
         }
     }
 

@@ -4,7 +4,7 @@ import com.jonnymatts.jzonbie.response.Response;
 
 import java.util.Map;
 
-public class ZombieResponse implements Response {
+public class AppResponse implements Response {
 
     private int statusCode;
     private Map<String, String> headers;
@@ -39,7 +39,7 @@ public class ZombieResponse implements Response {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ZombieResponse that = (ZombieResponse) o;
+        AppResponse that = (AppResponse) o;
 
         if (statusCode != that.statusCode) return false;
         if (headers != null ? !headers.equals(that.headers) : that.headers != null) return false;

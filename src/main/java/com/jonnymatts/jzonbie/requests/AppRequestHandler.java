@@ -3,10 +3,10 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppRequestFactory;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieRequestFactory;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import com.jonnymatts.jzonbie.response.Response;
 
 import java.util.Collection;
@@ -15,30 +15,30 @@ import java.util.Optional;
 
 public class AppRequestHandler implements RequestHandler {
 
-    private final Multimap<ZombieRequest, ZombieResponse> primingContext;
+    private final Multimap<AppRequest, AppResponse> primingContext;
     private final List<ZombiePriming> callHistory;
-    private final ZombieRequestFactory zombieRequestFactory;
+    private final AppRequestFactory appRequestFactory;
 
-    public AppRequestHandler(Multimap<ZombieRequest, ZombieResponse> primingContext,
+    public AppRequestHandler(Multimap<AppRequest, AppResponse> primingContext,
                              List<ZombiePriming> callHistory,
-                             ZombieRequestFactory zombieRequestFactory) {
+                             AppRequestFactory appRequestFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
-        this.zombieRequestFactory = zombieRequestFactory;
+        this.appRequestFactory = appRequestFactory;
     }
 
     @Override
     public Response handle(Request request) throws JsonProcessingException {
-        final ZombieRequest zombieRequest = zombieRequestFactory.create(request);
+        final AppRequest zombieRequest = appRequestFactory.create(request);
 
-        final Collection<ZombieResponse> zombieResponses = primingContext.get(zombieRequest);
-        final Optional<ZombieResponse> primedResponseOpt = zombieResponses.stream().findFirst();
+        final Collection<AppResponse> zombieResponses = primingContext.get(zombieRequest);
+        final Optional<AppResponse> primedResponseOpt = zombieResponses.stream().findFirst();
 
         if(!primedResponseOpt.isPresent()) {
             throw new PrimingNotFoundException(zombieRequest);
         }
 
-        final ZombieResponse zombieResponse = primedResponseOpt.get();
+        final AppResponse zombieResponse = primedResponseOpt.get();
 
         primingContext.remove(zombieRequest, zombieResponse);
 

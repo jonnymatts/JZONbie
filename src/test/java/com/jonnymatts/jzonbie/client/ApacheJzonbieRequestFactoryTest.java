@@ -3,9 +3,9 @@ package com.jonnymatts.jzonbie.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -34,8 +34,8 @@ public class ApacheJzonbieRequestFactoryTest {
     @Mock private ObjectMapper objectMapper;
 
     @Fixture private String zombieBaseUrl;
-    @Fixture private ZombieRequest zombieRequest;
-    @Fixture private ZombieResponse zombieResponse;
+    @Fixture private AppRequest zombieRequest;
+    @Fixture private AppResponse zombieResponse;
     @Fixture private String entityString;
 
     private ApacheJzonbieRequestFactory requestFactory;

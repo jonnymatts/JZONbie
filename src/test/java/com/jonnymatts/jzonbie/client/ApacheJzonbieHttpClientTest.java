@@ -1,10 +1,10 @@
 package com.jonnymatts.jzonbie.client;
 
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -34,8 +34,8 @@ public class ApacheJzonbieHttpClientTest {
     @Mock private ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
     @Mock private HttpClient httpClient;
     @Mock private Deserializer deserializer;
-    @Mock private ZombieRequest zombieRequest;
-    @Mock private ZombieResponse zombieResponse;
+    @Mock private AppRequest appRequest;
+    @Mock private AppResponse appResponse;
     @Mock private HttpUriRequest httpRequest;
     @Mock private HttpResponse httpResponse;
 
@@ -53,24 +53,24 @@ public class ApacheJzonbieHttpClientTest {
     public void primeZombieReturnsPrimingRequest() throws Exception {
         final ZombiePriming zombiePriming = new ZombiePriming();
 
-        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse)).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(appRequest, appResponse)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        final ZombiePriming got = jzonbieHttpClient.primeZombie(zombieRequest, zombieResponse);
+        final ZombiePriming got = jzonbieHttpClient.primeZombie(appRequest, appResponse);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
     public void primeZombieThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse)).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(appRequest, appResponse)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);
         expectedException.expectCause(is(runtimeException));
 
-        jzonbieHttpClient.primeZombie(zombieRequest, zombieResponse);
+        jzonbieHttpClient.primeZombie(appRequest, appResponse);
     }
 
     @Test

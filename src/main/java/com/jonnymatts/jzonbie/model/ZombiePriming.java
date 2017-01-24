@@ -5,32 +5,32 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ZombiePriming {
 
     @JsonProperty("request")
-    private ZombieRequest zombieRequest;
+    private AppRequest appRequest;
 
     @JsonProperty("response")
-    private ZombieResponse zombieResponse;
+    private AppResponse appResponse;
 
     public ZombiePriming() {}
 
-    public ZombiePriming(ZombieRequest zombieRequest, ZombieResponse zombieResponse) {
-        this.zombieRequest = zombieRequest;
-        this.zombieResponse = zombieResponse;
+    public ZombiePriming(AppRequest appRequest, AppResponse appResponse) {
+        this.appRequest = appRequest;
+        this.appResponse = appResponse;
     }
 
-    public ZombieRequest getZombieRequest() {
-        return zombieRequest;
+    public AppRequest getAppRequest() {
+        return appRequest;
     }
 
-    public void setZombieRequest(ZombieRequest zombieRequest) {
-        this.zombieRequest = zombieRequest;
+    public void setAppRequest(AppRequest appRequest) {
+        this.appRequest = appRequest;
     }
 
-    public ZombieResponse getZombieResponse() {
-        return zombieResponse;
+    public AppResponse getAppResponse() {
+        return appResponse;
     }
 
-    public void setZombieResponse(ZombieResponse zombieResponse) {
-        this.zombieResponse = zombieResponse;
+    public void setAppResponse(AppResponse appResponse) {
+        this.appResponse = appResponse;
     }
 
     @Override
@@ -40,15 +40,15 @@ public class ZombiePriming {
 
         ZombiePriming that = (ZombiePriming) o;
 
-        if (zombieRequest != null ? !zombieRequest.equals(that.zombieRequest) : that.zombieRequest != null)
+        if (appRequest != null ? !appRequest.equals(that.appRequest) : that.appRequest != null)
             return false;
-        return zombieResponse != null ? zombieResponse.equals(that.zombieResponse) : that.zombieResponse == null;
+        return appResponse != null ? appResponse.equals(that.appResponse) : that.appResponse == null;
     }
 
     @Override
     public int hashCode() {
-        int result = zombieRequest != null ? zombieRequest.hashCode() : 0;
-        result = 31 * result + (zombieResponse != null ? zombieResponse.hashCode() : 0);
+        int result = appRequest != null ? appRequest.hashCode() : 0;
+        result = 31 * result + (appResponse != null ? appResponse.hashCode() : 0);
         return result;
     }
 }

@@ -1,15 +1,15 @@
 package com.jonnymatts.jzonbie.requests;
 
-import com.jonnymatts.jzonbie.model.ZombieRequest;
+import com.jonnymatts.jzonbie.model.AppRequest;
 
 public class PrimingNotFoundException extends RuntimeException {
-    private final ZombieRequest request;
+    private final AppRequest request;
 
-    public PrimingNotFoundException(ZombieRequest request) {
+    public PrimingNotFoundException(AppRequest request) {
         this.request = request;
     }
 
-    public ZombieRequest getRequest() {
+    public AppRequest getRequest() {
         return request;
     }
 }

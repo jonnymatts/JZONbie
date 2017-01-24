@@ -8,30 +8,30 @@ public class PrimedMapping {
 
     public PrimedMapping() {}
 
-    public PrimedMapping(ZombieRequest zombieRequest, List<ZombieResponse> zombieResponses) {
-        this.zombieRequest = zombieRequest;
-        this.zombieResponses = zombieResponses;
+    public PrimedMapping(AppRequest appRequest, List<AppResponse> appResponses) {
+        this.appRequest = appRequest;
+        this.appResponses = appResponses;
     }
 
     @JsonProperty("request")
-    private ZombieRequest zombieRequest;
+    private AppRequest appRequest;
 
     @JsonProperty("responses")
-    private List<ZombieResponse> zombieResponses;
+    private List<AppResponse> appResponses;
 
-    public ZombieRequest getZombieRequest() {
-        return zombieRequest;
+    public AppRequest getAppRequest() {
+        return appRequest;
     }
 
-    public void setZombieRequest(ZombieRequest zombieRequest) {
-        this.zombieRequest = zombieRequest;
+    public void setAppRequest(AppRequest appRequest) {
+        this.appRequest = appRequest;
     }
 
-    public List<ZombieResponse> getZombieResponses() {
-        return zombieResponses;
+    public List<AppResponse> getAppResponses() {
+        return appResponses;
     }
 
-    public void setZombieResponses(List<ZombieResponse> zombieResponses) {
-        this.zombieResponses = zombieResponses;
+    public void setAppResponses(List<AppResponse> appResponses) {
+        this.appResponses = appResponses;
     }
 }

@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.google.common.collect.Multimap;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppRequestFactory;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieRequestFactory;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import com.jonnymatts.jzonbie.response.Response;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -34,11 +34,11 @@ public class AppRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<ZombieRequest, ZombieResponse> primingContext;
+    @Mock private Multimap<AppRequest, AppResponse> primingContext;
 
     @Mock private List<ZombiePriming> callHistory;
 
-    @Mock private ZombieRequestFactory zombieRequestFactory;
+    @Mock private AppRequestFactory appRequestFactory;
 
     @Mock private Request request;
 
@@ -46,18 +46,18 @@ public class AppRequestHandlerTest {
 
     private AppRequestHandler appRequestHandler;
 
-    private ZombieRequest zombieRequest;
+    private AppRequest zombieRequest;
 
-    private ZombieResponse zombieResponse;
+    private AppResponse zombieResponse;
 
     @Before
     public void setUp() throws Exception {
-        appRequestHandler = new AppRequestHandler(primingContext, callHistory, zombieRequestFactory);
+        appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
 
-        zombieRequest = ZombiePriming.getZombieRequest();
-        zombieResponse = ZombiePriming.getZombieResponse();
+        zombieRequest = ZombiePriming.getAppRequest();
+        zombieResponse = ZombiePriming.getAppResponse();
 
-        when(zombieRequestFactory.create(request)).thenReturn(zombieRequest);
+        when(appRequestFactory.create(request)).thenReturn(zombieRequest);
         when(primingContext.get(zombieRequest))
                 .thenReturn(singletonList(zombieResponse));
     }

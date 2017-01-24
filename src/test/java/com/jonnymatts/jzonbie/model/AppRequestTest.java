@@ -13,7 +13,7 @@ import java.util.Map;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ZombieRequestTest {
+public class AppRequestTest {
 
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
@@ -21,11 +21,11 @@ public class ZombieRequestTest {
 
     @Fixture private String password;
 
-    private ZombieRequest zombieRequest;
+    private AppRequest zombieRequest;
 
     @Before
     public void setUp() throws Exception {
-        zombieRequest = new ZombieRequest();
+        zombieRequest = new AppRequest();
         zombieRequest.setHeaders(new HashMap<>());
     }
 

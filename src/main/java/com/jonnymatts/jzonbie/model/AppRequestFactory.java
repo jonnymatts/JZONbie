@@ -6,15 +6,15 @@ import com.jonnymatts.jzonbie.util.Deserializer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ZombieRequestFactory {
+public class AppRequestFactory {
 
     private final Deserializer deserializer;
 
-    public ZombieRequestFactory(Deserializer deserializer) {
+    public AppRequestFactory(Deserializer deserializer) {
         this.deserializer = deserializer;
     }
 
-    public ZombieRequest create(Request request) {
+    public AppRequest create(Request request) {
         final Map<String, Object> primedRequestMap = new HashMap<String, Object>(){{
             put("path", request.getPath());
             put("method", request.getMethod());
@@ -23,6 +23,6 @@ public class ZombieRequestFactory {
             put("headers", request.getHeaders());
         }};
 
-        return deserializer.deserialize(primedRequestMap, ZombieRequest.class);
+        return deserializer.deserialize(primedRequestMap, AppRequest.class);
     }
 }

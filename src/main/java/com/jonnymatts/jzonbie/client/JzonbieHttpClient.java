@@ -1,15 +1,15 @@
 package com.jonnymatts.jzonbie.client;
 
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 
 import java.util.List;
 
 public interface JzonbieHttpClient {
 
-    ZombiePriming primeZombie(ZombieRequest request, ZombieResponse response);
+    ZombiePriming primeZombie(AppRequest request, AppResponse response);
 
     List<PrimedMapping> getCurrentPriming();
 

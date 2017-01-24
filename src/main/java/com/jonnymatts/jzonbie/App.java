@@ -43,12 +43,12 @@ public class App {
     public static void main(String[] args) {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final Deserializer deserializer = new Deserializer(objectMapper);
-        final Multimap<ZombieRequest, ZombieResponse> primingContext = LinkedListMultimap.create();
+        final Multimap<AppRequest, AppResponse> primingContext = LinkedListMultimap.create();
         final List<ZombiePriming> callHistory = new ArrayList<>();
-        final ZombieRequestFactory zombieRequestFactory = new ZombieRequestFactory(deserializer);
+        final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
 
-        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, zombieRequestFactory);
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
         final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
         final JsonResponseTransformer jsonResponseTransformer = new JsonResponseTransformer(objectMapper);
 

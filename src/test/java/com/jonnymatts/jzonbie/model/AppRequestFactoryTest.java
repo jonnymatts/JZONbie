@@ -21,14 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ZombieRequestFactoryTest {
+public class AppRequestFactoryTest {
 
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
     @Mock private Deserializer deserializer;
     @Mock private Request request;
 
-    @Fixture private ZombieRequest zombieRequest;
+    @Fixture private AppRequest appRequest;
     @Fixture private String path;
     @Fixture private String requestMethod;
     @Fixture private String requestBody;
@@ -37,11 +37,11 @@ public class ZombieRequestFactoryTest {
     private final Map<String, String> headers = singletonMap("hVar", "hVal");
     private final Map<String, List<String>> queryParams = singletonMap("qVar", asList("qVal1", "qVal2"));
 
-    private ZombieRequestFactory zombieRequestFactory;
+    private AppRequestFactory appRequestFactory;
 
     @Before
     public void setUp() throws Exception {
-        zombieRequestFactory = new ZombieRequestFactory(deserializer);
+        appRequestFactory = new AppRequestFactory(deserializer);
     }
 
     @Test
@@ -61,10 +61,10 @@ public class ZombieRequestFactoryTest {
         when(request.getBody()).thenReturn(requestBody);
 
         when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, ZombieRequest.class)).thenReturn(zombieRequest);
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(appRequest);
 
-        final ZombieRequest got = zombieRequestFactory.create(request);
+        final AppRequest got = appRequestFactory.create(request);
 
-        assertThat(got).isEqualTo(zombieRequest);
+        assertThat(got).isEqualTo(appRequest);
     }
 }

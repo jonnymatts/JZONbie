@@ -1,10 +1,10 @@
 package com.jonnymatts.jzonbie.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.model.ZombieRequest;
-import com.jonnymatts.jzonbie.model.ZombieResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -38,7 +38,7 @@ public class ApacheJzonbieHttpClient implements JzonbieHttpClient {
     }
 
     @Override
-    public ZombiePriming primeZombie(ZombieRequest request, ZombieResponse response) {
+    public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieRequest(request, response);
         final HttpResponse httpResponse = execute(primeZombieRequest);
         return deserializer.deserialize(httpResponse, ZombiePriming.class);
