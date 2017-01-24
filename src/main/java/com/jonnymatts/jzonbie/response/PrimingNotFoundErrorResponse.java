@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie.repsonse;
+package com.jonnymatts.jzonbie.response;
 
 import com.jonnymatts.jzonbie.model.ZombieRequest;
 

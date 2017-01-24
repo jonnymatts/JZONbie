@@ -1,9 +1,9 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import spark.Response;
+import com.jonnymatts.jzonbie.response.Response;
 
 public interface RequestHandler {
 
-    Object handle(Request request, Response response) throws JsonProcessingException;
+    Response handle(Request request) throws JsonProcessingException;
 }

@@ -1,19 +1,21 @@
 package com.jonnymatts.jzonbie;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.*;
-import com.jonnymatts.jzonbie.repsonse.ErrorResponse;
-import com.jonnymatts.jzonbie.repsonse.PrimingNotFoundErrorResponse;
 import com.jonnymatts.jzonbie.requests.*;
+import com.jonnymatts.jzonbie.response.ErrorResponse;
+import com.jonnymatts.jzonbie.response.PrimingNotFoundErrorResponse;
+import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.spark.JsonResponseTransformer;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import spark.Request;
-import spark.Response;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
@@ -69,7 +71,7 @@ public class App {
         options("*", App::handleRequest, jsonResponseTransformer);
     }
 
-    private static Object handleRequest(Request request, Response response) {
+    private static Object handleRequest(Request request, spark.Response response) {
         final String zombieHeader = request.headers("zombie");
 
         final RequestHandler requestHandler = zombieHeader != null ?
@@ -78,7 +80,11 @@ public class App {
         final SparkRequest sparkRequest = new SparkRequest(request);
 
         try {
-            return requestHandler.handle(sparkRequest, response);
+            final Response jzonbieResponse = requestHandler.handle(sparkRequest);
+
+            primeResponse(response, jzonbieResponse);
+
+            return jzonbieResponse.getBody();
         }
         catch (PrimingNotFoundException e) {
             response.status(NOT_FOUND_404);
@@ -90,5 +96,13 @@ public class App {
             response.header("Content-Type", "application/json");
             return new ErrorResponse(format("Error occurred: %s - %s", e.getClass().getName(), e.getMessage()));
         }
+    }
+
+    private static void primeResponse(spark.Response response, Response r) throws JsonProcessingException {
+        response.status(r.getStatusCode());
+
+        final Map<String, String> headers = r.getHeaders();
+
+        if(headers != null) headers.entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
     }
 }

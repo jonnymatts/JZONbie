@@ -2,17 +2,25 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Multimap;
-import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.ZombieRequest;
+import com.jonnymatts.jzonbie.model.ZombieResponse;
+import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
-import spark.Response;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 import static org.eclipse.jetty.http.HttpStatus.OK_200;
 
 public class ZombieRequestHandler implements RequestHandler {
+
+    public static final Map<String, String> JSON_HEADERS_MAP = singletonMap("Content-Type", "application/json");
 
     private final Multimap<ZombieRequest, ZombieResponse> primingContext;
     private final List<ZombiePriming> callHistory;
@@ -30,27 +38,27 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Object handle(Request request, Response response) throws JsonProcessingException {
+    public Response handle(Request request) throws JsonProcessingException {
         final String zombieHeaderValue = request.getHeaders().get("zombie");
 
         switch(zombieHeaderValue) {
             case "priming":
-                return handlePrimingRequest(request, response);
+                return handlePrimingRequest(request);
             case "list":
-                return handleListRequest(response);
+                return handleListRequest();
             case "history":
-                return handleHistoryRequest(response);
+                return handleHistoryRequest();
             case "reset":
-                return handleResetRequest(response);
+                return handleResetRequest();
             default:
                 throw new RuntimeException(format("Unknown zombie method: %s", zombieHeaderValue));
         }
     }
 
-    private ZombiePriming handlePrimingRequest(Request request, Response response) throws JsonProcessingException {
-        final ZombiePriming ZombiePriming = deserializer.deserialize(request, ZombiePriming.class);
-        final ZombieRequest zombieRequest = ZombiePriming.getZombieRequest();
-        final ZombieResponse zombieResponse = ZombiePriming.getZombieResponse();
+    private ZResponse handlePrimingRequest(Request request) throws JsonProcessingException {
+        final ZombiePriming zombiePriming = deserializer.deserialize(request, ZombiePriming.class);
+        final ZombieRequest zombieRequest = zombiePriming.getZombieRequest();
+        final ZombieResponse zombieResponse = zombiePriming.getZombieResponse();
 
         if(zombieRequest.getMethod() == null) {
             zombieRequest.setMethod(request.getMethod());
@@ -62,28 +70,48 @@ public class ZombieRequestHandler implements RequestHandler {
 
         primingContext.put(zombieRequest, zombieResponse);
 
-        response.status(CREATED_201);
-        response.header("Content-Type", "application/json");
-
-        return ZombiePriming;
+        return new ZResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
 
-    private List<PrimedMapping> handleListRequest(Response response) throws JsonProcessingException {
-        response.status(OK_200);
-        response.header("Content-Type", "application/json");
-        return primedMappingFactory.create(primingContext);
+    private ZResponse handleListRequest() throws JsonProcessingException {
+        return new ZResponse(OK_200, JSON_HEADERS_MAP, primedMappingFactory.create(primingContext));
     }
 
-    private List<ZombiePriming> handleHistoryRequest(Response response) throws JsonProcessingException {
-        response.status(OK_200);
-        response.header("Content-Type", "application/json");
-        return callHistory;
+    private ZResponse handleHistoryRequest() throws JsonProcessingException {
+        return new ZResponse(OK_200, JSON_HEADERS_MAP, callHistory);
     }
 
-    private String handleResetRequest(Response response) {
-        response.status(OK_200);
+    private ZResponse handleResetRequest() {
         primingContext.clear();
         callHistory.clear();
-        return "Zombie Reset";
+        return new ZResponse(OK_200, emptyMap(), "Zombie Reset");
+    }
+
+    private class ZResponse implements Response {
+
+        private final int statusCode;
+        private final Map<String, String> headers;
+        private final Object body;
+
+        public ZResponse(int statusCode, Map<String, String> headers, Object body) {
+            this.statusCode = statusCode;
+            this.headers = headers;
+            this.body = body;
+        }
+
+        @Override
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        @Override
+        public Map<String, String> getHeaders() {
+            return headers;
+        }
+
+        @Override
+        public Object getBody() {
+            return body;
+        }
     }
 }

@@ -8,6 +8,7 @@ import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.model.ZombieRequest;
 import com.jonnymatts.jzonbie.model.ZombieRequestFactory;
 import com.jonnymatts.jzonbie.model.ZombieResponse;
+import com.jonnymatts.jzonbie.response.Response;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,7 +17,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import spark.Response;
 
 import java.util.List;
 
@@ -24,7 +24,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AppRequestHandlerTest {
@@ -41,13 +42,7 @@ public class AppRequestHandlerTest {
 
     @Mock private Request request;
 
-    @Mock private Response response;
-
     @Fixture private ZombiePriming ZombiePriming;
-
-    @Fixture private String path;
-
-    @Fixture private String responseString;
 
     private AppRequestHandler appRequestHandler;
 
@@ -69,29 +64,18 @@ public class AppRequestHandlerTest {
 
     @Test
     public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
-        final Object got = appRequestHandler.handle(request, response);
+        final Response got = appRequestHandler.handle(request);
 
-        assertThat(got).isEqualTo(zombieResponse.getBody());
+        assertThat(got.getStatusCode()).isEqualTo(zombieResponse.getStatusCode());
+        assertThat(got.getHeaders()).containsAllEntriesOf(zombieResponse.getHeaders());
+        assertThat(got.getBody()).isEqualTo(zombieResponse.getBody());
 
-        verify(response).status(zombieResponse.getStatusCode());
-        zombieResponse.getHeaders().entrySet()
-                .forEach(entry -> verify(response).header(entry.getKey(), entry.getValue()));
         verify(primingContext).remove(zombieRequest, zombieResponse);
     }
 
     @Test
-    public void handleDoesNotAddHeadersToResponseIfPrimedResponseDoesNotHaveHeaders() throws JsonProcessingException {
-        zombieResponse.setHeaders(null);
-
-        appRequestHandler.handle(request, response);
-
-        verify(response).status(zombieResponse.getStatusCode());
-        verifyNoMoreInteractions(response);
-    }
-
-    @Test
     public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
-        appRequestHandler.handle(request, response);
+        appRequestHandler.handle(request);
 
         verify(callHistory).add(ZombiePriming);
     }
@@ -103,6 +87,6 @@ public class AppRequestHandlerTest {
         expectedException.expect(PrimingNotFoundException.class);
         expectedException.expect(Matchers.hasProperty("request", equalTo(zombieRequest)));
 
-        appRequestHandler.handle(request, response);
+        appRequestHandler.handle(request);
     }
 }

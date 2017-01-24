@@ -1,8 +1,10 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.response.Response;
+
 import java.util.Map;
 
-public class ZombieResponse {
+public class ZombieResponse implements Response {
 
     private int statusCode;
     private Map<String, String> headers;
