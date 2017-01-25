@@ -1,4 +1,4 @@
-package com.jonnymatts.jzonbie.requests;
+package com.jonnymatts.jzonbie.pippo;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
@@ -8,13 +8,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import spark.Request;
+import ro.pippo.core.ParameterValue;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import static com.google.common.collect.Iterators.asEnumeration;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -25,45 +25,47 @@ import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparkRequestTest {
+public class PippoRequestTest {
 
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
+    @Rule
+    public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
-    @Mock(answer = RETURNS_DEEP_STUBS) private Request request;
+    @Mock(answer = RETURNS_DEEP_STUBS) private ro.pippo.core.Request request;
 
-    @Fixture private String path;
+    @Fixture
+    private String path;
     @Fixture private String method;
-    @Fixture private Set<String> headerNames;
+    @Fixture private List<String> headerNames;
     @Fixture private String body;
 
-    private SparkRequest sparkRequest;
+    private PippoRequest pippoRequest;
 
     @Before
     public void setUp() throws Exception {
-        when(request.pathInfo()).thenReturn(path);
-        when(request.requestMethod()).thenReturn(method);
-        when(request.headers()).thenReturn(headerNames);
-        headerNames.forEach(name -> when(request.headers(name)).thenReturn(name.toUpperCase()));
-        when(request.body()).thenReturn(body);
-        when(request.queryMap().toMap()).thenReturn(new HashMap<String, String[]>(){{
-            put("qVar1", new String[]{"qVal1", "qVal2"});
-            put("qVar2", new String[]{"qVal1"});
-            put("qVar3", new String[]{});
+        when(request.getPath()).thenReturn(path);
+        when(request.getMethod()).thenReturn(method);
+        when(request.getHttpServletRequest().getHeaderNames()).thenReturn(asEnumeration(headerNames.iterator()));
+        headerNames.forEach(name -> when(request.getHeader(name)).thenReturn(name.toUpperCase()));
+        when(request.getBody()).thenReturn(body);
+        when(request.getQueryParameters()).thenReturn(new HashMap<String, ParameterValue>(){{
+            put("qVar1", new ParameterValue("qVal1", "qVal2"));
+            put("qVar2", new ParameterValue("qVal1"));
+            put("qVar3", new ParameterValue());
         }});
 
-        sparkRequest = new SparkRequest(request);
+        pippoRequest = new PippoRequest(request);
     }
 
     @Test
     public void getPathReturnsTheCorrectPath() throws Exception {
-        final String got = sparkRequest.getPath();
+        final String got = pippoRequest.getPath();
 
         assertThat(got).isEqualTo(path);
     }
 
     @Test
     public void getMethodReturnsTheCorrectMethod() throws Exception {
-        final String got = sparkRequest.getMethod();
+        final String got = pippoRequest.getMethod();
 
         assertThat(got).isEqualTo(method);
     }
@@ -72,14 +74,14 @@ public class SparkRequestTest {
     public void getHeadersReturnsTheCorrectHeaders() throws Exception {
         final Map<String, String> expectedHeaders = headerNames.stream().collect(toMap(identity(), String::toUpperCase));
 
-        final Map<String, String> got = sparkRequest.getHeaders();
+        final Map<String, String> got = pippoRequest.getHeaders();
 
         assertThat(got).isEqualTo(expectedHeaders);
     }
 
     @Test
     public void getBodyReturnsTheCorrectBody() throws Exception {
-        final String got = sparkRequest.getBody();
+        final String got = pippoRequest.getBody();
 
         assertThat(got).isEqualTo(body);
     }
@@ -92,7 +94,7 @@ public class SparkRequestTest {
             put("qVar3", emptyList());
         }};
 
-        final Map<String, List<String>> got = sparkRequest.getQueryParams();
+        final Map<String, List<String>> got = pippoRequest.getQueryParams();
 
         assertThat(got).isEqualTo(expectedMap);
     }
