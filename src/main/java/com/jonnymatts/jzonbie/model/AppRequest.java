@@ -58,10 +58,9 @@ public class AppRequest {
     }
 
     public void setBasicAuth(Map<String, String> basicAuth) {
-        this.basicAuth = basicAuth;
         basicAuth.entrySet().forEach(entry -> {
             final String authValue = format("%s:%s", entry.getKey(), entry.getValue());
-            headers.put("Authorization", Base64.getEncoder().encodeToString(authValue.getBytes()));
+            headers.put("Authorization", "Basic " + Base64.getEncoder().encodeToString(authValue.getBytes()));
         });
     }
 
@@ -76,25 +75,6 @@ public class AppRequest {
     public void setQueryParams(Map<String, List<String>> queryParams) {
         this.queryParams = queryParams;
     }
-
-    //    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//
-//        ZombieRequest that = (ZombieRequest) o;
-//
-//        if (headers != null ? !headers.equals(that.headers) : that.headers != null) return false;
-//        return body != null ? body.equals(that.body) : that.body == null;
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        int result = headers != null ? headers.hashCode() : 0;
-//        result = 31 * result + (body != null ? body.hashCode() : 0);
-//        return result;
-//    }
-
 
     @Override
     public boolean equals(Object o) {
@@ -117,5 +97,23 @@ public class AppRequest {
         result = 31 * result + (body != null ? body.hashCode() : 0);
         result = 31 * result + (queryParams != null ? queryParams.hashCode() : 0);
         return result;
+    }
+
+    public boolean matches(AppRequest that) {
+        if(this == that) return true;
+
+        if(path != null ? !path.equals(that.path) : that.path != null) return false;
+        if(method != null ? !method.equals(that.method) : that.method != null) return false;
+        if(queryParams != null ? !queryParams.equals(that.queryParams) : that.queryParams != null) return false;
+        if(headers != null ? !headersAreContainedWithinOtherRequestsHeaders(that.headers) : that.headers != null) return false;
+
+        return body != null ? body.equals(that.body) : that.body == null;
+    }
+
+    private boolean headersAreContainedWithinOtherRequestsHeaders(Map<String, String> otherHeaders) {
+        return headers.entrySet().stream().allMatch(e -> {
+            final String value = otherHeaders.get(e.getKey());
+            return value != null && value.equals(e.getValue());
+        });
     }
 }

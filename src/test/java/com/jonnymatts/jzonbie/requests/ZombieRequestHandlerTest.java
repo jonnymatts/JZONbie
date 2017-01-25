@@ -3,7 +3,6 @@ package com.jonnymatts.jzonbie.requests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
-import com.google.common.collect.Multimap;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -32,7 +31,7 @@ public class ZombieRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<AppRequest, AppResponse> primingContext;
+    @Mock private PrimingContext primingContext;
 
     @Mock private Deserializer deserializer;
 
@@ -72,7 +71,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(zombiePriming);
 
-        verify(primingContext).put(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
+        verify(primingContext).add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
     }
 
     @Test
@@ -104,7 +103,7 @@ public class ZombieRequestHandlerTest {
     @Test
     public void handleReturnsPrimingContextMappingsIfZombieHeaderHasListValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "list"));
-        when(primedMappingFactory.create(primingContext)).thenReturn(primedRequests);
+        when(primingContext.getCurrentPriming()).thenReturn(primedRequests);
 
         final Response got = zombieRequestHandler.handle(request);
 

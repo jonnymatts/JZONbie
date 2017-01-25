@@ -1,11 +1,7 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.Multimap;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
@@ -22,12 +18,12 @@ public class ZombieRequestHandler implements RequestHandler {
 
     public static final Map<String, String> JSON_HEADERS_MAP = singletonMap("Content-Type", "application/json");
 
-    private final Multimap<AppRequest, AppResponse> primingContext;
+    private final PrimingContext primingContext;
     private final List<ZombiePriming> callHistory;
     private final Deserializer deserializer;
     private final PrimedMappingFactory primedMappingFactory;
 
-    public ZombieRequestHandler(Multimap<AppRequest, AppResponse> primingContext,
+    public ZombieRequestHandler(PrimingContext primingContext,
                                 List<ZombiePriming> callHistory,
                                 Deserializer deserializer,
                                 PrimedMappingFactory primedMappingFactory) {
@@ -68,13 +64,13 @@ public class ZombieRequestHandler implements RequestHandler {
             zombieRequest.setPath(request.getPath());
         }
 
-        primingContext.put(zombieRequest, zombieResponse);
+        primingContext.add(zombieRequest, zombieResponse);
 
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
 
     private ZombieResponse handleListRequest() throws JsonProcessingException {
-        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, primedMappingFactory.create(primingContext));
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, primingContext.getCurrentPriming());
     }
 
     private ZombieResponse handleHistoryRequest() throws JsonProcessingException {

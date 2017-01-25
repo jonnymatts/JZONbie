@@ -3,11 +3,7 @@ package com.jonnymatts.jzonbie.requests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
-import com.google.common.collect.Multimap;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppRequestFactory;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.Response;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -20,8 +16,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.mockito.Mockito.verify;
@@ -34,7 +30,7 @@ public class AppRequestHandlerTest {
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    @Mock private Multimap<AppRequest, AppResponse> primingContext;
+    @Mock private PrimingContext primingContext;
 
     @Mock private List<ZombiePriming> callHistory;
 
@@ -58,8 +54,8 @@ public class AppRequestHandlerTest {
         zombieResponse = ZombiePriming.getAppResponse();
 
         when(appRequestFactory.create(request)).thenReturn(zombieRequest);
-        when(primingContext.get(zombieRequest))
-                .thenReturn(singletonList(zombieResponse));
+        when(primingContext.getResponse(zombieRequest))
+                .thenReturn(of(zombieResponse));
     }
 
     @Test
@@ -69,8 +65,6 @@ public class AppRequestHandlerTest {
         assertThat(got.getStatusCode()).isEqualTo(zombieResponse.getStatusCode());
         assertThat(got.getHeaders()).containsAllEntriesOf(zombieResponse.getHeaders());
         assertThat(got.getBody()).isEqualTo(zombieResponse.getBody());
-
-        verify(primingContext).remove(zombieRequest, zombieResponse);
     }
 
     @Test
@@ -82,7 +76,7 @@ public class AppRequestHandlerTest {
 
     @Test
     public void handleReturnsErrorResponseIfPrimingIsNotFound() throws Exception {
-        when(primingContext.get(zombieRequest)).thenReturn(emptyList());
+        when(primingContext.getResponse(zombieRequest)).thenReturn(empty());
 
         expectedException.expect(PrimingNotFoundException.class);
         expectedException.expect(Matchers.hasProperty("request", equalTo(zombieRequest)));

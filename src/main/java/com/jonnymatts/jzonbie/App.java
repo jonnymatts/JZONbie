@@ -1,9 +1,10 @@
 package com.jonnymatts.jzonbie;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
-import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.model.AppRequestFactory;
+import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
+import com.jonnymatts.jzonbie.model.PrimingContext;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
@@ -24,7 +25,7 @@ public class App {
     public static void main(String[] args) {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final Deserializer deserializer = new Deserializer(objectMapper);
-        final Multimap<AppRequest, AppResponse> primingContext = LinkedListMultimap.create();
+        final PrimingContext primingContext = new PrimingContext();
         final List<ZombiePriming> callHistory = new ArrayList<>();
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();

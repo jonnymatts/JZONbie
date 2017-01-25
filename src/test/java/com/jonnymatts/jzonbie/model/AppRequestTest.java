@@ -2,7 +2,6 @@ package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -21,24 +20,18 @@ public class AppRequestTest {
 
     @Fixture private String password;
 
-    private AppRequest zombieRequest;
-
-    @Before
-    public void setUp() throws Exception {
-        zombieRequest = new AppRequest();
-        zombieRequest.setHeaders(new HashMap<>());
-    }
+    @Fixture private AppRequest appRequest;
 
     @Test
     public void setBasicAuthAddsAuthorizationHeaderToHeadersWithStringInput() {
         final String authValue = String.format("%s:%s", username, password);
         final String encodedAuthValue = Base64.getEncoder().encodeToString(authValue.getBytes());
 
-        zombieRequest.setBasicAuth(username, password);
+        appRequest.setBasicAuth(username, password);
 
-        final Map<String, String> headers = zombieRequest.getHeaders();
+        final Map<String, String> headers = appRequest.getHeaders();
 
-        assertThat(headers).containsEntry("Authorization", encodedAuthValue);
+        assertThat(headers).containsEntry("Authorization", "Basic " + encodedAuthValue);
     }
 
     @Test
@@ -46,10 +39,83 @@ public class AppRequestTest {
         final String authValue = String.format("%s:%s", username, password);
         final String encodedAuthValue = Base64.getEncoder().encodeToString(authValue.getBytes());
 
-        zombieRequest.setBasicAuth(singletonMap(username, password));
+        appRequest.setBasicAuth(singletonMap(username, password));
 
-        final Map<String, String> headers = zombieRequest.getHeaders();
+        final Map<String, String> headers = appRequest.getHeaders();
 
-        assertThat(headers).containsEntry("Authorization", encodedAuthValue);
+        assertThat(headers).containsEntry("Authorization", "Basic " + encodedAuthValue);
+    }
+
+    @Test
+    public void matchesReturnsFalseIfPathsDoNotMatch() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        copy.setPath(appRequest.getPath() + "notEqual");
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsFalseIfMethodsDoNotMatch() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        copy.setMethod(appRequest.getMethod() + "notEqual");
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsFalseIfQueryParamsDoNotMatch() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        copy.getQueryParams().clear();
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsFalseIfBodiesDoNotMatch() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        copy.getBody().clear();
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        appRequest.getHeaders().put("var", "val");
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfHeadersOfThisRequestIsEmptyAndEverythingElseMatches() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        appRequest.getHeaders().clear();
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfHeadersOfThatRequestContainsTheHeadersOfThisRequest() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+        appRequest.getHeaders().remove(appRequest.getHeaders().keySet().iterator().next());
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfEveryFieldMatches() throws Exception {
+        final AppRequest copy = copyAppRequest(appRequest);
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    private AppRequest copyAppRequest(AppRequest appRequest) {
+        final AppRequest copy = new AppRequest();
+        copy.setPath(appRequest.getPath());
+        copy.setMethod(appRequest.getMethod());
+        copy.setQueryParams(new HashMap<>(appRequest.getQueryParams()));
+        copy.setHeaders(new HashMap<>(appRequest.getHeaders()));
+        copy.setBody(new HashMap<>(appRequest.getBody()));
+        return copy;
     }
 }
