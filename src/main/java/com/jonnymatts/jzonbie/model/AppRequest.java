@@ -104,7 +104,7 @@ public class AppRequest {
 
         if(path != null ? !path.equals(that.path) : that.path != null) return false;
         if(method != null ? !method.equals(that.method) : that.method != null) return false;
-        if(queryParams != null ? !queryParams.equals(that.queryParams) : that.queryParams != null) return false;
+        if(queryParams != null ? !queryParametersMatchWithRegex(that.queryParams) : that.queryParams != null) return false;
         if(headers != null ? !headersAreContainedWithinOtherRequestsHeaders(that.headers) : that.headers != null) return false;
 
         return body != null ? body.equals(that.body) : that.body == null;
@@ -115,5 +115,24 @@ public class AppRequest {
             final String value = otherHeaders.get(e.getKey());
             return value != null && value.equals(e.getValue());
         });
+    }
+
+    private boolean queryParametersMatchWithRegex(Map<String, List<String>> otherQueryParams) {
+        return queryParams.entrySet().stream().allMatch(e -> {
+            final List<String> otherValues = otherQueryParams.get(e.getKey());
+            return otherValues != null && e.getValue() != null && listsMatchesRegex(e.getValue(), otherValues);
+        });
+    }
+
+    private boolean listsMatchesRegex(List<String> patterns, List<String> values) {
+        if (patterns.size() != values.size())
+            return false;
+
+        for (int i = 0; i < patterns.size(); i++) {
+            if (!values.get(i).matches(patterns.get(i)))
+                return false;
+        }
+
+        return true;
     }
 }

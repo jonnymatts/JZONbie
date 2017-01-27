@@ -7,8 +7,10 @@ import org.junit.Test;
 
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,6 +70,19 @@ public class AppRequestTest {
         copy.getQueryParams().clear();
 
         assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfQueryParamsMatchRegex() throws Exception {
+        final Map<String, List<String>> appRequestQueryParams = appRequest.getQueryParams();
+        appRequestQueryParams.clear();
+        appRequestQueryParams.put("key", asList("val.*", "foo.*"));
+
+        final AppRequest copy = copyAppRequest(appRequest);
+
+        copy.getQueryParams().put("key", asList("value", "foobar"));
+
+        assertThat(appRequest.matches(copy)).isTrue();
     }
 
     @Test
