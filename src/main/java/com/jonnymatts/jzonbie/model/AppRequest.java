@@ -100,7 +100,7 @@ public class AppRequest {
         return result;
     }
 
-    boolean matches(AppRequest that) {
+    public boolean matches(AppRequest that) {
         if(this == that) return true;
 
         if(path != null ? !that.path.matches(path) : that.path != null) return false;
