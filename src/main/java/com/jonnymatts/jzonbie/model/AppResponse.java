@@ -14,7 +14,7 @@ public class AppResponse implements Response {
         return headers;
     }
 
-    public void setHeaders(Map<String, String> headers) {
+    void setHeaders(Map<String, String> headers) {
         this.headers = headers;
     }
 
@@ -22,7 +22,7 @@ public class AppResponse implements Response {
         return body;
     }
 
-    public void setBody(Map<String, Object> body) {
+    void setBody(Map<String, Object> body) {
         this.body = body;
     }
 
@@ -30,7 +30,7 @@ public class AppResponse implements Response {
         return statusCode;
     }
 
-    public void setStatusCode(int statusCode) {
+    void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -52,5 +52,9 @@ public class AppResponse implements Response {
         result = 31 * result + (headers != null ? headers.hashCode() : 0);
         result = 31 * result + (body != null ? body.hashCode() : 0);
         return result;
+    }
+
+    public static AppResponseBuilder builder(int statusCode) {
+        return new AppResponseBuilder(statusCode);
     }
 }

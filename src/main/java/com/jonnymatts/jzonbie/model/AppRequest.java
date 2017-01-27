@@ -19,10 +19,7 @@ public class AppRequest {
     }
 
     public static AppRequestBuilder builder(String method, String path) {
-        final AppRequest request = new AppRequest();
-        request.setPath(path);
-        request.setMethod(method);
-        return new AppRequestBuilder(request);
+        return new AppRequestBuilder(method, path);
     }
 
     public String getPath() {

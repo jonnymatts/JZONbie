@@ -8,8 +8,10 @@ import java.util.Map;
 public class AppRequestBuilder {
     private final AppRequest request;
 
-    AppRequestBuilder(AppRequest request) {
-        this.request = request;
+    public AppRequestBuilder(String method, String path) {
+        this.request = new AppRequest();
+        request.setPath(path);
+        request.setMethod(method);
     }
 
     public AppRequest build() {
@@ -17,6 +19,8 @@ public class AppRequestBuilder {
     }
 
     public AppRequestBuilder withHeader(String name, String value) {
+        if(request.getHeaders() == null)
+            request.setHeaders(new HashMap<>());
         request.getHeaders().put(name, value);
         return this;
     }

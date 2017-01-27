@@ -44,10 +44,10 @@ public class JzonbieClient {
                 .withBody(singletonMap("one", 1))
                 .build();
 
-        final AppResponse zombieResponse = new AppResponse();
-        zombieResponse.setStatusCode(200);
-        zombieResponse.setHeaders(singletonMap("Content-Type", "application/json"));
-        zombieResponse.setBody(singletonMap("message", "Well done!"));
+        final AppResponse zombieResponse = AppResponse.builder(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody(singletonMap("message", "Well done!"))
+                .build();
 
         final List<PrimedMapping> currentPriming = client.getCurrentPriming();
 

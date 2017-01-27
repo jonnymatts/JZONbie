@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
+import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -21,7 +22,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.when;
@@ -35,7 +35,7 @@ public class ApacheJzonbieRequestFactoryTest {
     @Mock private ObjectMapper objectMapper;
 
     @Fixture private String zombieBaseUrl;
-    @Fixture private AppResponse zombieResponse;
+    @Fixture private AppResponse appResponse;
     @Fixture private String entityString;
 
     private AppRequest appRequest;
@@ -46,18 +46,18 @@ public class ApacheJzonbieRequestFactoryTest {
     public void setUp() throws Exception {
         appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
 
+        appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
+
         requestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
 
         runtimeException = new RuntimeException();
-
-        zombieResponse.setBody(singletonMap("key", "value"));
     }
 
     @Test
     public void createPrimeZombieRequest() throws Exception {
-        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, zombieResponse))).thenReturn(entityString);
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, appResponse))).thenReturn(entityString);
 
-        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieRequest(appRequest, zombieResponse);
+        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieRequest(appRequest, appResponse);
 
         assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
@@ -67,12 +67,12 @@ public class ApacheJzonbieRequestFactoryTest {
 
     @Test
     public void createPrimeZombieRequestThrowsRuntimeExceptionIfAnyExceptionIsThrown() throws Exception {
-        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, zombieResponse))).thenThrow(runtimeException);
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, appResponse))).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);
         expectedException.expectCause(is(runtimeException));
 
-        requestFactory.createPrimeZombieRequest(appRequest, zombieResponse);
+        requestFactory.createPrimeZombieRequest(appRequest, appResponse);
     }
 
     @Test
