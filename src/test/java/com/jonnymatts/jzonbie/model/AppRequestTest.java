@@ -2,6 +2,8 @@ package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -11,8 +13,10 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 public class AppRequestTest {
 
@@ -22,7 +26,12 @@ public class AppRequestTest {
 
     @Fixture private String password;
 
-    @Fixture private AppRequest appRequest;
+    private AppRequest appRequest;
+
+    @Before
+    public void setUp() throws Exception {
+        appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
+    }
 
     @Test
     public void setBasicAuthAddsAuthorizationHeaderToHeadersWithStringInput() {
@@ -158,6 +167,23 @@ public class AppRequestTest {
         final AppRequest copy = copyAppRequest(appRequest);
 
         assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void builderCanConstructInstances() {
+        final AppRequest request = AppRequest.builder("GET", "/.*")
+                .withBody(appRequest.getBody())
+                .withBasicAuth(username, password)
+                .withHeader("header-name", "header-value")
+                .withQueryParam("param-name", "param-value")
+                .build();
+
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getPath()).isEqualTo("/.*");
+        assertThat(request.getQueryParams()).contains(entry("param-name", singletonList("param-value")));
+        assertThat(request.getBody()).isEqualTo(appRequest.getBody());
+        assertThat(request.getHeaders()).contains(entry("header-name", "header-value"));
+        assertThat(request.getHeaders()).containsKey("Authorization");
     }
 
     private AppRequest copyAppRequest(AppRequest appRequest) {

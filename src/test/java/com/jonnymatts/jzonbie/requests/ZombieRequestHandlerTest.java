@@ -61,9 +61,10 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
-        when(request.getPath()).thenReturn("path");
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
+        when(zombieRequest.getPath()).thenReturn("path");
+        when(zombieRequest.getMethod()).thenReturn("method");
 
         final Response got = zombieRequestHandler.handle(request);
 
@@ -74,30 +75,22 @@ public class ZombieRequestHandlerTest {
         verify(primingContext).add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
     }
 
-    @Test
-    public void handleUsesRequestMethodAsPrimingRequestMethodIfNotPresentInPrimedRequest() throws JsonProcessingException {
-        when(request.getPath()).thenReturn("path");
-        when(request.getMethod()).thenReturn("POST");
+    @Test(expected = IllegalArgumentException.class)
+    public void handleThrowsExceptionIfMethodNotPresentInPrimedRequest() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(zombieRequest.getMethod()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 
         zombieRequestHandler.handle(request);
-
-        verify(zombieRequest).setMethod(request.getMethod());
     }
 
-    @Test
-    public void handleUsesRequestPathAsPrimingRequestPathIfNotPresentInPrimedRequest() throws JsonProcessingException {
-        when(request.getPath()).thenReturn("path");
-        when(request.getMethod()).thenReturn("POST");
+    @Test(expected = IllegalArgumentException.class)
+    public void handleThrowsExceptionIfPathNotPresentInPrimedRequest() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(zombieRequest.getPath()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 
         zombieRequestHandler.handle(request);
-
-        verify(zombieRequest).setPath(request.getPath());
     }
 
     @Test

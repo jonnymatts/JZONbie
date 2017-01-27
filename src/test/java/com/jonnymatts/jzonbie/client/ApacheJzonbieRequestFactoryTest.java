@@ -6,6 +6,7 @@ import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -34,28 +35,29 @@ public class ApacheJzonbieRequestFactoryTest {
     @Mock private ObjectMapper objectMapper;
 
     @Fixture private String zombieBaseUrl;
-    @Fixture private AppRequest zombieRequest;
     @Fixture private AppResponse zombieResponse;
     @Fixture private String entityString;
 
+    private AppRequest appRequest;
     private ApacheJzonbieRequestFactory requestFactory;
     private RuntimeException runtimeException;
 
     @Before
     public void setUp() throws Exception {
+        appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
+
         requestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
 
         runtimeException = new RuntimeException();
 
-        zombieRequest.setBody(singletonMap("key", "value"));
         zombieResponse.setBody(singletonMap("key", "value"));
     }
 
     @Test
     public void createPrimeZombieRequest() throws Exception {
-        when(objectMapper.writeValueAsString(new ZombiePriming(zombieRequest, zombieResponse))).thenReturn(entityString);
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, zombieResponse))).thenReturn(entityString);
 
-        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse);
+        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieRequest(appRequest, zombieResponse);
 
         assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
@@ -65,12 +67,12 @@ public class ApacheJzonbieRequestFactoryTest {
 
     @Test
     public void createPrimeZombieRequestThrowsRuntimeExceptionIfAnyExceptionIsThrown() throws Exception {
-        when(objectMapper.writeValueAsString(new ZombiePriming(zombieRequest, zombieResponse))).thenThrow(runtimeException);
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, zombieResponse))).thenThrow(runtimeException);
 
         expectedException.expect(RuntimeException.class);
         expectedException.expectCause(is(runtimeException));
 
-        requestFactory.createPrimeZombieRequest(zombieRequest, zombieResponse);
+        requestFactory.createPrimeZombieRequest(appRequest, zombieResponse);
     }
 
     @Test

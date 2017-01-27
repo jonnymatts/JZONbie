@@ -40,10 +40,9 @@ public class JzonbieClient {
     public static void main(String[] args) {
         JzonbieClient client = new JzonbieClient("http://localhost:8080");
 
-        final AppRequest zombieRequest = new AppRequest();
-        zombieRequest.setPath("/blah");
-        zombieRequest.setMethod("POST");
-        zombieRequest.setBody(singletonMap("one", 1));
+        final AppRequest zombieRequest = AppRequest.builder("POST", "/blah")
+                .withBody(singletonMap("one", 1))
+                .build();
 
         final AppResponse zombieResponse = new AppResponse();
         zombieResponse.setStatusCode(200);

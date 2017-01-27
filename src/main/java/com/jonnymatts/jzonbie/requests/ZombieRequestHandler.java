@@ -57,11 +57,11 @@ public class ZombieRequestHandler implements RequestHandler {
         final AppResponse zombieResponse = zombiePriming.getAppResponse();
 
         if(zombieRequest.getMethod() == null) {
-            zombieRequest.setMethod(request.getMethod());
+            throw new IllegalArgumentException("Method cannot be null");
         }
 
         if(zombieRequest.getPath() == null) {
-            zombieRequest.setPath(request.getPath());
+            throw new IllegalArgumentException("Path cannot be null");
         }
 
         primingContext.add(zombieRequest, zombieResponse);

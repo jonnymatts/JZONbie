@@ -14,15 +14,22 @@ public class AppRequest {
     private Map<String, String> basicAuth;
     private Map<String, List<String>> queryParams;
 
-    public AppRequest() {
+    AppRequest() {
         this.headers = new HashMap<>();
+    }
+
+    public static AppRequestBuilder builder(String method, String path) {
+        final AppRequest request = new AppRequest();
+        request.setPath(path);
+        request.setMethod(method);
+        return new AppRequestBuilder(request);
     }
 
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    void setPath(String path) {
         this.path = path;
     }
 
@@ -30,7 +37,7 @@ public class AppRequest {
         return headers;
     }
 
-    public void setHeaders(Map<String, String> headers) {
+    void setHeaders(Map<String, String> headers) {
         this.headers = headers;
     }
 
@@ -38,7 +45,7 @@ public class AppRequest {
         return method;
     }
 
-    public void setMethod(String method) {
+    void setMethod(String method) {
         this.method = method;
     }
 
@@ -46,7 +53,7 @@ public class AppRequest {
         return body;
     }
 
-    public void setBody(Map<String, Object> body) {
+    void setBody(Map<String, Object> body) {
         this.body = body;
     }
 
@@ -54,14 +61,14 @@ public class AppRequest {
         return basicAuth;
     }
 
-    public void setBasicAuth(Map<String, String> basicAuth) {
+    void setBasicAuth(Map<String, String> basicAuth) {
         basicAuth.entrySet().forEach(entry -> {
             final String authValue = format("%s:%s", entry.getKey(), entry.getValue());
             headers.put("Authorization", "Basic " + Base64.getEncoder().encodeToString(authValue.getBytes()));
         });
     }
 
-    public void setBasicAuth(String username, String password) {
+    void setBasicAuth(String username, String password) {
         setBasicAuth(singletonMap(username, password));
     }
 
@@ -69,7 +76,7 @@ public class AppRequest {
         return queryParams;
     }
 
-    public void setQueryParams(Map<String, List<String>> queryParams) {
+    void setQueryParams(Map<String, List<String>> queryParams) {
         this.queryParams = queryParams;
     }
 
@@ -96,7 +103,7 @@ public class AppRequest {
         return result;
     }
 
-    public boolean matches(AppRequest that) {
+    boolean matches(AppRequest that) {
         if(this == that) return true;
 
         if(path != null ? !that.path.matches(path) : that.path != null) return false;
