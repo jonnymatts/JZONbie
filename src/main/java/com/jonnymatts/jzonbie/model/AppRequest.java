@@ -1,9 +1,6 @@
 package com.jonnymatts.jzonbie.model;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
@@ -102,19 +99,23 @@ public class AppRequest {
     public boolean matches(AppRequest that) {
         if(this == that) return true;
 
-        if(path != null ? !path.equals(that.path) : that.path != null) return false;
+        if(path != null ? !that.path.matches(path) : that.path != null) return false;
         if(method != null ? !method.equals(that.method) : that.method != null) return false;
         if(queryParams != null ? !queryParametersMatchWithRegex(that.queryParams) : that.queryParams != null) return false;
         if(headers != null ? !headersAreContainedWithinOtherRequestsHeaders(that.headers) : that.headers != null) return false;
 
-        return body != null ? body.equals(that.body) : that.body == null;
+        return body != null ? mapValuesMatchWithRegex(body, that.body) : that.body == null;
     }
 
     private boolean headersAreContainedWithinOtherRequestsHeaders(Map<String, String> otherHeaders) {
-        return headers.entrySet().stream().allMatch(e -> {
-            final String value = otherHeaders.get(e.getKey());
-            return value != null && value.equals(e.getValue());
-        });
+        final Set<String> primedHeaderKeys = headers.keySet();
+        final Set<String> otherHeaderKeys = otherHeaders.keySet();
+
+        if(!otherHeaderKeys.containsAll(primedHeaderKeys)) return false;
+
+        otherHeaders.entrySet().removeIf(e -> !primedHeaderKeys.contains(e.getKey()));
+
+        return mapValuesMatchWithRegex(headers, otherHeaders);
     }
 
     private boolean queryParametersMatchWithRegex(Map<String, List<String>> otherQueryParams) {
@@ -124,15 +125,37 @@ public class AppRequest {
         });
     }
 
-    private boolean listsMatchesRegex(List<String> patterns, List<String> values) {
+    private boolean mapValuesMatchWithRegex(Map<?, ?> patterns, Map<?, ?> values) {
+        if(!patterns.keySet().equals(values.keySet())) return false;
+
+        return patterns.entrySet().stream().allMatch(e -> {
+            final Object pattern = e.getValue();
+            final Object value = values.get(e.getKey());
+            return matchRegexRecursively(pattern, value);
+        });
+    }
+
+    private boolean listsMatchesRegex(List<?> patterns, List<?> values) {
         if (patterns.size() != values.size())
             return false;
 
-        for (int i = 0; i < patterns.size(); i++) {
-            if (!values.get(i).matches(patterns.get(i)))
+        for(int i = 0; i < patterns.size(); i++) {
+            final Object pattern = patterns.get(i);
+            final Object value = values.get(i);
+            if (!matchRegexRecursively(pattern, value))
                 return false;
         }
 
         return true;
+    }
+
+    private boolean matchRegexRecursively(Object pattern, Object value) {
+        if(value instanceof String)
+            return ((String)value).matches((String) pattern);
+        if(value instanceof Map)
+            return mapValuesMatchWithRegex((Map<?,?>) pattern, (Map<?,?>)value);
+        if(value instanceof List)
+            return listsMatchesRegex((List<?>) pattern, (List<?>)value);
+        return Objects.equals(pattern, value);
     }
 }

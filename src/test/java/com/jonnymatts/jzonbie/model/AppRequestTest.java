@@ -57,6 +57,16 @@ public class AppRequestTest {
     }
 
     @Test
+    public void matchesReturnsTrueIfPathsMatchRegex() throws Exception {
+        appRequest.setPath("path.*");
+
+        final AppRequest copy = copyAppRequest(appRequest);
+        copy.setPath(appRequest.getPath() + "extraStuff");
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
     public void matchesReturnsFalseIfMethodsDoNotMatch() throws Exception {
         final AppRequest copy = copyAppRequest(appRequest);
         copy.setMethod(appRequest.getMethod() + "notEqual");
@@ -94,6 +104,19 @@ public class AppRequestTest {
     }
 
     @Test
+    public void matchesReturnsTrueIfBodyValuesMatchRegex() throws Exception {
+        final Map<String, Object> appRequestBody = appRequest.getBody();
+        appRequestBody.clear();
+        appRequestBody.put("key", "val.*");
+
+        final AppRequest copy = copyAppRequest(appRequest);
+
+        copy.getBody().put("key", "value");
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
     public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
         final AppRequest copy = copyAppRequest(appRequest);
         appRequest.getHeaders().put("var", "val");
@@ -113,6 +136,19 @@ public class AppRequestTest {
     public void matchesReturnsTrueIfHeadersOfThatRequestContainsTheHeadersOfThisRequest() throws Exception {
         final AppRequest copy = copyAppRequest(appRequest);
         appRequest.getHeaders().remove(appRequest.getHeaders().keySet().iterator().next());
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfHeaderValuesMatchRegex() throws Exception {
+        final Map<String, String> appRequestHeaders = appRequest.getHeaders();
+        appRequestHeaders.clear();
+        appRequestHeaders.put("key", "val.*");
+
+        final AppRequest copy = copyAppRequest(appRequest);
+
+        copy.getHeaders().put("key", "value");
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
