@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'maven-publish'
+    id "com.palantir.docker" version "0.11.0"
 }
 
 group 'com.jonnymatts'
@@ -47,4 +48,14 @@ publishing {
             artifact sourcesJar
         }
     }
+}
+
+shadowJar {
+    dependsOn build
+}
+
+docker {
+    dependsOn shadowJar
+    name "jonnymatts/jzonbie:${version}"
+    files tasks.shadowJar.outputs
 }
