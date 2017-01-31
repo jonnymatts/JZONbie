@@ -1,15 +1,25 @@
 # JZONbie   ![Travis build status](https://travis-ci.org/jonnymatts/JZONbie.svg?branch=master "JZONbie build status")
 
-JZONbie is a mock HTTP server that serves known JSON responses for primed requests. It is ran as a standalone process, stubbing the behaviour of an application's external dependencies during integration testing. It also offers the ability to verify that requests have been received.
+JZONbie is a lightweight HTTP server for mocking JSON based APIs.
+* Simple REST API for: 
+  * priming
+  * current state
+  * history
+  * resetting state
+* Easy to use Java client
+* Available on Docker Hub
 
-## Usage
+
+## Starting JZONbie
 JZONbie is ran as a standalone process, most commonly as a docker container. It can be found on Docker Hub [here](https://hub.docker.com/r/jonnymatts/jzonbie/ "JZONbie on Docker Hub"). The docker image can also be built locally by cloning the repository and running the following command.
 
 ```bash
 ./gradlew clean docker
 ```
 
+## Usage
 
+### Using JSON API 
 To prime JZONbie to return a known response for a given request, the JZONbie JSON API can be used. 
 
 Sending the following request, with the header `zombie:priming`, will prime the zombie to listen for a POST request on any path and abody with the field `var` having the value `val`.
@@ -44,7 +54,7 @@ Other functions of JZONbie are accessed by changing the value of the request's `
 | "reset"  | Clears the current state  |
 
 
-
+### Using Java client
 In addition to the JSON API, there is also a Java client that can be used to interact with a JZONbie instance. An example usage of this client is shown below.
 
 ```java
