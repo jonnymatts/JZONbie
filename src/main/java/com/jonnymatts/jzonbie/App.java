@@ -34,7 +34,7 @@ public class App {
         final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
 
         final Pippo pippo = new Pippo(new PippoApplication(appRequestHandler, zombieRequestHandler, objectMapper));
-        pippo.getServer().setPort(PORT);
+        pippo.getServer().setPort(PORT).getSettings().host("0.0.0.0");
         pippo.start();
 
         System.out.println(format("Started server on port: %s", PORT));
