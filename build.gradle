@@ -1,8 +1,8 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
-//    id 'maven-publish'
     id "com.palantir.docker" version "0.11.0"
+//    id 'maven-publish'   // Uncomment to be able to publish to maven local
     id 'maven'
     id 'signing'
 }
@@ -42,12 +42,12 @@ javadoc {
     source = sourceSets.main.allJava
 }
 
-task sourcesJar ( type: Jar, dependsOn: classes ) {
+task sourcesJar(type: Jar, dependsOn: classes) {
     classifier 'sources'
     from sourceSets.main.allJava
 }
 
-task javadocJar ( type: Jar, dependsOn: javadoc ) {
+task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier 'javadoc'
     from javadoc.destinationDir
 }
@@ -56,10 +56,7 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-signing {
-    sign configurations.archives
-}
-
+// maven-publish plugin configuration
 //publishing {
 //    publications {
 //        mavenJava(MavenPublication) {
@@ -70,44 +67,52 @@ signing {
 //    }
 //}
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+// signing and maven plugin configuration. Run gradle with project property -Prelease to use these tasks
+// Ensure gradle.properties are set for signing key and sonatype credentials
+if (project.hasProperty("release")) {
+    signing {
+        sign configurations.archives
+    }
 
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
-                name 'JZONbie'
-                packaging 'jar'
-                // optionally artifactId can be defined here
-                artifactId 'jzonbie'
-                description 'Mock HTTP server serving JSON for integration testing'
-                url 'jonnymatts.com'
-
-                scm {
-                    connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
-                    developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
-                    url 'http://github.com/jonnymatts/jzonbie/tree/master'
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
                 }
 
-                licenses {
-                    license {
-                        name 'MIT License'
-                        url 'http://www.opensource.org/licenses/mit-license.php'
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'JZONbie'
+                    packaging 'jar'
+                    // optionally artifactId can be defined here
+                    artifactId 'jzonbie'
+                    description 'Mock HTTP server serving JSON for integration testing'
+                    url 'jonnymatts.com'
+
+                    scm {
+                        connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
+                        developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
+                        url 'http://github.com/jonnymatts/jzonbie/tree/master'
                     }
-                }
 
-                developers {
-                    developer {
-                        name 'Jonathan Matts'
-                        email 'jonoamatts@gmail.com'
+                    licenses {
+                        license {
+                            name 'MIT License'
+                            url 'http://www.opensource.org/licenses/mit-license.php'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name 'Jonathan Matts'
+                            email 'jonoamatts@gmail.com'
+                        }
                     }
                 }
             }
