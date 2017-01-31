@@ -1,8 +1,10 @@
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id 'maven-publish'
+//    id 'maven-publish'
     id "com.palantir.docker" version "0.11.0"
+    id 'maven'
+    id 'signing'
 }
 
 group 'com.jonnymatts'
@@ -36,16 +38,79 @@ dependencies {
     testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.1.0'
 }
 
+javadoc {
+    source = sourceSets.main.allJava
+}
+
 task sourcesJar ( type: Jar, dependsOn: classes ) {
     classifier 'sources'
     from sourceSets.main.allJava
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
+task javadocJar ( type: Jar, dependsOn: javadoc ) {
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+//publishing {
+//    publications {
+//        mavenJava(MavenPublication) {
+//            from components.java
+//            artifact sourcesJar
+//            artifact javadocJar
+//        }
+//    }
+//}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'JZONbie'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                artifactId 'jzonbie'
+                description 'Mock HTTP server serving JSON for integration testing'
+                url 'jonnymatts.com'
+
+                scm {
+                    connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
+                    developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
+                    url 'http://github.com/jonnymatts/jzonbie/tree/master'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+
+                developers {
+                    developer {
+                        name 'Jonathan Matts'
+                        email 'jonoamatts@gmail.com'
+                    }
+                }
+            }
         }
     }
 }
