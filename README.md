@@ -22,7 +22,7 @@ JZONbie is ran as a standalone process, most commonly as a docker container. It 
 ### Using JSON API 
 To prime JZONbie to return a known response for a given request, the JZONbie JSON API can be used. 
 
-Sending the following request, with the header `zombie:priming`, will prime the zombie to listen for a POST request on any path and abody with the field `var` having the value `val`.
+Sending the following request, with the header `zombie:priming`, will prime the zombie to listen for a POST request on any path and a body with the field `var` having the value `val`.
 ```json
 {
   "request": {
@@ -44,7 +44,7 @@ If JZONbie receives a request matching this description, it will serve a 200 (OK
 
 
 
-Other functions of JZONbie are accessed by changing the value of the request's `zombie` header. the table below shows each of the JZONbie functions available.
+Other functions of JZONbie are accessed by changing the value of the request's `zombie` header. The table below shows each of the JZONbie functions available.
 
 | Zombie Header Value  | JZONbie Function |
 | ------------- | ------------- |
