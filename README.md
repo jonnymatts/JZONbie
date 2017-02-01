@@ -1,4 +1,4 @@
-# JZONbie   ![Travis build status](https://travis-ci.org/jonnymatts/JZONbie.svg?branch=master "JZONbie build status")
+# JZONbie   ![Travis build status](https://travis-ci.org/jonnymatts/JZONbie.svg?branch=master "JZONbie build status") [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.jonnymatts/jzonbie/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.jonnymatts/jzonbie)
 
 JZONbie is a lightweight HTTP server for mocking JSON based APIs.
 * Simple REST API for: 
