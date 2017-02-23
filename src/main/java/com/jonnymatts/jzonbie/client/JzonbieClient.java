@@ -7,54 +7,13 @@ import com.jonnymatts.jzonbie.model.ZombiePriming;
 
 import java.util.List;
 
-import static java.util.Collections.singletonMap;
+public interface JzonbieClient {
 
-public class JzonbieClient {
+    ZombiePriming primeZombie(AppRequest request, AppResponse response);
 
-    private final JzonbieHttpClient httpClient;
+    List<PrimedMapping> getCurrentPriming();
 
-    public JzonbieClient(String zombieBaseUrl) {
-        this.httpClient = new ApacheJzonbieHttpClient(zombieBaseUrl);
-    }
+    List<ZombiePriming> getHistory();
 
-    public JzonbieClient(JzonbieHttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
-        return httpClient.primeZombie(request, response);
-    }
-
-    public List<PrimedMapping> getCurrentPriming() {
-        return httpClient.getCurrentPriming();
-    }
-
-    public List<ZombiePriming> getHistory() {
-        return httpClient.getHistory();
-    }
-
-    public void reset() {
-        httpClient.reset();
-    }
-
-    public static void main(String[] args) {
-        JzonbieClient client = new JzonbieClient("http://localhost:8080");
-
-        final AppRequest zombieRequest = AppRequest.builder("POST", "/blah")
-                .withBody(singletonMap("one", 1))
-                .build();
-
-        final AppResponse zombieResponse = AppResponse.builder(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(singletonMap("message", "Well done!"))
-                .build();
-
-        final List<PrimedMapping> currentPriming = client.getCurrentPriming();
-
-        final PrimedMapping mapping = currentPriming.get(0);
-
-        mapping.getAppRequest();
-
-        currentPriming.clear();
-    }
+    void reset();
 }

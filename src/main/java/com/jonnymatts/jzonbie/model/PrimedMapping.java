@@ -34,4 +34,23 @@ public class PrimedMapping {
     public void setAppResponses(List<AppResponse> appResponses) {
         this.appResponses = appResponses;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+
+        PrimedMapping that = (PrimedMapping) o;
+
+        if(appRequest != null ? !appRequest.equals(that.appRequest) : that.appRequest != null) return false;
+        return appResponses != null ? appResponses.equals(that.appResponses) : that.appResponses == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = appRequest != null ? appRequest.hashCode() : 0;
+        result = 31 * result + (appResponses != null ? appResponses.hashCode() : 0);
+        return result;
+    }
 }

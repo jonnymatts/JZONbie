@@ -15,7 +15,7 @@ import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
-public class ApacheJzonbieHttpClient implements JzonbieHttpClient {
+public class ApacheJzonbieHttpClient implements JzonbieClient {
 
     private final ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
     private final HttpClient httpClient;
