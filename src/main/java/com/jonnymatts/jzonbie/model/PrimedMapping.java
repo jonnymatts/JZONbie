@@ -1,14 +1,13 @@
 package com.jonnymatts.jzonbie.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
+import com.jonnymatts.jzonbie.response.DefaultingQueue;
 
 public class PrimedMapping {
 
     public PrimedMapping() {}
 
-    public PrimedMapping(AppRequest appRequest, List<AppResponse> appResponses) {
+    public PrimedMapping(AppRequest appRequest, DefaultingQueue<AppResponse> appResponses) {
         this.appRequest = appRequest;
         this.appResponses = appResponses;
     }
@@ -17,7 +16,7 @@ public class PrimedMapping {
     private AppRequest appRequest;
 
     @JsonProperty("responses")
-    private List<AppResponse> appResponses;
+    private DefaultingQueue<AppResponse> appResponses;
 
     public AppRequest getAppRequest() {
         return appRequest;
@@ -27,11 +26,11 @@ public class PrimedMapping {
         this.appRequest = appRequest;
     }
 
-    public List<AppResponse> getAppResponses() {
+    public DefaultingQueue<AppResponse> getAppResponses() {
         return appResponses;
     }
 
-    public void setAppResponses(List<AppResponse> appResponses) {
+    public void setAppResponses(DefaultingQueue<AppResponse> appResponses) {
         this.appResponses = appResponses;
     }
 

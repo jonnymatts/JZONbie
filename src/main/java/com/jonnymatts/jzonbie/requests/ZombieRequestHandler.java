@@ -1,7 +1,10 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
+import com.jonnymatts.jzonbie.model.PrimingContext;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
@@ -40,6 +43,8 @@ public class ZombieRequestHandler implements RequestHandler {
         switch(zombieHeaderValue) {
             case "priming":
                 return handlePrimingRequest(request);
+            case "priming-default":
+                return handleDefaultPrimingRequest(request);
             case "list":
                 return handleListRequest();
             case "history":
@@ -52,19 +57,17 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     private ZombieResponse handlePrimingRequest(Request request) throws JsonProcessingException {
-        final ZombiePriming zombiePriming = deserializer.deserialize(request, ZombiePriming.class);
-        final AppRequest zombieRequest = zombiePriming.getAppRequest();
-        final AppResponse zombieResponse = zombiePriming.getAppResponse();
+        final ZombiePriming zombiePriming = getZombiePriming(request);
 
-        if(zombieRequest.getMethod() == null) {
-            throw new IllegalArgumentException("Method cannot be null");
-        }
+        primingContext.add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
 
-        if(zombieRequest.getPath() == null) {
-            throw new IllegalArgumentException("Path cannot be null");
-        }
+        return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
+    }
 
-        primingContext.add(zombieRequest, zombieResponse);
+    private ZombieResponse handleDefaultPrimingRequest(Request request) throws JsonProcessingException {
+        final ZombiePriming zombiePriming = getZombiePriming(request);
+
+        primingContext.addDefault(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
 
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
@@ -81,6 +84,20 @@ public class ZombieRequestHandler implements RequestHandler {
         primingContext.clear();
         callHistory.clear();
         return new ZombieResponse(OK_200, emptyMap(), "Zombie Reset");
+    }
+
+    private ZombiePriming getZombiePriming(Request request) {
+        final ZombiePriming zombiePriming = deserializer.deserialize(request, ZombiePriming.class);
+        final AppRequest zombieRequest = zombiePriming.getAppRequest();
+
+        if(zombieRequest.getMethod() == null) {
+            throw new IllegalArgumentException("Method cannot be null");
+        }
+
+        if(zombieRequest.getPath() == null) {
+            throw new IllegalArgumentException("Path cannot be null");
+        }
+        return zombiePriming;
     }
 
     private class ZombieResponse implements Response {

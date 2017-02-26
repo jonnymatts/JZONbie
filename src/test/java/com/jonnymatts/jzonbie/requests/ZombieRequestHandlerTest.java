@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.junit.Before;
@@ -17,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 
 import static java.util.Collections.singletonMap;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
@@ -47,13 +49,23 @@ public class ZombieRequestHandlerTest {
 
     @Fixture private List<ZombiePriming> callHistory;
 
-    @Fixture private List<PrimedMapping> primedRequests;
+    @Fixture private List<AppRequest> appRequests;
+
+    @Fixture private List<AppResponse> appResponses;
+
+    private DefaultingQueue<AppResponse> defaultingQueue;
+
+    private List<PrimedMapping> primedRequests;
 
     private ZombieRequestHandler zombieRequestHandler;
 
     @Before
     public void setUp() throws Exception {
         zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
+        defaultingQueue = new DefaultingQueue<AppResponse>(){{
+            add(appResponses);
+        }};
+        primedRequests = appRequests.stream().map(request -> new PrimedMapping(request, defaultingQueue)).collect(toList());
 
         when(zombiePriming.getAppRequest()).thenReturn(zombieRequest);
         when(zombiePriming.getAppResponse()).thenReturn(zombieResponse);
@@ -73,6 +85,22 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getBody()).isEqualTo(zombiePriming);
 
         verify(primingContext).add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
+    }
+
+    @Test
+    public void handleAddsDefaultRequestToPrimingContextIfZombieHeaderHasDefaultPrimingValue() throws JsonProcessingException {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-default"));
+        when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
+        when(zombieRequest.getPath()).thenReturn("path");
+        when(zombieRequest.getMethod()).thenReturn("method");
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(CREATED_201);
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(zombiePriming);
+
+        verify(primingContext).addDefault(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
     }
 
     @Test(expected = IllegalArgumentException.class)

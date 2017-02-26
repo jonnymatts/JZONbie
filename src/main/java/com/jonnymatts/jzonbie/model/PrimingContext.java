@@ -1,5 +1,7 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.response.DefaultingQueue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +32,7 @@ public class PrimingContext {
         primedMappings.add(
                 new PrimedMapping(
                         zombiePriming.getAppRequest(),
-                        new ArrayList<AppResponse>(){{
+                        new DefaultingQueue<AppResponse>(){{
                             add(zombiePriming.getAppResponse());
                         }}
                 )
@@ -42,24 +44,37 @@ public class PrimingContext {
         return add(new ZombiePriming(appRequest, appResponse));
     }
 
-    public Optional<AppResponse> getResponse(AppRequest appRequest) {
-        return findPrimedMappingForRequest(appRequest).flatMap(primedMapping -> {
-            final List<AppResponse> appResponses = primedMapping.getAppResponses();
-            return appResponses.stream()
-                    .findFirst()
-                    .map(response -> removeResponseFromPriming(response, primedMapping));
-        });
+    public PrimingContext addDefault(ZombiePriming zombiePriming) {
+        final Optional<PrimedMapping> existingPrimedMappingForAppRequest = findPrimedMappingForRequest(zombiePriming.getAppRequest());
+
+        if (existingPrimedMappingForAppRequest.isPresent()) {
+            existingPrimedMappingForAppRequest.get().getAppResponses().setDefault(zombiePriming.getAppResponse());
+            return this;
+        }
+
+        primedMappings.add(
+                new PrimedMapping(
+                        zombiePriming.getAppRequest(),
+                        new DefaultingQueue<AppResponse>(){{
+                            setDefault(zombiePriming.getAppResponse());
+                        }}
+                )
+        );
+        return this;
     }
 
-    private AppResponse removeResponseFromPriming(AppResponse appResponse, PrimedMapping primedMapping) {
-        final List<AppResponse> appResponses = primedMapping.getAppResponses();
+    public PrimingContext addDefault(AppRequest appRequest, AppResponse appResponse) {
+        return addDefault(new ZombiePriming(appRequest, appResponse));
+    }
 
-        appResponses.remove(appResponse);
-
-        if(appResponses.size() < 1)
-            primedMappings.remove(primedMapping);
-
-        return appResponse;
+    public Optional<AppResponse> getResponse(AppRequest appRequest) {
+        final Optional<PrimedMapping> primedMappingOpt = findPrimedMappingForRequest(appRequest);
+        return primedMappingOpt.map(primedMapping -> {
+            final DefaultingQueue<AppResponse> appResponses = primedMapping.getAppResponses();
+            final AppResponse appResponse = appResponses.poll();
+            if(appResponses.hasSize() == 0 && !appResponses.getDefault().isPresent()) primedMappings.remove(primedMapping);
+            return appResponse;
+        });
     }
 
     private Optional<PrimedMapping> findPrimedMappingForRequest(AppRequest appRequest) {

@@ -71,6 +71,25 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
+    public void testPrimingDefault() throws Exception {
+        final Response pippoResponse = given()
+                .header("zombie", "priming-default")
+                .contentType(ContentType.JSON)
+                .body(objectMapper.writeValueAsString(zombiePriming))
+                .post("/");
+        pippoResponse.then().statusCode(201);
+        pippoResponse.then().contentType(ContentType.JSON);
+        pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
+        pippoResponse.then().body("response.statusCode", equalTo(appResponse.getStatusCode()));
+
+        assertThat(primingContext.getCurrentPriming()).hasSize(1);
+
+        final PrimedMapping mapping = primingContext.getCurrentPriming().get(0);
+
+        assertThat(mapping.getAppResponses().getDefault().isPresent()).isTrue();
+    }
+
+    @Test
     public void testList() throws Exception {
         primingContext.add(zombiePriming);
 

@@ -43,7 +43,7 @@ public class PrimedMappingFactoryTest {
             final PrimedMapping primedRequest = primedRequests.get(i);
 
             assertThat(primedRequest.getAppRequest()).isEqualTo(entry.getKey());
-            assertThat(primedRequest.getAppResponses()).isEqualTo(entry.getValue());
+            assertThat(primedRequest.getAppResponses().getEntries()).containsExactlyElementsOf(entry.getValue());
         }
     }
 
