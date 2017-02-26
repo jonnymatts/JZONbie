@@ -98,6 +98,6 @@ public class DefaultingQueueTest {
 
         final Optional<Integer> got = queue.getDefault();
 
-        assertThat(got.get()).isEqualTo(1);
+        assertThat(got).contains(1);
     }
 }

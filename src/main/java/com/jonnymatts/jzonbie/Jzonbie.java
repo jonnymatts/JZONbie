@@ -50,6 +50,13 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
+    public ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response) {
+        final ZombiePriming zombiePriming = new ZombiePriming(request, response);
+        primingContext.addDefault(zombiePriming);
+        return zombiePriming;
+    }
+
+    @Override
     public List<PrimedMapping> getCurrentPriming() {
         return primingContext.getCurrentPriming();
     }

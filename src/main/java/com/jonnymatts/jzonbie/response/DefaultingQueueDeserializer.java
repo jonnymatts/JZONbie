@@ -32,21 +32,27 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
     public DefaultingQueue<AppResponse> deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
 
-        final List<AppResponse> appResponses = StreamSupport.stream(node.spliterator(), false)
-                .map(appResponseNode -> {
-                    final AppResponseBuilder builder = AppResponse.builder(appResponseNode.get("statusCode").intValue())
-                            .withBody((Map<String, Object>) convertJsonNodeToObject(appResponseNode.get("body")));
-                    final Map<String, String> headers = (Map<String, String>) convertJsonNodeToObject(appResponseNode.get("headers"));
-                    if(headers != null) {
-                        headers.entrySet().forEach(e -> builder.withHeader(e.getKey(), e.getValue()));
-                    }
-                    return builder.build();
-                })
+        final JsonNode defaultNode = node.get("default");
+        final AppResponse defaultValue = (defaultNode instanceof NullNode) ? null : convertObjectNodeToAppResponse(defaultNode);
+
+        final List<AppResponse> appResponses = StreamSupport.stream(node.get("responses").spliterator(), false)
+                .map(queueNode -> convertObjectNodeToAppResponse(queueNode))
                 .collect(toList());
 
         return new DefaultingQueue<AppResponse>(){{
             add(appResponses);
+            setDefault(defaultValue);
         }};
+    }
+
+    private AppResponse convertObjectNodeToAppResponse(JsonNode queueNode) {
+        final AppResponseBuilder builder = AppResponse.builder(queueNode.get("statusCode").intValue())
+                .withBody((Map<String, Object>) convertJsonNodeToObject(queueNode.get("body")));
+        final Map<String, String> headers = (Map<String, String>) convertJsonNodeToObject(queueNode.get("headers"));
+        if(headers != null) {
+            headers.entrySet().forEach(e -> builder.withHeader(e.getKey(), e.getValue()));
+        }
+        return builder.build();
     }
 
     private Map<String, Object> getMapFromObjectNode(ObjectNode objectNode) {
@@ -66,6 +72,7 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
     }
 
     private Object convertJsonNodeToObject(JsonNode node) {
+        if(node == null) return null;
         if(node instanceof NullNode) return null;
         if(node instanceof TextNode) return node.textValue();
         if(node instanceof IntNode) return node.intValue();

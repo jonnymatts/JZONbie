@@ -19,7 +19,9 @@ public class DefaultingQueueSerializer extends StdSerializer<DefaultingQueue<App
 
     @Override
     public void serialize(DefaultingQueue<AppResponse> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeStartArray();
+        gen.writeStartObject();
+        gen.writeObjectField("default", value.getDefault().orElse(null));
+        gen.writeArrayFieldStart("responses");
         for(AppResponse appResponse : value.getEntries()) {
             gen.writeStartObject();
             gen.writeNumberField("statusCode", appResponse.getStatusCode());
@@ -28,5 +30,6 @@ public class DefaultingQueueSerializer extends StdSerializer<DefaultingQueue<App
             gen.writeEndObject();
         }
         gen.writeEndArray();
+        gen.writeEndObject();
     }
 }

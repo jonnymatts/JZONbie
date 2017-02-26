@@ -25,6 +25,10 @@ public class JzonbieHttpClient {
         return httpClient.primeZombie(request, response);
     }
 
+    public ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response) {
+        return httpClient.primeZombieForDefault(request, response);
+    }
+
     public List<PrimedMapping> getCurrentPriming() {
         return httpClient.getCurrentPriming();
     }

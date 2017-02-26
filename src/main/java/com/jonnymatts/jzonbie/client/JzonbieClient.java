@@ -11,6 +11,8 @@ public interface JzonbieClient {
 
     ZombiePriming primeZombie(AppRequest request, AppResponse response);
 
+    ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response);
+
     List<PrimedMapping> getCurrentPriming();
 
     List<ZombiePriming> getHistory();

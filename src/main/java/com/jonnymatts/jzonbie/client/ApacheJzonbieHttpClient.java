@@ -45,6 +45,13 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
+    public ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response) {
+        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, response);
+        final HttpResponse httpResponse = execute(primeZombieRequest);
+        return deserializer.deserialize(httpResponse, ZombiePriming.class);
+    }
+
+    @Override
     public List<PrimedMapping> getCurrentPriming() {
         final HttpUriRequest getCurrentPrimingRequest = apacheJzonbieRequestFactory.createGetCurrentPrimingRequest();
         final HttpResponse httpResponse = execute(getCurrentPrimingRequest);

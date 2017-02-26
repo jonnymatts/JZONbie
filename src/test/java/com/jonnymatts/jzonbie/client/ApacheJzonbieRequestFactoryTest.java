@@ -76,6 +76,18 @@ public class ApacheJzonbieRequestFactoryTest {
     }
 
     @Test
+    public void createPrimeZombieForDefaultRequest() throws Exception {
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, appResponse))).thenReturn(entityString);
+
+        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieForDefaultRequest(appRequest, appResponse);
+
+        assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
+        assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(primeZombieRequest, "priming-default");
+        assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
+    }
+
+    @Test
     public void createGetCurrentPrimingRequest() throws Exception {
         final HttpUriRequest getCurrentPrimingRequest = requestFactory.createGetCurrentPrimingRequest();
 

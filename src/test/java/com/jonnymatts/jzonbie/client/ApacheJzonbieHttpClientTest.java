@@ -63,6 +63,19 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
+    public void primeZombieForDefaultReturnsPrimingRequest() throws Exception {
+        final ZombiePriming zombiePriming = new ZombiePriming();
+
+        when(apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(appRequest, appResponse)).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
+
+        final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, appResponse);
+
+        assertThat(got).isEqualTo(zombiePriming);
+    }
+
+    @Test
     public void primeZombieThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
         when(apacheJzonbieRequestFactory.createPrimeZombieRequest(appRequest, appResponse)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);

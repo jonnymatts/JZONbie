@@ -26,16 +26,12 @@ public class ApacheJzonbieRequestFactory {
         this.objectMapper = objectMapper;
     }
 
-    public HttpUriRequest createPrimeZombieRequest(AppRequest zombieRequest, AppResponse zombieResponse) {
-        final ZombiePriming zombiePriming = new ZombiePriming(zombieRequest, zombieResponse);
-        try {
-            return RequestBuilder.post(zombieBaseUrl)
-                    .addHeader("zombie", "priming")
-                    .setEntity(new StringEntity(objectMapper.writeValueAsString(zombiePriming)))
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public HttpUriRequest createPrimeZombieRequest(AppRequest appRequest, AppResponse appResponse) {
+        return createPrimingRequest(appRequest, appResponse, "priming");
+    }
+
+    public HttpUriRequest createPrimeZombieForDefaultRequest(AppRequest appRequest, AppResponse appResponse) {
+        return createPrimingRequest(appRequest, appResponse, "priming-default");
     }
 
     public HttpUriRequest createGetCurrentPrimingRequest() {
@@ -54,5 +50,17 @@ public class ApacheJzonbieRequestFactory {
         return RequestBuilder.delete(zombieBaseUrl)
                 .addHeader("zombie", "reset")
                 .build();
+    }
+
+    private HttpUriRequest createPrimingRequest(AppRequest appRequest, AppResponse appResponse, String zombieHeader) {
+        final ZombiePriming zombiePriming = new ZombiePriming(appRequest, appResponse);
+        try {
+            return RequestBuilder.post(zombieBaseUrl)
+                    .addHeader("zombie", zombieHeader)
+                    .setEntity(new StringEntity(objectMapper.writeValueAsString(zombiePriming)))
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -46,4 +46,23 @@ public class JzonbieTest {
         assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
         assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
     }
+
+    @Test
+    public void jzonbieCanBePrimedForDefault() throws Exception {
+        final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
+                AppRequest.builder("GET", "/").build(),
+                AppResponse.builder(200).withBody(singletonMap("key", "val")).build()
+        );
+
+        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+
+        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
+    }
 }

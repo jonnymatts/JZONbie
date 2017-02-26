@@ -25,6 +25,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PippoApplicationTest extends PippoTest {
@@ -100,7 +101,8 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(200);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo(appRequest.getPath()));
-        pippoResponse.then().body("[0].responses[0].statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("[0].responses.default", nullValue());
+        pippoResponse.then().body("[0].responses.responses[0].statusCode", equalTo(appResponse.getStatusCode()));
     }
 
     @Test

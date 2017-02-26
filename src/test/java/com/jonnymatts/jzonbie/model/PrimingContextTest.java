@@ -134,7 +134,7 @@ public class PrimingContextTest {
 
         final PrimedMapping primedMapping = currentPriming.get(0);
 
-        assertThat(primedMapping.getAppResponses().getDefault().get()).isEqualTo(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class PrimingContextTest {
 
         final PrimedMapping primedMapping = currentPriming.get(0);
 
-        assertThat(primedMapping.getAppResponses().getDefault().get()).isEqualTo(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
     }
 
     @Test
@@ -160,7 +160,7 @@ public class PrimingContextTest {
 
         final PrimedMapping primedMapping = currentPriming.get(0);
 
-        assertThat(primedMapping.getAppResponses().getDefault().get()).isEqualTo(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
     }
 
     @Test
@@ -177,7 +177,7 @@ public class PrimingContextTest {
         final Optional<AppResponse> got = primingContext.getResponse(zombiePriming.getAppRequest());
 
         assertThat(got.isPresent()).isTrue();
-        assertThat(got.get()).isEqualTo(zombiePriming.getAppResponse());
+        assertThat(got).contains(zombiePriming.getAppResponse());
     }
 
     @Test
