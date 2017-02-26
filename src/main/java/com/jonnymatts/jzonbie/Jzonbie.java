@@ -15,26 +15,31 @@ import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
 public class Jzonbie implements JzonbieClient {
 
-    private final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
-    private final Deserializer deserializer = new Deserializer(objectMapper);
     private final PrimingContext primingContext = new PrimingContext();
     private final List<ZombiePriming> callHistory = new ArrayList<>();
-    private final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
-    private final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
-    private final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
-    private final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
-    private final Pippo pippo = new Pippo(new PippoApplication(appRequestHandler, zombieRequestHandler, objectMapper));
+    private final Pippo pippo;
 
     public Jzonbie() {
-        this(0);
+        this(options());
     }
 
-    public Jzonbie(int port) {
+    public Jzonbie(JzonbieOptions options) {
+        final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
+        final Deserializer deserializer = new Deserializer(objectMapper);
+        final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
+        final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, primedMappingFactory);
+
+        pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, objectMapper));
+
+
         pippo.setServer(new JzonbieJettyServer());
-        pippo.getServer().setPort(port).getSettings().host("0.0.0.0");
+        pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");
         pippo.start();
     }
 

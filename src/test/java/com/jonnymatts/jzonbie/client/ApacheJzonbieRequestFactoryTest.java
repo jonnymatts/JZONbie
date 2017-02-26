@@ -61,7 +61,7 @@ public class ApacheJzonbieRequestFactoryTest {
 
         assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(primeZombieRequest, "priming");
+        assertZombieHeader(primeZombieRequest, "zombie", "priming");
         assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
     }
 
@@ -83,7 +83,7 @@ public class ApacheJzonbieRequestFactoryTest {
 
         assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(primeZombieRequest, "priming-default");
+        assertZombieHeader(primeZombieRequest, "zombie", "priming-default");
         assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
     }
 
@@ -93,7 +93,7 @@ public class ApacheJzonbieRequestFactoryTest {
 
         assertThat(getCurrentPrimingRequest.getMethod()).isEqualTo("GET");
         assertThat(getCurrentPrimingRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(getCurrentPrimingRequest, "list");
+        assertZombieHeader(getCurrentPrimingRequest, "zombie", "list");
     }
 
     @Test
@@ -102,9 +102,8 @@ public class ApacheJzonbieRequestFactoryTest {
 
         assertThat(getHistoryRequest.getMethod()).isEqualTo("GET");
         assertThat(getHistoryRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(getHistoryRequest, "history");
+        assertZombieHeader(getHistoryRequest, "zombie", "history");
     }
-
 
     @Test
     public void createResetRequest() throws Exception {
@@ -112,7 +111,19 @@ public class ApacheJzonbieRequestFactoryTest {
 
         assertThat(resetRequest.getMethod()).isEqualTo("DELETE");
         assertThat(resetRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(resetRequest, "reset");
+        assertZombieHeader(resetRequest, "zombie", "reset");
+    }
+
+    @Test
+    public void zombieHeaderNameCanBeSetByConstructor() throws Exception {
+        final String zombieHeaderName = "jzonbie";
+        requestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, zombieHeaderName, objectMapper);
+
+        final HttpUriRequest resetRequest = requestFactory.createResetRequest();
+
+        assertThat(resetRequest.getMethod()).isEqualTo("DELETE");
+        assertThat(resetRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(resetRequest, zombieHeaderName, "reset");
     }
 
     private void assertRequestBodyIsEqualTo(HttpUriRequest primeZombieRequest, String entityString) throws IOException {
@@ -120,8 +131,8 @@ public class ApacheJzonbieRequestFactoryTest {
         assertThat(EntityUtils.toString(request.getEntity())).isEqualTo(entityString);
     }
 
-    private void assertZombieHeader(HttpUriRequest primeZombieRequest, String zombieHeaderValue) {
-        final Header[] zombieHeaders = primeZombieRequest.getHeaders("zombie");
+    private void assertZombieHeader(HttpUriRequest primeZombieRequest, String zombieHeaderName, String zombieHeaderValue) {
+        final Header[] zombieHeaders = primeZombieRequest.getHeaders(zombieHeaderName);
         assertThat(zombieHeaders).hasSize(1);
         final Header zombieHeader = zombieHeaders[0];
         assertThat(zombieHeader.getValue()).isEqualTo(zombieHeaderValue);

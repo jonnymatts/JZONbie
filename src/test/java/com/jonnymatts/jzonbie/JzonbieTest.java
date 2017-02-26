@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -64,5 +65,33 @@ public class JzonbieTest {
 
         assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
         assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
+    }
+
+
+    @Test
+    public void zombieHeaderNameCanBeSet() throws Exception {
+        final String zombieHeaderName = "jzonbie";
+        final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
+
+        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.primeZombie(
+                AppRequest.builder("GET", "/").build(),
+                AppResponse.builder(200).withBody(singletonMap("key", "val")).build()
+        );
+
+        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient(
+                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
+                zombieHeaderName
+        );
+
+        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+
+        jzonbieWithZombieHeaderNameSet.stop();
     }
 }

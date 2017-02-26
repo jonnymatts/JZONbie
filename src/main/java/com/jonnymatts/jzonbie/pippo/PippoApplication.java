@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
 import com.jonnymatts.jzonbie.requests.RequestHandler;
@@ -23,14 +24,17 @@ public class PippoApplication extends Application {
     private final AppRequestHandler appRequestHandler;
     private final ZombieRequestHandler zombieRequestHandler;
     private final ObjectMapper objectMapper;
+    private final String zombieHeaderName;
 
-    public PippoApplication(AppRequestHandler appRequestHandler,
+    public PippoApplication(JzonbieOptions options,
+                            AppRequestHandler appRequestHandler,
                             ZombieRequestHandler zombieRequestHandler,
                             ObjectMapper objectMapper) {
 
         this.appRequestHandler = appRequestHandler;
         this.zombieRequestHandler = zombieRequestHandler;
         this.objectMapper = objectMapper;
+        this.zombieHeaderName = options.getZombieHeaderName();
     }
 
     @Override
@@ -42,7 +46,7 @@ public class PippoApplication extends Application {
         final PippoRequest pippoRequest = new PippoRequest(routeContext.getRequest());
         final ro.pippo.core.Response pippoResponse = routeContext.getResponse();
 
-        final String zombieHeader = pippoRequest.getHeaders().get("zombie");
+        final String zombieHeader = pippoRequest.getHeaders().get(zombieHeaderName);
 
         final RequestHandler requestHandler = zombieHeader != null ?
                 zombieRequestHandler : appRequestHandler;

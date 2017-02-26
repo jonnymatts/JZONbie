@@ -17,6 +17,11 @@ public class JzonbieHttpClient {
         this.httpClient = new ApacheJzonbieHttpClient(zombieBaseUrl);
     }
 
+    public JzonbieHttpClient(String zombieBaseUrl,
+                             String zombieHeaderName) {
+        this.httpClient = new ApacheJzonbieHttpClient(zombieBaseUrl, zombieHeaderName);
+    }
+
     public JzonbieHttpClient(JzonbieClient httpClient) {
         this.httpClient = httpClient;
     }

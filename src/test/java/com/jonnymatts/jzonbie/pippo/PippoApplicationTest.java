@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
@@ -35,14 +36,14 @@ public class PippoApplicationTest extends PippoTest {
     private static final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     private static final Deserializer deserializer = new Deserializer(objectMapper);
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, new AppRequestFactory(deserializer));
-    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, new PrimedMappingFactory());
+    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new PrimedMappingFactory());
 
     private AppRequest appRequest;
     private AppResponse appResponse;
     private ZombiePriming zombiePriming;
 
     @ClassRule
-    public static PippoRule pippoRule = new PippoRule(new PippoApplication(appRequestHandler, zombieRequestHandler, objectMapper));
+    public static PippoRule pippoRule = new PippoRule(new PippoApplication(JzonbieOptions.options(), appRequestHandler, zombieRequestHandler, objectMapper));
 
 
     @Before

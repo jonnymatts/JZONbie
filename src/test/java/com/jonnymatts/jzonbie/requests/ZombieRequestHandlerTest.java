@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie.requests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
@@ -53,6 +54,8 @@ public class ZombieRequestHandlerTest {
 
     @Fixture private List<AppResponse> appResponses;
 
+    @Fixture private JzonbieOptions jzonbieOptions;
+
     private DefaultingQueue<AppResponse> defaultingQueue;
 
     private List<PrimedMapping> primedRequests;
@@ -61,7 +64,7 @@ public class ZombieRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        zombieRequestHandler = new ZombieRequestHandler(primingContext, callHistory, deserializer, primedMappingFactory);
+        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, primedMappingFactory);
         defaultingQueue = new DefaultingQueue<AppResponse>(){{
             add(appResponses);
         }};
@@ -167,5 +170,18 @@ public class ZombieRequestHandlerTest {
         expectedException.expectMessage("unknownValue");
 
         zombieRequestHandler.handle(request);
+    }
+
+    @Test
+    public void zombieHeaderNameCanBeSet() throws JsonProcessingException {
+        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, primedMappingFactory);
+
+        when(request.getHeaders()).thenReturn(singletonMap(jzonbieOptions.getZombieHeaderName(), "history"));
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(OK_200);
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(callHistory);
     }
 }

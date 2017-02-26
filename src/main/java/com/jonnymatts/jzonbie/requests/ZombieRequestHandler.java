@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
 import com.jonnymatts.jzonbie.model.PrimingContext;
@@ -25,8 +26,10 @@ public class ZombieRequestHandler implements RequestHandler {
     private final List<ZombiePriming> callHistory;
     private final Deserializer deserializer;
     private final PrimedMappingFactory primedMappingFactory;
+    private final String zombieHeaderName;
 
-    public ZombieRequestHandler(PrimingContext primingContext,
+    public ZombieRequestHandler(JzonbieOptions options,
+                                PrimingContext primingContext,
                                 List<ZombiePriming> callHistory,
                                 Deserializer deserializer,
                                 PrimedMappingFactory primedMappingFactory) {
@@ -34,11 +37,12 @@ public class ZombieRequestHandler implements RequestHandler {
         this.callHistory = callHistory;
         this.deserializer = deserializer;
         this.primedMappingFactory = primedMappingFactory;
+        this.zombieHeaderName = options.getZombieHeaderName();
     }
 
     @Override
     public Response handle(Request request) throws JsonProcessingException {
-        final String zombieHeaderValue = request.getHeaders().get("zombie");
+        final String zombieHeaderValue = request.getHeaders().get(zombieHeaderName);
 
         switch(zombieHeaderValue) {
             case "priming":

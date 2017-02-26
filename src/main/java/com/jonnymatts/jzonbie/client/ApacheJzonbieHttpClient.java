@@ -29,6 +29,15 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         this.deserializer = new Deserializer(objectMapper);
     }
 
+    public ApacheJzonbieHttpClient(String zombieBaseUrl,
+                                   String zombieHeaderName) {
+        final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(NON_NULL);
+
+        this.apacheJzonbieRequestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, zombieHeaderName, objectMapper);
+        this.httpClient = HttpClientBuilder.create().build();
+        this.deserializer = new Deserializer(objectMapper);
+    }
+
     public ApacheJzonbieHttpClient(HttpClient httpClient,
                                    ApacheJzonbieRequestFactory apacheJzonbieRequestFactory,
                                    Deserializer deserializer) {
