@@ -35,7 +35,7 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
         final JsonNode defaultNode = node.get("default");
         final AppResponse defaultValue = (defaultNode instanceof NullNode) ? null : convertObjectNodeToAppResponse(defaultNode);
 
-        final List<AppResponse> appResponses = StreamSupport.stream(node.get("responses").spliterator(), false)
+        final List<AppResponse> appResponses = StreamSupport.stream(node.get("primed").spliterator(), false)
                 .map(queueNode -> convertObjectNodeToAppResponse(queueNode))
                 .collect(toList());
 

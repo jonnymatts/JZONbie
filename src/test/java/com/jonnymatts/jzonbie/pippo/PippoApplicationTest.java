@@ -102,7 +102,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo(appRequest.getPath()));
         pippoResponse.then().body("[0].responses.default", nullValue());
-        pippoResponse.then().body("[0].responses.responses[0].statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(appResponse.getStatusCode()));
     }
 
     @Test

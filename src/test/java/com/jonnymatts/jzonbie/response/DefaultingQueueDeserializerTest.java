@@ -41,7 +41,7 @@ public class DefaultingQueueDeserializerTest {
         final DefaultingQueueDeserializer deserializer = new DefaultingQueueDeserializer();
         final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
             put("default", NullNode.instance);
-            put("responses", new ArrayNode(instance, emptyList()));
+            put("primed", new ArrayNode(instance, emptyList()));
         }});
 
         when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
@@ -59,7 +59,7 @@ public class DefaultingQueueDeserializerTest {
 
         final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
             put("default", NullNode.instance);
-            put("responses", arrayNode);
+            put("primed", arrayNode);
         }});
 
         when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
@@ -75,7 +75,7 @@ public class DefaultingQueueDeserializerTest {
         final DefaultingQueueDeserializer deserializer = new DefaultingQueueDeserializer();
         final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
             put("default", new ObjectNode(instance, APP_RESPONSE_NODE_MAP));
-            put("responses", new ArrayNode(instance, emptyList()));
+            put("primed", new ArrayNode(instance, emptyList()));
         }});
 
         when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
@@ -94,7 +94,7 @@ public class DefaultingQueueDeserializerTest {
 
         final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
             put("default", new ObjectNode(instance, copy));
-            put("responses", new ArrayNode(instance, emptyList()));
+            put("primed", new ArrayNode(instance, emptyList()));
         }});
 
         when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
