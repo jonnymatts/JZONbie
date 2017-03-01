@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
@@ -10,16 +11,21 @@ import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.response.ErrorResponse;
 import com.jonnymatts.jzonbie.response.PrimingNotFoundErrorResponse;
 import com.jonnymatts.jzonbie.response.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ro.pippo.core.Application;
 import ro.pippo.core.route.RouteContext;
 
 import java.util.Map;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class PippoApplication extends Application {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PippoApplication.class);
 
     private final AppRequestHandler appRequestHandler;
     private final ZombieRequestHandler zombieRequestHandler;
@@ -43,6 +49,7 @@ public class PippoApplication extends Application {
     }
 
     private void handleRequest(RouteContext routeContext) {
+        final Stopwatch stopwatch = Stopwatch.createStarted();
         final PippoRequest pippoRequest = new PippoRequest(routeContext.getRequest());
         final ro.pippo.core.Response pippoResponse = routeContext.getResponse();
 
@@ -56,9 +63,14 @@ public class PippoApplication extends Application {
             primeResponse(pippoResponse, response);
             routeContext.send(objectMapper.writeValueAsString(response.getBody()));
         } catch (PrimingNotFoundException e) {
+            LOGGER.error("Priming not found", e);
             sendErrorResponse(routeContext, SC_NOT_FOUND, new PrimingNotFoundErrorResponse(e.getRequest()));
         } catch (Exception e) {
+            LOGGER.error("Exception occurred: " + e.getClass().getSimpleName(), e);
             sendErrorResponse(routeContext, SC_INTERNAL_SERVER_ERROR, new ErrorResponse(format("Error occurred: %s - %s", e.getClass().getName(), e.getMessage())));
+        } finally {
+            stopwatch.stop();
+            LOGGER.debug("Handled request {} in {} ms", pippoRequest, stopwatch.elapsed(MILLISECONDS));
         }
     }
 

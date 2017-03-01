@@ -21,8 +21,12 @@ public class Deserializer {
     }
 
     public <T> T deserialize(Request request, Class<T> clazz) {
+        return deserialize(request.getBody(), clazz);
+    }
+
+    public <T> T deserialize(String s, Class<T> clazz) {
         try {
-            return objectMapper.readValue(request.getBody(), clazz);
+            return objectMapper.readValue(s, clazz);
         } catch (IOException e) {
             throw new DeserializationException(String.format("Error deserializing %s", clazz.getSimpleName()), e);
         }

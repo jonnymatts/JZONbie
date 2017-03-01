@@ -1,5 +1,8 @@
 package com.jonnymatts.jzonbie.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.function.Supplier;
 
 public abstract class DefaultResponse<T> {
@@ -8,12 +11,13 @@ public abstract class DefaultResponse<T> {
 
     public abstract T getResponse();
 
+    @JsonIgnore
     public abstract boolean isDynamic();
 
     public static class StaticDefaultResponse<T> extends DefaultResponse<T> {
         private T response;
 
-        public StaticDefaultResponse(T response) {
+        public StaticDefaultResponse(@JsonProperty("response") T response) {
             this.response = response;
         }
 

@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.client.JzonbieClient;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
@@ -13,9 +14,9 @@ import ro.pippo.core.Pippo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
 public class Jzonbie implements JzonbieClient {
@@ -23,20 +24,22 @@ public class Jzonbie implements JzonbieClient {
     private final PrimingContext primingContext = new PrimingContext();
     private final List<ZombiePriming> callHistory = new ArrayList<>();
     private final Pippo pippo;
+    public Deserializer deserializer;
+    public ObjectMapper objectMapper;
 
     public Jzonbie() {
         this(options());
     }
 
     public Jzonbie(JzonbieOptions options) {
-        final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
-        final Deserializer deserializer = new Deserializer(objectMapper);
+        objectMapper = options.getObjectMapper().setSerializationInclusion(NON_NULL);
+        deserializer = new Deserializer(objectMapper);
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
         final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, primedMappingFactory);
 
-        pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, objectMapper));
+        pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, options.getObjectMapper()));
 
 
         pippo.setServer(new JzonbieJettyServer());
@@ -51,17 +54,29 @@ public class Jzonbie implements JzonbieClient {
     @Override
     public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
         final ZombiePriming zombiePriming = new ZombiePriming(request, response);
-        primingContext.add(zombiePriming);
-        return zombiePriming;
+        final ZombiePriming deserialized = normalizeForPriming(zombiePriming, ZombiePriming.class);
+        primingContext.add(deserialized);
+        return deserialized;
     }
 
     @Override
     public ZombiePriming primeZombieForDefault(AppRequest request, DefaultResponse<AppResponse> defaultResponse) {
-        primingContext.addDefault(request, defaultResponse);
+        final AppRequest appRequest = normalizeForPriming(request, AppRequest.class);
+        final DefaultResponse<AppResponse> appResponse = defaultResponse.isDynamic() ? defaultResponse :
+                normalizeForPriming(defaultResponse, DefaultResponse.StaticDefaultResponse.class);
+
+        primingContext.addDefault(appRequest, appResponse);
 
         final AppResponse returnResponse = defaultResponse.isDynamic() ? null : defaultResponse.getResponse();
-
         return new ZombiePriming(request, returnResponse);
+    }
+
+    private <T> T normalizeForPriming(T appRequest, Class<? extends T> clazz) {
+        try {
+            return deserializer.deserialize(objectMapper.writeValueAsString(appRequest), clazz);
+        } catch(JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -82,5 +97,8 @@ public class Jzonbie implements JzonbieClient {
 
     public void stop() {
         pippo.stop();
+        try {
+            Thread.sleep(2000); // TODO: This should be made better, though NOTHING has worked so far. And we did a LOT
+        } catch(InterruptedException ignored) {}
     }
 }

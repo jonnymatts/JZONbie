@@ -126,6 +126,30 @@ public class AppRequestTest {
     }
 
     @Test
+    public void matchesReturnsTrueIfThisBodyIsEmptyMapAndThatBodyIsNull() throws Exception {
+        final Map<String, Object> appRequestBody = appRequest.getBody();
+        appRequestBody.clear();
+
+        final AppRequest copy = copyAppRequest(appRequest);
+
+        copy.setBody(null);
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfBothBodiesContainAValueOfTheSameNumberButOfDifferentTypes() throws Exception {
+        final Map<String, Object> appRequestBody = appRequest.getBody();
+        appRequestBody.clear();
+        appRequestBody.put("key", 10L);
+
+        final AppRequest copy = copyAppRequest(appRequest);
+        copy.getBody().put("key", 10);
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
     public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
         final AppRequest copy = copyAppRequest(appRequest);
         appRequest.getHeaders().put("var", "val");
@@ -186,13 +210,17 @@ public class AppRequestTest {
         assertThat(request.getHeaders()).containsKey("Authorization");
     }
 
-    private AppRequest copyAppRequest(AppRequest appRequest) {
+    static AppRequest copyAppRequest(AppRequest appRequest) {
         final AppRequest copy = new AppRequest();
         copy.setPath(appRequest.getPath());
         copy.setMethod(appRequest.getMethod());
-        copy.setQueryParams(new HashMap<>(appRequest.getQueryParams()));
-        copy.setHeaders(new HashMap<>(appRequest.getHeaders()));
-        copy.setBody(new HashMap<>(appRequest.getBody()));
+        copy.setQueryParams(copyMap(appRequest.getQueryParams()));
+        copy.setHeaders(copyMap(appRequest.getHeaders()));
+        copy.setBody(copyMap(appRequest.getBody()));
         return copy;
+    }
+
+    private static <K, V> HashMap<K, V> copyMap(Map<K, V> map) {
+        return map == null ? null : new HashMap<>(map);
     }
 }

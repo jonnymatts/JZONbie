@@ -2,13 +2,13 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '1.2.4'
     id "com.palantir.docker" version "0.11.0"
-//    id 'maven-publish'   // Uncomment to be able to publish to maven local
+    id 'maven-publish'   // Uncomment to be able to publish to maven local
     id 'maven'
     id 'signing'
 }
 
 group 'com.jonnymatts'
-version '1.2'
+version '2.0'
 
 sourceCompatibility = 1.8
 
@@ -30,6 +30,7 @@ dependencies {
     compile group: 'ro.pippo', name: 'pippo-core', version: '1.1.0'
     compile group: 'ro.pippo', name: 'pippo-jetty', version: '1.1.0'
     compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.1.0'
+    compile group: 'ch.qos.logback', name:'logback-classic', version : '1.2.1'
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.5.2'
@@ -57,15 +58,15 @@ artifacts {
 }
 
 // maven-publish plugin configuration
-//publishing {
-//    publications {
-//        mavenJava(MavenPublication) {
-//            from components.java
-//            artifact sourcesJar
-//            artifact javadocJar
-//        }
-//    }
-//}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
 
 // signing and maven plugin configuration. Run gradle with project property -Prelease to use these tasks
 // Ensure gradle.properties are set for signing key and sonatype credentials

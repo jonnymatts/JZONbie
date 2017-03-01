@@ -25,7 +25,7 @@ public class AppRequestBuilder {
         return this;
     }
 
-    public AppRequestBuilder withBody(Map<String, Object> body) {
+    public AppRequestBuilder withBody(Map<String, ?> body) {
         request.setBody(body);
         return this;
     }
