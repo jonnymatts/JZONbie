@@ -16,7 +16,7 @@ import static java.util.Optional.ofNullable;
 public class DefaultingQueue<T> {
 
     private final ArrayDeque<T> deque;
-    private T defaultElement;
+    private DefaultResponse<T> defaultResponse;
 
     public DefaultingQueue() {
         deque = new ArrayDeque<>();
@@ -24,7 +24,7 @@ public class DefaultingQueue<T> {
 
     public T poll() {
         final T dequeElement = deque.poll();
-        return dequeElement == null ? defaultElement : dequeElement;
+        return (dequeElement == null && defaultResponse != null) ? defaultResponse.getResponse() : dequeElement;
     }
 
     public void add(T element) {
@@ -43,17 +43,17 @@ public class DefaultingQueue<T> {
         return Lists.newArrayList(deque.iterator());
     }
 
-    public void setDefault(T defaultElement) {
-        this.defaultElement = defaultElement;
+    public void setDefault(DefaultResponse<T> defaultResponse) {
+        this.defaultResponse = defaultResponse;
     }
 
-    public Optional<T> getDefault() {
-        return ofNullable(defaultElement);
+    public Optional<DefaultResponse<T>> getDefault() {
+        return ofNullable(defaultResponse);
     }
 
     public void reset() {
         deque.clear();
-        defaultElement = null;
+        defaultResponse = null;
     }
 
     @Override
@@ -64,13 +64,13 @@ public class DefaultingQueue<T> {
         DefaultingQueue<?> that = (DefaultingQueue<?>) o;
 
         if (deque != null ? !deque.equals(that.deque) : that.deque != null) return false;
-        return defaultElement != null ? defaultElement.equals(that.defaultElement) : that.defaultElement == null;
+        return defaultResponse != null ? defaultResponse.equals(that.defaultResponse) : that.defaultResponse == null;
     }
 
     @Override
     public int hashCode() {
         int result = deque != null ? deque.hashCode() : 0;
-        result = 31 * result + (defaultElement != null ? defaultElement.hashCode() : 0);
+        result = 31 * result + (defaultResponse != null ? defaultResponse.hashCode() : 0);
         return result;
     }
 }

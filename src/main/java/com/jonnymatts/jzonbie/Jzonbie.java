@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.response.DefaultResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import ro.pippo.core.Pippo;
 
@@ -55,10 +56,12 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response) {
-        final ZombiePriming zombiePriming = new ZombiePriming(request, response);
-        primingContext.addDefault(zombiePriming);
-        return zombiePriming;
+    public ZombiePriming primeZombieForDefault(AppRequest request, DefaultResponse<AppResponse> defaultResponse) {
+        primingContext.addDefault(request, defaultResponse);
+
+        final AppResponse returnResponse = defaultResponse.isDynamic() ? null : defaultResponse.getResponse();
+
+        return new ZombiePriming(request, returnResponse);
     }
 
     @Override

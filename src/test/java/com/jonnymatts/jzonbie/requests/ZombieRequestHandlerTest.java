@@ -5,6 +5,7 @@ import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -103,7 +104,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(zombiePriming);
 
-        verify(primingContext).addDefault(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
+        verify(primingContext).addDefault(zombiePriming.getAppRequest(), new StaticDefaultResponse<>(zombiePriming.getAppResponse()));
     }
 
     @Test(expected = IllegalArgumentException.class)

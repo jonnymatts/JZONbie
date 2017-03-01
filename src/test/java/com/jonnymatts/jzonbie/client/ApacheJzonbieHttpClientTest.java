@@ -5,6 +5,7 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -70,7 +71,7 @@ public class ApacheJzonbieHttpClientTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, appResponse);
+        final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, new StaticDefaultResponse<>(appResponse));
 
         assertThat(got).isEqualTo(zombiePriming);
     }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.*;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.AppResponseBuilder;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -33,7 +34,8 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
         JsonNode node = jp.getCodec().readTree(jp);
 
         final JsonNode defaultNode = node.get("default");
-        final AppResponse defaultValue = (defaultNode instanceof NullNode) ? null : convertObjectNodeToAppResponse(defaultNode);
+        final DefaultResponse<AppResponse> defaultResponse = (defaultNode instanceof NullNode || defaultNode instanceof TextNode) ? null
+                : new StaticDefaultResponse<>(convertObjectNodeToAppResponse(defaultNode));
 
         final List<AppResponse> appResponses = StreamSupport.stream(node.get("primed").spliterator(), false)
                 .map(queueNode -> convertObjectNodeToAppResponse(queueNode))
@@ -41,7 +43,7 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
 
         return new DefaultingQueue<AppResponse>(){{
             add(appResponses);
-            setDefault(defaultValue);
+            setDefault(defaultResponse);
         }};
     }
 

@@ -6,6 +6,7 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
 import com.jonnymatts.jzonbie.model.PrimingContext;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
@@ -71,7 +72,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private ZombieResponse handleDefaultPrimingRequest(Request request) throws JsonProcessingException {
         final ZombiePriming zombiePriming = getZombiePriming(request);
 
-        primingContext.addDefault(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
+        primingContext.addDefault(zombiePriming.getAppRequest(), new StaticDefaultResponse<>(zombiePriming.getAppResponse()));
 
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }

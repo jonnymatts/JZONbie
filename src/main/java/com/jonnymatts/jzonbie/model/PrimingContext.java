@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.response.DefaultResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 
 import java.util.ArrayList;
@@ -44,27 +45,23 @@ public class PrimingContext {
         return add(new ZombiePriming(appRequest, appResponse));
     }
 
-    public PrimingContext addDefault(ZombiePriming zombiePriming) {
-        final Optional<PrimedMapping> existingPrimedMappingForAppRequest = findPrimedMappingForRequest(zombiePriming.getAppRequest());
+    public PrimingContext addDefault(AppRequest appRequest, DefaultResponse<AppResponse> defaultResponse) {
+        final Optional<PrimedMapping> existingPrimedMappingForAppRequest = findPrimedMappingForRequest(appRequest);
 
         if (existingPrimedMappingForAppRequest.isPresent()) {
-            existingPrimedMappingForAppRequest.get().getAppResponses().setDefault(zombiePriming.getAppResponse());
+            existingPrimedMappingForAppRequest.get().getAppResponses().setDefault(defaultResponse);
             return this;
         }
 
         primedMappings.add(
                 new PrimedMapping(
-                        zombiePriming.getAppRequest(),
+                        appRequest,
                         new DefaultingQueue<AppResponse>(){{
-                            setDefault(zombiePriming.getAppResponse());
+                            setDefault(defaultResponse);
                         }}
                 )
         );
         return this;
-    }
-
-    public PrimingContext addDefault(AppRequest appRequest, AppResponse appResponse) {
-        return addDefault(new ZombiePriming(appRequest, appResponse));
     }
 
     public Optional<AppResponse> getResponse(AppRequest appRequest) {

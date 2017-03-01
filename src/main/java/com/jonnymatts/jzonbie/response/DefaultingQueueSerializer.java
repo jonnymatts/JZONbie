@@ -20,7 +20,7 @@ public class DefaultingQueueSerializer extends StdSerializer<DefaultingQueue<App
     @Override
     public void serialize(DefaultingQueue<AppResponse> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
-        gen.writeObjectField("default", value.getDefault().orElse(null));
+        writeDefaultField(gen, value);
         gen.writeArrayFieldStart("primed");
         for(AppResponse appResponse : value.getEntries()) {
             gen.writeStartObject();
@@ -31,5 +31,17 @@ public class DefaultingQueueSerializer extends StdSerializer<DefaultingQueue<App
         }
         gen.writeEndArray();
         gen.writeEndObject();
+    }
+
+    private void writeDefaultField(JsonGenerator gen, DefaultingQueue<AppResponse> value) throws IOException {
+        final DefaultResponse<AppResponse> defaultResponse = value.getDefault().orElse(null);
+
+        if(defaultResponse == null) {
+            gen.writeObjectField("default", null);
+        } else if(!defaultResponse.isDynamic()) {
+            gen.writeObjectField("default", defaultResponse.getResponse());
+        } else {
+            gen.writeStringField("default", "Dynamic default generator");
+        }
     }
 }

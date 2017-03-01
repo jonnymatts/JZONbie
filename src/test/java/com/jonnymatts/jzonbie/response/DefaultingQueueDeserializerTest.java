@@ -82,7 +82,7 @@ public class DefaultingQueueDeserializerTest {
 
         final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
 
-        assertThat(got.getDefault()).contains(EXPECTED_RESPONSE);
+        assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(EXPECTED_RESPONSE);
         assertThat(got.hasSize()).isEqualTo(0);
     }
 
@@ -101,7 +101,7 @@ public class DefaultingQueueDeserializerTest {
 
         final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
 
-        assertThat(got.getDefault()).contains(EXPECTED_RESPONSE);
+        assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(EXPECTED_RESPONSE);
         assertThat(got.hasSize()).isEqualTo(0);
     }
 }

@@ -4,6 +4,7 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class JzonbieHttpClient {
     }
 
     public ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response) {
-        return httpClient.primeZombieForDefault(request, response);
+        return httpClient.primeZombieForDefault(request, new StaticDefaultResponse<>(response));
     }
 
     public List<PrimedMapping> getCurrentPriming() {

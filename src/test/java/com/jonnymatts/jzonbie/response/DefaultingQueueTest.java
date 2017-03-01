@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.response;
 
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import org.junit.Test;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class DefaultingQueueTest {
     @Test
     public void pollReturnsDefaultValueIfThereIsADefaultElementSetAndQueueIsEmpty() throws Exception {
         final DefaultingQueue<Integer> queue = new DefaultingQueue<>();
-        queue.setDefault(1);
+        queue.setDefault(new StaticDefaultResponse<>(1));
 
         final Integer got = queue.poll();
 
@@ -32,7 +33,7 @@ public class DefaultingQueueTest {
     @Test
     public void pollReturnsQueueElementIfThereIsADefaultElementSetAndQueueContainsAnElement() throws Exception {
         final DefaultingQueue<Integer> queue = new DefaultingQueue<>();
-        queue.setDefault(1);
+        queue.setDefault(new StaticDefaultResponse<>(1));
         queue.add(2);
 
         final Integer got = queue.poll();
@@ -53,7 +54,7 @@ public class DefaultingQueueTest {
     @Test
     public void resetClearsQueueAndRemovesDefaultElement() throws Exception {
         final DefaultingQueue<Integer> queue = new DefaultingQueue<>();
-        queue.setDefault(1);
+        queue.setDefault(new StaticDefaultResponse<>(1));
         queue.add(2);
         queue.reset();
 
@@ -86,7 +87,7 @@ public class DefaultingQueueTest {
     public void getDefaultReturnsEmptyOptionalIfDefaultIsNotSet() throws Exception {
         final DefaultingQueue<Integer> queue = new DefaultingQueue<>();
 
-        final Optional<Integer> got = queue.getDefault();
+        final Optional<DefaultResponse<Integer>> got = queue.getDefault();
 
         assertThat(got.isPresent()).isFalse();
     }
@@ -94,10 +95,10 @@ public class DefaultingQueueTest {
     @Test
     public void getDefaultReturnsOptionalIfDefaultIsSet() throws Exception {
         final DefaultingQueue<Integer> queue = new DefaultingQueue<>();
-        queue.setDefault(1);
+        queue.setDefault(new StaticDefaultResponse<>(1));
 
-        final Optional<Integer> got = queue.getDefault();
+        final Optional<DefaultResponse<Integer>> got = queue.getDefault();
 
-        assertThat(got).contains(1);
+        assertThat(got.get().getResponse()).isEqualTo(1);
     }
 }

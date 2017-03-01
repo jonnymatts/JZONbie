@@ -2,6 +2,8 @@ package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.response.DefaultResponse;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import org.junit.Before;
 import org.junit.Rule;
@@ -126,7 +128,9 @@ public class PrimingContextTest {
                 )
         );
 
-        final PrimingContext got = primingContext.addDefault(zombiePriming);
+        final StaticDefaultResponse<AppResponse> defaultResponse = new StaticDefaultResponse<>(zombiePriming.getAppResponse());
+
+        final PrimingContext got = primingContext.addDefault(zombiePriming.getAppRequest(), defaultResponse);
 
         final List<PrimedMapping> currentPriming = got.getCurrentPriming();
 
@@ -134,12 +138,14 @@ public class PrimingContextTest {
 
         final PrimedMapping primedMapping = currentPriming.get(0);
 
-        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultResponse::getResponse)).contains(zombiePriming.getAppResponse());
     }
 
     @Test
     public void addDefaultReturnsPrimingContextWithDefaultPrimingAddedForNewPriming() throws Exception {
-        final PrimingContext got = primingContext.addDefault(zombiePriming);
+        final StaticDefaultResponse<AppResponse> defaultResponse = new StaticDefaultResponse<>(zombiePriming.getAppResponse());
+
+        final PrimingContext got = primingContext.addDefault(zombiePriming.getAppRequest(), defaultResponse);
 
         final List<PrimedMapping> currentPriming = got.getCurrentPriming();
 
@@ -147,20 +153,7 @@ public class PrimingContextTest {
 
         final PrimedMapping primedMapping = currentPriming.get(0);
 
-        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
-    }
-
-    @Test
-    public void addDefaultReturnsPrimingContextWithDefaultPrimingAddedWithRequestAndResponseInputs() throws Exception {
-        final PrimingContext got = primingContext.addDefault(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
-
-        final List<PrimedMapping> currentPriming = got.getCurrentPriming();
-
-        assertThat(currentPriming).hasSize(1);
-
-        final PrimedMapping primedMapping = currentPriming.get(0);
-
-        assertThat(primedMapping.getAppResponses().getDefault()).contains(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultResponse::getResponse)).contains(zombiePriming.getAppResponse());
     }
 
     @Test
