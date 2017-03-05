@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jonnymatts.jzonbie.response.Response;
 
 import java.util.Map;
@@ -20,6 +21,12 @@ public class AppResponse implements Response {
 
     public Map<String, Object> getBody() {
         return body;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isFileResponse() {
+        return false;
     }
 
     void setBody(Map<String, Object> body) {

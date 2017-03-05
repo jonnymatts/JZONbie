@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.DefaultResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import ro.pippo.core.Pippo;
@@ -32,9 +33,9 @@ public class Jzonbie implements JzonbieClient {
         final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL);
         final Deserializer deserializer = new Deserializer(objectMapper);
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
-        final PrimedMappingFactory primedMappingFactory = new PrimedMappingFactory();
+        final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, primedMappingFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, fileResponseFactory);
 
         pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, objectMapper));
 
@@ -82,5 +83,9 @@ public class Jzonbie implements JzonbieClient {
 
     public void stop() {
         pippo.stop();
+    }
+
+    public static void main(String[] args) {
+        new Jzonbie(options().withPort(30000));
     }
 }

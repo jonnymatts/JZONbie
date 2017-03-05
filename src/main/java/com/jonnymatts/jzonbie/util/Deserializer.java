@@ -21,8 +21,12 @@ public class Deserializer {
     }
 
     public <T> T deserialize(Request request, Class<T> clazz) {
+        return deserialize(request.getBody(), clazz);
+    }
+
+    public <T> T deserialize(String s, Class<T> clazz) {
         try {
-            return objectMapper.readValue(request.getBody(), clazz);
+            return objectMapper.readValue(s, clazz);
         } catch (IOException e) {
             throw new DeserializationException(String.format("Error deserializing %s", clazz.getSimpleName()), e);
         }
@@ -63,6 +67,15 @@ public class Deserializer {
             return maps.stream().map(t -> deserialize(t, clazz)).collect(toList());
         } catch (IOException e) {
             throw new DeserializationException("Error deserializing http response", e);
+        }
+    }
+
+    public <T> List<T> deserializeCollection(String s, Class<T> clazz) {
+        try {
+            final List<Map<String, Object>> maps = objectMapper.readValue(s, new TypeReference<List<T>>() {});
+            return maps.stream().map(t -> deserialize(t, clazz)).collect(toList());
+        } catch (IOException e) {
+            throw new DeserializationException("Error deserializing %s", e);
         }
     }
 }

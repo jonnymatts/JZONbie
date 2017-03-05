@@ -2,11 +2,11 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonnymatts.jzonbie.JzonbieOptions;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.PrimedMappingFactory;
-import com.jonnymatts.jzonbie.model.PrimingContext;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
+import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
 import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
+import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
@@ -26,19 +26,19 @@ public class ZombieRequestHandler implements RequestHandler {
     private final PrimingContext primingContext;
     private final List<ZombiePriming> callHistory;
     private final Deserializer deserializer;
-    private final PrimedMappingFactory primedMappingFactory;
     private final String zombieHeaderName;
+    private final CurrentPrimingFileResponseFactory fileResponseFactory;
 
     public ZombieRequestHandler(JzonbieOptions options,
                                 PrimingContext primingContext,
                                 List<ZombiePriming> callHistory,
                                 Deserializer deserializer,
-                                PrimedMappingFactory primedMappingFactory) {
+                                CurrentPrimingFileResponseFactory fileResponseFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
         this.deserializer = deserializer;
-        this.primedMappingFactory = primedMappingFactory;
         this.zombieHeaderName = options.getZombieHeaderName();
+        this.fileResponseFactory = fileResponseFactory;
     }
 
     @Override
@@ -50,8 +50,12 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handlePrimingRequest(request);
             case "priming-default":
                 return handleDefaultPrimingRequest(request);
-            case "list":
-                return handleListRequest();
+            case "priming-file":
+                return handleFilePrimingRequest(request);
+            case "current":
+                return handleCurrentPrimingRequest();
+            case "current-file":
+                return handleCurrentPrimingFileRequest();
             case "history":
                 return handleHistoryRequest();
             case "reset":
@@ -77,8 +81,24 @@ public class ZombieRequestHandler implements RequestHandler {
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
 
-    private ZombieResponse handleListRequest() throws JsonProcessingException {
+    private ZombieResponse handleFilePrimingRequest(Request request) throws JsonProcessingException {
+        final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(request.getPrimingFileContent(), PrimedMapping.class);
+
+        primedMappings.forEach(primedMapping -> {
+            final DefaultingQueue<AppResponse> defaultingQueue = primedMapping.getAppResponses();
+            defaultingQueue.getEntries().forEach(appResponse -> primingContext.add(primedMapping.getAppRequest(), appResponse));
+            defaultingQueue.getDefault().map(defaultResponse -> primingContext.addDefault(primedMapping.getAppRequest(), defaultResponse));
+        });
+
+        return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, primedMappings);
+    }
+
+    private ZombieResponse handleCurrentPrimingRequest() throws JsonProcessingException {
         return new ZombieResponse(OK_200, JSON_HEADERS_MAP, primingContext.getCurrentPriming());
+    }
+
+    private FileResponse handleCurrentPrimingFileRequest() throws JsonProcessingException {
+        return fileResponseFactory.create(primingContext.getCurrentPriming());
     }
 
     private ZombieResponse handleHistoryRequest() throws JsonProcessingException {
@@ -130,6 +150,11 @@ public class ZombieRequestHandler implements RequestHandler {
         @Override
         public Object getBody() {
             return body;
+        }
+
+        @Override
+        public boolean isFileResponse() {
+            return false;
         }
     }
 }

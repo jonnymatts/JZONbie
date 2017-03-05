@@ -7,17 +7,20 @@ import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
 import com.jonnymatts.jzonbie.requests.RequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
 import com.jonnymatts.jzonbie.response.ErrorResponse;
 import com.jonnymatts.jzonbie.response.PrimingNotFoundErrorResponse;
 import com.jonnymatts.jzonbie.response.Response;
 import ro.pippo.core.Application;
 import ro.pippo.core.route.RouteContext;
 
+import java.io.ByteArrayInputStream;
 import java.util.Map;
 
 import static java.lang.String.format;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static ro.pippo.core.HttpConstants.ContentType.APPLICATION_JSON;
 
 public class PippoApplication extends Application {
 
@@ -53,8 +56,14 @@ public class PippoApplication extends Application {
 
         try {
             final Response response = requestHandler.handle(pippoRequest);
-            primeResponse(pippoResponse, response);
-            routeContext.send(objectMapper.writeValueAsString(response.getBody()));
+            if(response instanceof FileResponse) {
+                final FileResponse fileResponse = (FileResponse) response;
+                pippoResponse.contentType(APPLICATION_JSON);
+                pippoResponse.file(fileResponse.getFileName(), new ByteArrayInputStream(fileResponse.getContents().getBytes()));
+            } else {
+                primeResponse(pippoResponse, response);
+                routeContext.send(objectMapper.writeValueAsString(response.getBody()));
+            }
         } catch (PrimingNotFoundException e) {
             sendErrorResponse(routeContext, SC_NOT_FOUND, new PrimingNotFoundErrorResponse(e.getRequest()));
         } catch (Exception e) {

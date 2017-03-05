@@ -8,8 +8,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import ro.pippo.core.FileItem;
 import ro.pippo.core.ParameterValue;
 
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ public class PippoRequestTest {
     public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
     @Mock(answer = RETURNS_DEEP_STUBS) private ro.pippo.core.Request request;
+    @Mock private FileItem fileItem;
 
     @Fixture
     private String path;
@@ -52,6 +55,7 @@ public class PippoRequestTest {
             put("qVar2", new ParameterValue("qVal1"));
             put("qVar3", new ParameterValue());
         }});
+        when(request.getFile("priming").getInputStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
         pippoRequest = new PippoRequest(request);
     }
@@ -97,5 +101,23 @@ public class PippoRequestTest {
         final Map<String, List<String>> got = pippoRequest.getQueryParams();
 
         assertThat(got).isEqualTo(expectedMap);
+    }
+
+    @Test
+    public void getPrimingFileContentReturnsContentOfPrimingFile() throws Exception {
+        when(request.getContentType()).thenReturn("multipart/form-data");
+
+        final String got = new PippoRequest(request).getPrimingFileContent();
+
+        assertThat(got).isEqualTo(body);
+    }
+
+    @Test
+    public void getPrimingFileContentReturnsNullIfPrimingFileIsNotPresent() throws Exception {
+        when(request.getContentType()).thenReturn("multipart/form-data");
+
+        final String got = new PippoRequest(request).getPrimingFileContent();
+
+        assertThat(got).isEqualTo(body);
     }
 }
