@@ -49,7 +49,7 @@ Other functions of JZONbie are accessed by changing the value of the request's `
 | Zombie Header Value  | JZONbie Function |
 | ------------- | ------------- |
 | "priming"  | Primes JZONbie with the given request and response  |
-| "list"  | Responds with the list of request/response mappings currently stored in JZONbie  |
+| "current"  | Responds with the list of request/response mappings currently stored in JZONbie  |
 | "history"  | Responds with the list of successful calls to JZONbie  |
 | "reset"  | Clears the current state  |
 

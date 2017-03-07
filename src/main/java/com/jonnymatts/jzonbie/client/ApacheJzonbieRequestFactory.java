@@ -52,7 +52,7 @@ public class ApacheJzonbieRequestFactory {
 
     public HttpUriRequest createGetCurrentPrimingRequest() {
         return RequestBuilder.get(zombieBaseUrl)
-                .addHeader(zombieHeaderName, "list")
+                .addHeader(zombieHeaderName, "current")
                 .build();
     }
 

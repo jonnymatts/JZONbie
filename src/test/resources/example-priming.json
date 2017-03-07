@@ -1,0 +1,27 @@
+[ {
+  "request" : {
+    "path" : "/path",
+    "headers" : { },
+    "method" : "GET"
+  },
+  "responses" : {
+    "default" : {
+      "statusCode" : 200,
+      "headers" : {
+        "Content-Type" : "application/json"
+      },
+      "body" : {
+        "key" : "val"
+      }
+    },
+    "primed" : [ {
+      "statusCode" : 201,
+      "headers" : {
+        "Content-Type" : "application/json"
+      },
+      "body" : {
+        "key" : "val"
+      }
+    } ]
+  }
+} ]

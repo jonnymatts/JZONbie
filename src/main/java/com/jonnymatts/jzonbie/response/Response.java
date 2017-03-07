@@ -6,4 +6,5 @@ public interface Response {
     int getStatusCode();
     Map<String, String> getHeaders();
     Object getBody();
+    boolean isFileResponse();
 }

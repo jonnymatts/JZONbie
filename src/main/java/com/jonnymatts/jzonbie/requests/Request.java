@@ -9,4 +9,5 @@ public interface Request {
     Map<String, String> getHeaders();
     String getBody();
     Map<String, List<String>> getQueryParams();
+    String getPrimingFileContent();
 }

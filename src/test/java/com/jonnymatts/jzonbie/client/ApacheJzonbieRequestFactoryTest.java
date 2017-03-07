@@ -93,7 +93,7 @@ public class ApacheJzonbieRequestFactoryTest {
 
         assertThat(getCurrentPrimingRequest.getMethod()).isEqualTo("GET");
         assertThat(getCurrentPrimingRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(getCurrentPrimingRequest, "zombie", "list");
+        assertZombieHeader(getCurrentPrimingRequest, "zombie", "current");
     }
 
     @Test

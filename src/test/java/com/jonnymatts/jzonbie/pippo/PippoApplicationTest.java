@@ -8,6 +8,7 @@ import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -16,6 +17,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import ro.pippo.core.util.IoUtils;
 import ro.pippo.test.PippoRule;
 import ro.pippo.test.PippoTest;
 
@@ -27,6 +29,7 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PippoApplicationTest extends PippoTest {
@@ -36,7 +39,7 @@ public class PippoApplicationTest extends PippoTest {
     private static final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     private static final Deserializer deserializer = new Deserializer(objectMapper);
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, new AppRequestFactory(deserializer));
-    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new PrimedMappingFactory());
+    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new CurrentPrimingFileResponseFactory(objectMapper));
 
     private AppRequest appRequest;
     private AppResponse appResponse;
@@ -92,11 +95,25 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testList() throws Exception {
+    public void testPrimingFile() throws Exception {
+        final Response pippoResponse = given()
+                .header("zombie", "priming-file")
+                .contentType("multipart/form-data")
+                .multiPart("priming", IoUtils.toString(getClass().getResourceAsStream("/example-priming.json")))
+                .post("/");
+        pippoResponse.then().statusCode(201);
+        pippoResponse.then().contentType(ContentType.JSON);
+        pippoResponse.then().body("[0].request.path", equalTo("/path"));
+        pippoResponse.then().body("[0].responses.default.statusCode", equalTo(200));
+        pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(201));
+    }
+
+    @Test
+    public void testCurrent() throws Exception {
         primingContext.add(zombiePriming);
 
         final Response pippoResponse = given()
-                .header("zombie", "list")
+                .header("zombie", "current")
                 .contentType(ContentType.JSON)
                 .post("/");
         pippoResponse.then().statusCode(200);
@@ -104,6 +121,18 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().body("[0].request.path", equalTo(appRequest.getPath()));
         pippoResponse.then().body("[0].responses.default", nullValue());
         pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(appResponse.getStatusCode()));
+    }
+
+    @Test
+    public void testCurrentAsFile() throws Exception {
+        primingContext.add(zombiePriming);
+
+        final Response pippoResponse = given()
+                .header("zombie", "current-file")
+                .post("/");
+        pippoResponse.then().statusCode(200);
+        pippoResponse.then().contentType(ContentType.JSON);
+        pippoResponse.then().header("content-disposition", startsWith("attachment; filename=\"jzonbie-current-priming"));
     }
 
     @Test

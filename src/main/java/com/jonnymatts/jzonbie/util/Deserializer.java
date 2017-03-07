@@ -69,4 +69,13 @@ public class Deserializer {
             throw new DeserializationException("Error deserializing http response", e);
         }
     }
+
+    public <T> List<T> deserializeCollection(String s, Class<T> clazz) {
+        try {
+            final List<Map<String, Object>> maps = objectMapper.readValue(s, new TypeReference<List<T>>() {});
+            return maps.stream().map(t -> deserialize(t, clazz)).collect(toList());
+        } catch (IOException e) {
+            throw new DeserializationException("Error deserializing %s", e);
+        }
+    }
 }
