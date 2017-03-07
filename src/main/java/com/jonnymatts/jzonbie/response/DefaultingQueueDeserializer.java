@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.*;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.AppResponseBuilder;
+import com.jonnymatts.jzonbie.model.content.BodyContent;
 import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 
 import java.io.IOException;
@@ -16,6 +17,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.model.content.BodyContent.TYPE_IDENTIFIER;
+import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
+import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -38,7 +44,7 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
                 : new StaticDefaultResponse<>(convertObjectNodeToAppResponse(defaultNode));
 
         final List<AppResponse> appResponses = StreamSupport.stream(node.get("primed").spliterator(), false)
-                .map(queueNode -> convertObjectNodeToAppResponse(queueNode))
+                .map(this::convertObjectNodeToAppResponse)
                 .collect(toList());
 
         return new DefaultingQueue<AppResponse>(){{
@@ -48,13 +54,35 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
     }
 
     private AppResponse convertObjectNodeToAppResponse(JsonNode queueNode) {
+        final BodyContent body = getBodyContent(queueNode.get("body"));
         final AppResponseBuilder builder = AppResponse.builder(queueNode.get("statusCode").intValue())
-                .withBody((Map<String, Object>) convertJsonNodeToObject(queueNode.get("body")));
+                .withBody(body);
         final Map<String, String> headers = (Map<String, String>) convertJsonNodeToObject(queueNode.get("headers"));
         if(headers != null) {
             headers.entrySet().forEach(e -> builder.withHeader(e.getKey(), e.getValue()));
         }
         return builder.build();
+    }
+
+    private BodyContent getBodyContent(JsonNode bodyNode) {
+        final Object object = convertJsonNodeToObject(bodyNode);
+        if(bodyNode instanceof ObjectNode) {
+            final Map<String, Object> map = (Map<String, Object>) object;
+            map.remove(TYPE_IDENTIFIER);
+            return objectBody(map);
+        } else {
+            final List<Object> list = (List<Object>) object;
+            final String bodyContentType = (String)list.get(0);
+            switch (bodyContentType) {
+                case "J_STRING":
+                    return stringBody((String)list.get(1));
+                case "J_ARRAY":
+                    list.remove(0);
+                    return arrayBody((List<Object>)list.get(0));
+                default:
+                    return literalBody(list.get(1));
+            }
+        }
     }
 
     private Map<String, Object> getMapFromObjectNode(ObjectNode objectNode) {

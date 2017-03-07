@@ -9,6 +9,7 @@ import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
+import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -23,10 +24,16 @@ import ro.pippo.test.PippoTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
@@ -105,7 +112,27 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo("/path"));
         pippoResponse.then().body("[0].responses.default.statusCode", equalTo(200));
+        pippoResponse.then().body("[0].responses.default.body.key", equalTo("val"));
         pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(201));
+        pippoResponse.then().body("[0].responses.primed[0].body.key", equalTo("val"));
+
+        assertThat(primingContext.getCurrentPriming()).hasSize(1);
+
+        final PrimedMapping mapping = primingContext.getCurrentPriming().get(0);
+
+        assertThat(mapping.getAppResponses().getDefault()).contains(new StaticDefaultResponse<>(
+                AppResponse.builder(200)
+                        .contentType("application/json")
+                        .withBody(singletonMap("key", "val"))
+                        .build()
+        ));
+
+        assertThat(mapping.getAppResponses().getEntries()).contains(
+                AppResponse.builder(201)
+                        .contentType("application/json")
+                        .withBody(singletonMap("key", "val"))
+                        .build()
+        );
     }
 
     @Test
@@ -160,6 +187,7 @@ public class PippoApplicationTest extends PippoTest {
                 .post("/");
         pippoResponse.then().statusCode(200);
         pippoResponse.then().contentType(ContentType.JSON);
+        pippoResponse.then().body("message", equalTo("Zombie Reset"));
 
         assertThat(primingContext.getCurrentPriming()).isEmpty();
         assertThat(callHistory).isEmpty();
@@ -176,5 +204,84 @@ public class PippoApplicationTest extends PippoTest {
                 .contentType(ContentType.JSON)
                 .get("/path");
         pippoResponse.then().statusCode(403);
+    }
+
+    @Test
+    public void testAppRequestWithMapBodyPriming() throws Exception {
+        final Map<String, String> requestBody = singletonMap("key", "val");
+        final String errorMessage = "Something bad happened!";
+        final AppRequest request = AppRequest.builder("GET", "/path").withBody(requestBody).build();
+        final AppResponse response = AppResponse.builder(403).contentType("application/json").withBody(singletonMap("error", errorMessage)).build();
+
+        primingContext.add(request, response);
+
+        final Response pippoResponse = given()
+                .contentType(ContentType.JSON)
+                .body(objectMapper.writeValueAsString(requestBody))
+                .get("/path");
+        pippoResponse.then().statusCode(403);
+
+        final Map<String, Object> responseBody = deserializer.deserialize(pippoResponse.getBody().asString());
+
+        assertThat(responseBody).containsOnly(entry("error", errorMessage));
+    }
+
+    @Test
+    public void testAppRequestWithStringBodyPriming() throws Exception {
+        final String requestBody = "<jzonbie>message</jzonbie>";
+        final String responseBody = "<error>Something bad happened!</error>";
+        final AppRequest request = AppRequest.builder("GET", "/path").withBody(requestBody).build();
+        final AppResponse response = AppResponse.builder(403).contentType("application/xml").withBody(responseBody).build();
+
+        primingContext.add(request, response);
+
+        final Response pippoResponse = given()
+                .body(requestBody)
+                .get("/path");
+        pippoResponse.then().statusCode(403);
+        pippoResponse.then().body(equalTo(responseBody));
+    }
+
+    @Test
+    public void testAppRequestWithJsonStringBodyPriming() throws Exception {
+        final AppRequest request = AppRequest.builder("GET", "/path").withBody(stringBody("request")).build();
+        final AppResponse response = AppResponse.builder(403).withBody(stringBody("response")).build();
+
+        primingContext.add(request, response);
+
+        final Response pippoResponse = given()
+                .body("\"request\"")
+                .get("/path");
+        pippoResponse.then().statusCode(403);
+        pippoResponse.then().body(equalTo("\"response\""));
+    }
+
+    @Test
+    public void testAppRequestWithListBodyPriming() throws Exception {
+        final List<String> responseBody = singletonList("response1");
+        final AppRequest request = AppRequest.builder("GET", "/path").withBody(arrayBody(singletonList("request1"))).build();
+        final AppResponse response = AppResponse.builder(403).contentType("application/json").withBody(arrayBody(responseBody)).build();
+
+        primingContext.add(request, response);
+
+        final Response pippoResponse = given()
+                .body("[\"request1\"]")
+                .get("/path");
+        pippoResponse.then().statusCode(403);
+        pippoResponse.then().body("[0]", equalTo("response1"));
+    }
+
+    @Test
+    public void testAppRequestWithNumberBodyPriming() throws Exception {
+        final AppRequest request = AppRequest.builder("GET", "/path").withBody(1).build();
+        final AppResponse response = AppResponse.builder(403).contentType("text/plain").withBody(2).build();
+
+        primingContext.add(request, response);
+
+        final Response pippoResponse = given()
+                .body("1")
+                .get("/path");
+        pippoResponse.then().statusCode(403);
+        pippoResponse.then().body(equalTo("2"));
     }
 }

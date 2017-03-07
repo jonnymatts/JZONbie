@@ -190,7 +190,8 @@ public class ZombieRequestHandlerTest {
         final Response got = zombieRequestHandler.handle(request);
 
         assertThat(got.getStatusCode()).isEqualTo(OK_200);
-        assertThat(got.getBody()).isEqualTo("Zombie Reset");
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(singletonMap("message", "Zombie Reset"));
         assertThat(callHistory).isEmpty();
 
         verify(primingContext).clear();

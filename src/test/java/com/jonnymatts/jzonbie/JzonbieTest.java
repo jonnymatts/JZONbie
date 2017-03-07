@@ -15,6 +15,8 @@ import org.junit.Test;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
+import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +39,83 @@ public class JzonbieTest {
         final ZombiePriming zombiePriming = jzonbie.primeZombie(
                 AppRequest.builder("GET", "/").build(),
                 AppResponse.builder(200).withBody(singletonMap("key", "val")).build()
+        );
+
+        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+
+        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithStringBodyContent() throws Exception {
+        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+                AppRequest.builder("POST", "/").withBody("<jzonbie>message</jzonbie>").build(),
+                AppResponse.builder(200).withBody("<response>message</response>").build()
+        );
+
+        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+
+        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithListBodyContent() throws Exception {
+        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+                AppRequest.builder("POST", "/").withBody(singletonList("request")).build(),
+                AppResponse.builder(200).withBody(singletonList("response")).build()
+        );
+
+        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+
+        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithJsonStringListBodyContent() throws Exception {
+        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+                AppRequest.builder("POST", "/").withBody(stringBody("request")).build(),
+                AppResponse.builder(200).withBody(stringBody("response")).build()
+        );
+
+        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+
+        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+    }
+
+
+    @Test
+    public void jzonbieCanBePrimedWithNumberBodyContent() throws Exception {
+        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+                AppRequest.builder("POST", "/").withBody(1).build(),
+                AppResponse.builder(200).withBody(2).build()
         );
 
         final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());

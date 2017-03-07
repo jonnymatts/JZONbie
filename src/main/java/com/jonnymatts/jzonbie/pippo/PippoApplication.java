@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.JzonbieOptions;
+import com.jonnymatts.jzonbie.model.content.BodyContent;
+import com.jonnymatts.jzonbie.model.content.LiteralBodyContent;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
 import com.jonnymatts.jzonbie.requests.RequestHandler;
@@ -69,7 +71,14 @@ public class PippoApplication extends Application {
                 pippoResponse.file(fileResponse.getFileName(), new ByteArrayInputStream(fileResponse.getContents().getBytes()));
             } else {
                 primeResponse(pippoResponse, response);
-                routeContext.send(objectMapper.writeValueAsString(response.getBody()));
+                final Object body = response.getBody();
+
+                if(body instanceof LiteralBodyContent) {
+                    routeContext.send(((LiteralBodyContent) body).getContent());
+                } else {
+                    final Object o = (body instanceof BodyContent) ? ((BodyContent) body).getContent() : body;
+                    routeContext.send(objectMapper.writeValueAsString(o));
+                }
             }
         } catch (PrimingNotFoundException e) {
             LOGGER.error("Priming not found", e);
@@ -88,9 +97,9 @@ public class PippoApplication extends Application {
 
         final Map<String, String> headers = r.getHeaders();
 
-        response.contentType("application/json");
-
-        if (headers != null) headers.entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
+        if(headers != null) {
+            headers.entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
+        }
     }
 
     private void sendErrorResponse(RouteContext routeContext, int statusCode, ErrorResponse errorResponse) {

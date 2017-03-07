@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.model.content.ObjectBodyContent;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
@@ -17,7 +18,16 @@ public class AppResponseBuilderTest {
                 .build();
 
         assertThat(response.getStatusCode()).isEqualTo(SC_OK);
-        assertThat(response.getBody()).contains(entry("key", "value"));
+        assertThat(((ObjectBodyContent)response.getBody()).getContent()).contains(entry("key", "value"));
         assertThat(response.getHeaders()).contains(entry("header-name", "header-value"));
+    }
+
+    @Test
+    public void contentTypeAddsContentTypeHeader() throws Exception {
+        final AppResponse response = AppResponse.builder(SC_OK)
+                .contentType("header-value")
+                .build();
+
+        assertThat(response.getHeaders()).contains(entry("Content-Type", "header-value"));
     }
 }

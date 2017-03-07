@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.model;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
+import com.jonnymatts.jzonbie.model.content.*;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,11 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
+import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 
 public class AppRequestTest {
 
@@ -104,50 +107,7 @@ public class AppRequestTest {
         assertThat(appRequest.matches(copy)).isTrue();
     }
 
-    @Test
-    public void matchesReturnsFalseIfBodiesDoNotMatch() throws Exception {
-        final AppRequest copy = copyAppRequest(appRequest);
-        copy.getBody().clear();
 
-        assertThat(appRequest.matches(copy)).isFalse();
-    }
-
-    @Test
-    public void matchesReturnsTrueIfBodyValuesMatchRegex() throws Exception {
-        final Map<String, Object> appRequestBody = appRequest.getBody();
-        appRequestBody.clear();
-        appRequestBody.put("key", "val.*");
-
-        final AppRequest copy = copyAppRequest(appRequest);
-
-        copy.getBody().put("key", "value");
-
-        assertThat(appRequest.matches(copy)).isTrue();
-    }
-
-    @Test
-    public void matchesReturnsTrueIfThisBodyIsEmptyMapAndThatBodyIsNull() throws Exception {
-        final Map<String, Object> appRequestBody = appRequest.getBody();
-        appRequestBody.clear();
-
-        final AppRequest copy = copyAppRequest(appRequest);
-
-        copy.setBody(null);
-
-        assertThat(appRequest.matches(copy)).isTrue();
-    }
-
-    @Test
-    public void matchesReturnsTrueIfBothBodiesContainAValueOfTheSameNumberButOfDifferentTypes() throws Exception {
-        final Map<String, Object> appRequestBody = appRequest.getBody();
-        appRequestBody.clear();
-        appRequestBody.put("key", 10L);
-
-        final AppRequest copy = copyAppRequest(appRequest);
-        copy.getBody().put("key", 10);
-
-        assertThat(appRequest.matches(copy)).isTrue();
-    }
 
     @Test
     public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
@@ -193,34 +153,25 @@ public class AppRequestTest {
         assertThat(appRequest.matches(copy)).isTrue();
     }
 
-    @Test
-    public void builderCanConstructInstances() {
-        final AppRequest request = AppRequest.builder("GET", "/.*")
-                .withBody(appRequest.getBody())
-                .withBasicAuth(username, password)
-                .withHeader("header-name", "header-value")
-                .withQueryParam("param-name", "param-value")
-                .build();
-
-        assertThat(request.getMethod()).isEqualTo("GET");
-        assertThat(request.getPath()).isEqualTo("/.*");
-        assertThat(request.getQueryParams()).contains(entry("param-name", singletonList("param-value")));
-        assertThat(request.getBody()).isEqualTo(appRequest.getBody());
-        assertThat(request.getHeaders()).contains(entry("header-name", "header-value"));
-        assertThat(request.getHeaders()).containsKey("Authorization");
-    }
-
     static AppRequest copyAppRequest(AppRequest appRequest) {
         final AppRequest copy = new AppRequest();
         copy.setPath(appRequest.getPath());
         copy.setMethod(appRequest.getMethod());
         copy.setQueryParams(copyMap(appRequest.getQueryParams()));
         copy.setHeaders(copyMap(appRequest.getHeaders()));
-        copy.setBody(copyMap(appRequest.getBody()));
+        copy.setBody(copyBodyContent(appRequest.getBody()));
         return copy;
     }
 
     private static <K, V> HashMap<K, V> copyMap(Map<K, V> map) {
         return map == null ? null : new HashMap<>(map);
+    }
+
+    private static BodyContent copyBodyContent(BodyContent bodyContent) {
+        if(bodyContent == null) return null;
+        if(bodyContent instanceof LiteralBodyContent) return literalBody(((LiteralBodyContent)bodyContent).getContent());
+        if(bodyContent instanceof ArrayBodyContent) return arrayBody(((ArrayBodyContent)bodyContent).getContent());
+        if(bodyContent instanceof StringBodyContent) return stringBody(((StringBodyContent)bodyContent).getContent());
+        return objectBody(new HashMap<>(((ObjectBodyContent)bodyContent).getContent()));
     }
 }

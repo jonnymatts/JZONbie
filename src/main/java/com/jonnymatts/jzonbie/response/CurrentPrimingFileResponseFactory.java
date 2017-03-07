@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie.response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
+import com.jonnymatts.jzonbie.model.content.BodyContent;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -57,7 +58,7 @@ public class CurrentPrimingFileResponseFactory {
         }
 
         @Override
-        public Object getBody() {
+        public BodyContent getBody() {
             return null;
         }
 

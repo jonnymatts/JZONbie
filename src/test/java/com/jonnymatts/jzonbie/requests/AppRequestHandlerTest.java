@@ -71,6 +71,17 @@ public class AppRequestHandlerTest {
     }
 
     @Test
+    public void handleReturnsPrimedResponseIfPrimingKeyExistsWithStringContentBody() throws JsonProcessingException {
+
+
+        final Response got = appRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(appResponse.getStatusCode());
+        assertThat(got.getHeaders()).containsAllEntriesOf(appResponse.getHeaders());
+        assertThat(got.getBody()).isEqualTo(appResponse.getBody());
+    }
+
+    @Test
     public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
         appRequestHandler.handle(request);
 

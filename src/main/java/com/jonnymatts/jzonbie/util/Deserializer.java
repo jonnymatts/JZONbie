@@ -24,6 +24,14 @@ public class Deserializer {
         return deserialize(request.getBody(), clazz);
     }
 
+    public <T> T deserialize(String s, TypeReference typeReference) {
+        try {
+            return objectMapper.readValue(s, typeReference);
+        } catch (IOException e) {
+            throw new DeserializationException(String.format("Error deserializing %s", typeReference.getClass().getSimpleName()), e);
+        }
+    }
+
     public <T> T deserialize(String s, Class<T> clazz) {
         try {
             return objectMapper.readValue(s, clazz);

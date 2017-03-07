@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jonnymatts.jzonbie.model.content.BodyContent;
 import com.jonnymatts.jzonbie.response.Response;
 
 import java.util.Map;
@@ -9,7 +10,7 @@ public class AppResponse implements Response {
 
     private int statusCode;
     private Map<String, String> headers;
-    private Map<String, Object> body;
+    private BodyContent body;
 
     public Map<String, String> getHeaders() {
         return headers;
@@ -19,7 +20,7 @@ public class AppResponse implements Response {
         this.headers = headers;
     }
 
-    public Map<String, Object> getBody() {
+    public BodyContent getBody() {
         return body;
     }
 
@@ -29,7 +30,7 @@ public class AppResponse implements Response {
         return false;
     }
 
-    void setBody(Map<String, Object> body) {
+    void setBody(BodyContent body) {
         this.body = body;
     }
 

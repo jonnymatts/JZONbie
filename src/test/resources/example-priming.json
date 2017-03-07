@@ -11,6 +11,7 @@
         "Content-Type" : "application/json"
       },
       "body" : {
+        "JZONBIE_CONTENT_TYPE": "J_OBJECT",
         "key" : "val"
       }
     },
@@ -20,6 +21,7 @@
         "Content-Type" : "application/json"
       },
       "body" : {
+        "JZONBIE_CONTENT_TYPE": "J_OBJECT",
         "key" : "val"
       }
     } ]

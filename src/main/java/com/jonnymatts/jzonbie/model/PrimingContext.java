@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.model.content.BodyContent;
 import com.jonnymatts.jzonbie.response.DefaultResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 
@@ -137,7 +138,7 @@ public class PrimingContext {
     private static class HeaderlessAppRequest {
         private final String path;
         private final String method;
-        private final Map<String, Object> body;
+        private final BodyContent body;
         private final Map<String, List<String>> queryParams;
 
         private HeaderlessAppRequest(AppRequest appRequest) {

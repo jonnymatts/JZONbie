@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 import static org.eclipse.jetty.http.HttpStatus.OK_200;
@@ -108,7 +107,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private ZombieResponse handleResetRequest() {
         primingContext.clear();
         callHistory.clear();
-        return new ZombieResponse(OK_200, emptyMap(), "Zombie Reset");
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, singletonMap("message", "Zombie Reset"));
     }
 
     private ZombiePriming getZombiePriming(Request request) {

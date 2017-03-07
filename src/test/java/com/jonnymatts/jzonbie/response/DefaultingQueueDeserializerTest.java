@@ -3,10 +3,7 @@ package com.jonnymatts.jzonbie.response;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.*;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,9 +11,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.node.JsonNodeFactory.instance;
+import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
+import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -32,7 +32,10 @@ public class DefaultingQueueDeserializerTest {
             .build();
     private static final Map<String, JsonNode> APP_RESPONSE_NODE_MAP = new HashMap<String, JsonNode>() {{
         put("statusCode", new IntNode(200));
-        put("body", new ObjectNode(instance, singletonMap("array", new ArrayNode(instance))));
+        put("body", new ObjectNode(instance, new HashMap<String, JsonNode>() {{
+            put("array", new ArrayNode(instance));
+            put("JZONBIE_CONTENT_TYPE", new TextNode("J_OBJECT"));
+        }}));
         put("headers", NullNode.instance);
     }};
 
@@ -102,6 +105,81 @@ public class DefaultingQueueDeserializerTest {
         final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
 
         assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(EXPECTED_RESPONSE);
+        assertThat(got.hasSize()).isEqualTo(0);
+    }
+
+    @Test
+    public void deserializeReturnsQueueWhenBodyIsLiteralContentBody() throws Exception {
+        final String requestString = "requestString";
+        final HashMap<String, JsonNode> copy = new HashMap<>(APP_RESPONSE_NODE_MAP);
+        final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
+            put("default", new ObjectNode(instance, copy));
+            put("primed", new ArrayNode(instance, emptyList()));
+        }});
+
+        copy.put("body", new ArrayNode(instance, asList(new TextNode("J_LITERAL"), new TextNode(requestString))));
+
+        when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
+
+        final DefaultingQueueDeserializer deserializer = new DefaultingQueueDeserializer();
+
+        final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
+
+        final AppResponse expectedAppResponse = AppResponse.builder(200)
+                .withBody(requestString)
+                .build();
+
+        assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(expectedAppResponse);
+        assertThat(got.hasSize()).isEqualTo(0);
+    }
+
+    @Test
+    public void deserializeReturnsQueueWhenBodyIsJsonStringContentBody() throws Exception {
+        final String requestString = "requestString";
+        final HashMap<String, JsonNode> copy = new HashMap<>(APP_RESPONSE_NODE_MAP);
+        final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
+            put("default", new ObjectNode(instance, copy));
+            put("primed", new ArrayNode(instance, emptyList()));
+        }});
+
+        copy.put("body", new ArrayNode(instance, asList(new TextNode("J_STRING"), new TextNode(requestString))));
+
+        when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
+
+        final DefaultingQueueDeserializer deserializer = new DefaultingQueueDeserializer();
+
+        final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
+
+        final AppResponse expectedAppResponse = AppResponse.builder(200)
+                .withBody(stringBody(requestString))
+                .build();
+
+        assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(expectedAppResponse);
+        assertThat(got.hasSize()).isEqualTo(0);
+    }
+
+    @Test
+    public void deserializeReturnsQueueWhenBodyIsListContentBody() throws Exception {
+        final List<String> requestList = singletonList("requestString");
+        final HashMap<String, JsonNode> copy = new HashMap<>(APP_RESPONSE_NODE_MAP);
+        final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
+            put("default", new ObjectNode(instance, copy));
+            put("primed", new ArrayNode(instance, emptyList()));
+        }});
+
+        copy.put("body", new ArrayNode(instance, asList(new TextNode("J_ARRAY"), new ArrayNode(instance, singletonList(new TextNode("requestString"))))));
+
+        when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
+
+        final DefaultingQueueDeserializer deserializer = new DefaultingQueueDeserializer();
+
+        final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
+
+        final AppResponse expectedAppResponse = AppResponse.builder(200)
+                .withBody(requestList)
+                .build();
+
+        assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(expectedAppResponse);
         assertThat(got.hasSize()).isEqualTo(0);
     }
 }
