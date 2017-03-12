@@ -23,11 +23,7 @@ public class DefaultingQueueSerializer extends StdSerializer<DefaultingQueue<App
         writeDefaultField(gen, value);
         gen.writeArrayFieldStart("primed");
         for(AppResponse appResponse : value.getEntries()) {
-            gen.writeStartObject();
-            gen.writeNumberField("statusCode", appResponse.getStatusCode());
-            gen.writeObjectField("headers", appResponse.getHeaders());
-            gen.writeObjectField("body", appResponse.getBody());
-            gen.writeEndObject();
+            gen.writeObject(appResponse);
         }
         gen.writeEndArray();
         gen.writeEndObject();

@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Stopwatch;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.jonnymatts.jzonbie.JzonbieOptions;
@@ -21,11 +22,14 @@ import ro.pippo.core.util.IoUtils;
 import ro.pippo.test.PippoRule;
 import ro.pippo.test.PippoTest;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -36,7 +40,7 @@ public class PippoApplicationTest extends PippoTest {
 
     private static PrimingContext primingContext = new PrimingContext();
     private static final List<ZombiePriming> callHistory = new ArrayList<>();
-    private static final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).setSerializationInclusion(NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    private static final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT).findAndRegisterModules().setSerializationInclusion(NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     private static final Deserializer deserializer = new Deserializer(objectMapper);
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, new AppRequestFactory(deserializer));
     private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new CurrentPrimingFileResponseFactory(objectMapper));
@@ -56,6 +60,8 @@ public class PippoApplicationTest extends PippoTest {
 
         appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
         appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
+
+        appResponse.setDelay(Duration.ZERO);
 
         zombiePriming = new ZombiePriming(appRequest, appResponse);
     }
@@ -106,6 +112,24 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().body("[0].request.path", equalTo("/path"));
         pippoResponse.then().body("[0].responses.default.statusCode", equalTo(200));
         pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(201));
+    }
+
+    @Test
+    public void testPrimingWithDelay() throws Exception {
+        zombiePriming.getAppResponse().setDelay(Duration.ofSeconds(10));
+
+        final Response pippoResponse = given()
+                .header("zombie", "priming")
+                .contentType(ContentType.JSON)
+                .body(objectMapper.writeValueAsString(zombiePriming))
+                .post("/");
+        pippoResponse.then().statusCode(201);
+        pippoResponse.then().contentType(ContentType.JSON);
+        pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
+        pippoResponse.then().body("response.statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("response.delay", equalTo(10.0f));
+
+        assertThat(primingContext.getCurrentPriming()).hasSize(1);
     }
 
     @Test
@@ -176,5 +200,24 @@ public class PippoApplicationTest extends PippoTest {
                 .contentType(ContentType.JSON)
                 .get("/path");
         pippoResponse.then().statusCode(403);
+    }
+
+    @Test
+    public void testAppRequestWithResponseDelay() throws Exception {
+        final AppRequest request = AppRequest.builder("GET", "/path").build();
+        final AppResponse response = AppResponse.builder(403).withDelay(Duration.of(5, SECONDS)).build();
+
+        primingContext.add(request, response);
+
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+
+        final Response pippoResponse = given()
+                .get("/path");
+
+        stopwatch.stop();
+
+        pippoResponse.then().statusCode(403);
+
+        assertThat(stopwatch.elapsed(MILLISECONDS)).isGreaterThanOrEqualTo(5000);
     }
 }

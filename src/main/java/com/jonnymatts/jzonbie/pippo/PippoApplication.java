@@ -63,12 +63,21 @@ public class PippoApplication extends Application {
 
         try {
             final Response response = requestHandler.handle(pippoRequest);
-            if(response instanceof FileResponse) {
+            if (response instanceof FileResponse) {
                 final FileResponse fileResponse = (FileResponse) response;
                 pippoResponse.contentType(APPLICATION_JSON);
                 pippoResponse.file(fileResponse.getFileName(), new ByteArrayInputStream(fileResponse.getContents().getBytes()));
             } else {
                 primeResponse(pippoResponse, response);
+
+                response.getDelay().ifPresent(d -> {
+                    try {
+                        Thread.sleep(d.toMillis());
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
                 routeContext.send(objectMapper.writeValueAsString(response.getBody()));
             }
         } catch (PrimingNotFoundException e) {

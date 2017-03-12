@@ -4,11 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Optional.empty;
 
 public class CurrentPrimingFileResponseFactory {
 
@@ -64,6 +68,11 @@ public class CurrentPrimingFileResponseFactory {
         @Override
         public boolean isFileResponse() {
             return true;
+        }
+
+        @Override
+        public Optional<Duration> getDelay() {
+            return empty();
         }
     }
 }

@@ -15,7 +15,6 @@ import ro.pippo.core.Pippo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
@@ -33,7 +32,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public Jzonbie(JzonbieOptions options) {
-        objectMapper = options.getObjectMapper().setSerializationInclusion(NON_NULL);
+        objectMapper = options.getObjectMapper().findAndRegisterModules().setSerializationInclusion(NON_NULL);
         deserializer = new Deserializer(objectMapper);
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);

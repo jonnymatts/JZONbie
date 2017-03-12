@@ -10,12 +10,15 @@ import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
+import static java.util.Optional.empty;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 import static org.eclipse.jetty.http.HttpStatus.OK_200;
 
@@ -155,6 +158,11 @@ public class ZombieRequestHandler implements RequestHandler {
         @Override
         public boolean isFileResponse() {
             return false;
+        }
+
+        @Override
+        public Optional<Duration> getDelay() {
+            return empty();
         }
     }
 }
