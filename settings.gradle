@@ -1,2 +1,6 @@
 rootProject.name = 'jzonbie'
 
+include ':jzonbie-core'
+include ':jzonbie-server'
+include ':jzonbie-client'
+include ':jzonbie-test-util'
