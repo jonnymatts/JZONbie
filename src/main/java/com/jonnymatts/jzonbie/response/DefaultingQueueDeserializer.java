@@ -54,9 +54,11 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
     }
 
     private AppResponse convertObjectNodeToAppResponse(JsonNode queueNode) {
+        final AppResponseBuilder builder = AppResponse.builder(queueNode.get("statusCode").intValue());
         final BodyContent body = getBodyContent(queueNode.get("body"));
-        final AppResponseBuilder builder = AppResponse.builder(queueNode.get("statusCode").intValue())
-                .withBody(body);
+        if(body != null) {
+            builder.withBody(body);
+        }
         final Map<String, String> headers = (Map<String, String>) convertJsonNodeToObject(queueNode.get("headers"));
         if(headers != null) {
             headers.entrySet().forEach(e -> builder.withHeader(e.getKey(), e.getValue()));
@@ -66,6 +68,7 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
 
     private BodyContent getBodyContent(JsonNode bodyNode) {
         final Object object = convertJsonNodeToObject(bodyNode);
+        if(object == null) return null;
         if(bodyNode instanceof ObjectNode) {
             final Map<String, Object> map = (Map<String, Object>) object;
             map.remove(TYPE_IDENTIFIER);

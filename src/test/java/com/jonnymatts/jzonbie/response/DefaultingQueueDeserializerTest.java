@@ -182,4 +182,32 @@ public class DefaultingQueueDeserializerTest {
         assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(expectedAppResponse);
         assertThat(got.hasSize()).isEqualTo(0);
     }
+
+    @Test
+    public void deserializeReturnsQueueWhenDefaultAndPrimedBodiesAreNull() throws Exception {
+        final HashMap<String, JsonNode> copy = new HashMap<>(APP_RESPONSE_NODE_MAP);
+        final ArrayNode arrayNode = new ArrayNode(instance, singletonList(new ObjectNode(instance, copy)));
+        final ObjectNode queueNode = new ObjectNode(instance,  new HashMap<String, JsonNode>(){{
+            put("default", new ObjectNode(instance, copy));
+            put("primed", arrayNode);
+        }});
+
+        copy.put("body", null);
+
+        when(jsonParser.getCodec().readTree(jsonParser)).thenReturn(queueNode);
+
+        final DefaultingQueueDeserializer deserializer = new DefaultingQueueDeserializer();
+
+        final DefaultingQueue<AppResponse> got = deserializer.deserialize(jsonParser, context);
+
+        final AppResponse expectedAppResponse = AppResponse.builder(200).build();
+
+        assertThat(got.getDefault().map(DefaultResponse::getResponse)).contains(expectedAppResponse);
+        assertThat(got.hasSize()).isEqualTo(1);
+
+        final AppResponse appResponse = got.getEntries().get(0);
+
+        assertThat(appResponse.getBody()).isNull();
+        assertThat(appResponse.getStatusCode()).isEqualTo(200);
+    }
 }
