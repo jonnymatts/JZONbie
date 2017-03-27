@@ -1,134 +1,22 @@
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id "com.palantir.docker" version "0.11.0"
-    id 'maven-publish'   // Uncomment to be able to publish to maven local
-    id 'maven'
-    id 'signing'
-}
-
-group 'com.jonnymatts'
-version '3.0'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
-jar {
-    manifest {
-        attributes "application-version": version,
-                "Main-Class": "com.jonnymatts.jzonbie.App"
+allprojects {
+    ext {
+        group 'com.jonnymatts'
+        version '3.2'
     }
 }
 
-dependencies {
-    compile group: 'com.google.guava', name: 'guava', version: '20.0'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.7'
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.8.7'
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.8.7'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
-    compile group: 'ro.pippo', name: 'pippo-core', version: '1.1.0'
-    compile group: 'ro.pippo', name: 'pippo-jetty', version: '1.1.0'
-    compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.1.0'
-    compile group: 'ch.qos.logback', name:'logback-classic', version : '1.2.1'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
-    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.5.2'
-    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.6.8'
-    testCompile group: 'com.flextrade.jfixture', name: 'jfixture', version: '2.6.3'
-    testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.1.0'
-}
+configure(subprojects) {
 
-javadoc {
-    source = sourceSets.main.allJava
-}
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier 'sources'
-    from sourceSets.main.allJava
-}
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives jar, javadocJar, sourcesJar
-}
-
-// maven-publish plugin configuration
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-        }
+    repositories {
+        mavenLocal()
+        mavenCentral()
     }
-}
-
-// signing and maven plugin configuration. Run gradle with project property -Prelease to use these tasks
-// Ensure gradle.properties are set for signing key and sonatype credentials
-if (project.hasProperty("release")) {
-    signing {
-        sign configurations.archives
-    }
-
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-
-                pom.project {
-                    name 'JZONbie'
-                    packaging 'jar'
-                    // optionally artifactId can be defined here
-                    artifactId 'jzonbie'
-                    description 'Mock HTTP server serving JSON for integration testing'
-                    url 'jonnymatts.com'
-
-                    scm {
-                        connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
-                        developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
-                        url 'http://github.com/jonnymatts/jzonbie/tree/master'
-                    }
-
-                    licenses {
-                        license {
-                            name 'MIT License'
-                            url 'http://www.opensource.org/licenses/mit-license.php'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            name 'Jonathan Matts'
-                            email 'jonoamatts@gmail.com'
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-shadowJar {
-    dependsOn build
-}
-
-docker {
-    dependsOn shadowJar
-    name "jonnymatts/jzonbie:${version}"
-    files tasks.shadowJar.outputs
 }

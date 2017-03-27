@@ -1,0 +1,123 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id "com.palantir.docker" version "0.11.0"
+}
+
+dependencies {
+    compile project(':jzonbie-client')
+//    compile group: 'com.jonnymatts', name: 'jzonbie-client', version: version
+    compile group: 'ro.pippo', name: 'pippo-core', version: '1.1.0'
+    compile group: 'ro.pippo', name: 'pippo-jetty', version: '1.1.0'
+    compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.1.0'
+    compile group: 'ch.qos.logback', name:'logback-classic', version : '1.2.1'
+    testCompile project(':jzonbie-test-util')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.5.2'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.6.8'
+    testCompile group: 'com.flextrade.jfixture', name: 'jfixture', version: '2.6.3'
+    testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.1.0'
+}
+
+jar {
+    baseName 'jzonbie'
+    manifest {
+        attributes "application-version": version,
+                "Main-Class": "com.jonnymatts.jzonbie.App"
+    }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    baseName 'jzonbie'
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName 'jzonbie'
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives jar, javadocJar, sourcesJar
+}
+
+// maven-publish plugin configuration
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+// signing and maven plugin configuration. Run gradle with project property -Prelease to use these tasks
+// Ensure gradle.properties are set for signing key and sonatype credentials
+if (project.hasProperty("release")) {
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'JZONbie'
+                    packaging 'jar'
+                    artifactId 'jzonbie'
+                    description 'Mock HTTP server serving JSON for integration testing'
+                    url 'jonnymatts.com'
+
+                    scm {
+                        connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
+                        developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
+                        url 'http://github.com/jonnymatts/jzonbie/tree/master'
+                    }
+
+                    licenses {
+                        license {
+                            name 'MIT License'
+                            url 'http://www.opensource.org/licenses/mit-license.php'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name 'Jonathan Matts'
+                            email 'jonoamatts@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+shadowJar {
+    baseName "jzonbie"
+    dependsOn build
+}
+
+docker {
+    dependsOn shadowJar
+    dockerfile "${projectDir}/Dockerfile"
+    name "jonnymatts/jzonbie:${version}"
+    files tasks.shadowJar.outputs
+}
