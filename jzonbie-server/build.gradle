@@ -5,7 +5,6 @@ plugins {
 
 dependencies {
     compile project(':jzonbie-client')
-//    compile group: 'com.jonnymatts', name: 'jzonbie-client', version: version
     compile group: 'ro.pippo', name: 'pippo-core', version: '1.1.0'
     compile group: 'ro.pippo', name: 'pippo-jetty', version: '1.1.0'
     compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.1.0'
