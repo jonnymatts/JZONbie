@@ -5,8 +5,7 @@ import com.jonnymatts.jzonbie.model.content.BodyContent;
 
 import java.util.*;
 
-import static com.jonnymatts.jzonbie.util.Matching.listsMatchesRegex;
-import static com.jonnymatts.jzonbie.util.Matching.mapValuesMatchWithRegex;
+import static com.jonnymatts.jzonbie.util.Matching.*;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
@@ -117,7 +116,7 @@ public class AppRequest {
         if(queryParams != null ? !queryParametersMatchWithRegex(that.queryParams) : that.queryParams != null) return false;
         if(headers != null ? !headersAreContainedWithinOtherRequestsHeaders(that.headers) : that.headers != null) return false;
 
-        return body != null ? body.matches(that.body) : that.body == null;
+        return bodyContentsMatch(body, that.body);
     }
 
     @Override

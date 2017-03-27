@@ -1,5 +1,7 @@
 package com.jonnymatts.jzonbie.util;
 
+import com.jonnymatts.jzonbie.model.content.BodyContent;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,10 @@ public class Matching {
         if(value instanceof Number)
             return numbersEqual((Number)pattern, (Number)value);
         return Objects.equals(pattern, value);
+    }
+
+    public static boolean bodyContentsMatch(BodyContent pattern, BodyContent value) {
+        return pattern == null || (pattern.matches(value) && value != null);
     }
 
     private static boolean isNullOrEmpty(Map<?,?> map) {

@@ -146,4 +146,21 @@ public class AppRequestTest {
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
+
+    @Test
+    public void matchesReturnsTrueIfBodyOfThisRequestIsNullAndBodyOfThatRequestIsNull() throws Exception {
+        appRequest.setBody(null);
+
+        final AppRequest copy = AppRequestCloner.clone(appRequest);
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfBodyOfThisRequestIsNullAndBodyOfThatRequestIsNotNull() throws Exception {
+        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        appRequest.setBody(null);
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
 }
