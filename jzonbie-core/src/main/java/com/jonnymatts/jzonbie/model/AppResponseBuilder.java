@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie.model;
 import com.jonnymatts.jzonbie.model.content.BodyContent;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +54,11 @@ public class AppResponseBuilder {
 
     public AppResponseBuilder withBody(BodyContent body) {
         response.setBody(body);
+        return this;
+    }
+
+    public AppResponseBuilder withDelay(Duration delay) {
+        response.setDelay(delay);
         return this;
     }
 

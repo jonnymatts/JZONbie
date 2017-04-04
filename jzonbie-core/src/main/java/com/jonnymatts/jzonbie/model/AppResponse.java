@@ -4,12 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jonnymatts.jzonbie.model.content.BodyContent;
 import com.jonnymatts.jzonbie.response.Response;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 public class AppResponse implements Response {
 
     private int statusCode;
     private Map<String, String> headers;
+    private Duration delay;
     private BodyContent body;
 
     public Map<String, String> getHeaders() {
@@ -42,6 +47,15 @@ public class AppResponse implements Response {
         this.statusCode = statusCode;
     }
 
+    public void setDelay(Duration delay) {
+        this.delay = delay;
+    }
+
+    @Override
+    public Optional<Duration> getDelay() {
+        return ofNullable(delay);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,7 +65,8 @@ public class AppResponse implements Response {
 
         if (statusCode != that.statusCode) return false;
         if (headers != null ? !headers.equals(that.headers) : that.headers != null) return false;
-        return body != null ? body.equals(that.body) : that.body == null;
+        if (body != null ? !body.equals(that.body) : that.body != null) return false;
+        return delay != null ? delay.equals(that.delay) : that.delay == null;
     }
 
     @Override
@@ -59,6 +74,7 @@ public class AppResponse implements Response {
         int result = statusCode;
         result = 31 * result + (headers != null ? headers.hashCode() : 0);
         result = 31 * result + (body != null ? body.hashCode() : 0);
+        result = 31 * result + (delay != null ? delay.hashCode() : 0);
         return result;
     }
 

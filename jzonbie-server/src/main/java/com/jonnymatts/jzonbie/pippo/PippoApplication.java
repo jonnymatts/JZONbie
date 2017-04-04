@@ -71,6 +71,15 @@ public class PippoApplication extends Application {
                 pippoResponse.file(fileResponse.getFileName(), new ByteArrayInputStream(fileResponse.getContents().getBytes()));
             } else {
                 primeResponse(pippoResponse, response);
+
+                response.getDelay().ifPresent(d -> {
+                    try {
+                        Thread.sleep(d.toMillis());
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
                 final Object body = response.getBody();
 
                 if(body instanceof LiteralBodyContent) {
