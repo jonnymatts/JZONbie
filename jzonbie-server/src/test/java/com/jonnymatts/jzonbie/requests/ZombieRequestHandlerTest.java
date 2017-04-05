@@ -7,7 +7,6 @@ import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -21,6 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
@@ -52,14 +52,14 @@ public class ZombieRequestHandlerTest {
     @Fixture private JzonbieOptions jzonbieOptions;
     @Fixture private String primingFileContent;
 
-    private DefaultingQueue<AppResponse> defaultingQueue;
+    private DefaultingQueue defaultingQueue;
     private List<PrimedMapping> primedRequests;
     private ZombieRequestHandler zombieRequestHandler;
 
     @Before
     public void setUp() throws Exception {
         zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory);
-        defaultingQueue = new DefaultingQueue<AppResponse>() {{
+        defaultingQueue = new DefaultingQueue() {{
             add(appResponses);
         }};
         primedRequests = appRequests.stream().map(request -> new PrimedMapping(request, defaultingQueue)).collect(toList());
@@ -97,7 +97,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(zombiePriming);
 
-        verify(primingContext).addDefault(zombiePriming.getAppRequest(), new StaticDefaultResponse<>(zombiePriming.getAppResponse()));
+        verify(primingContext).addDefault(zombiePriming.getAppRequest(), staticDefault(zombiePriming.getAppResponse()));
     }
 
     @Test
@@ -125,8 +125,8 @@ public class ZombieRequestHandlerTest {
         when(request.getPrimingFileContent()).thenReturn(primingFileContent);
         final List<PrimedMapping> mappings = singletonList(new PrimedMapping(
                 zombieRequest,
-                new DefaultingQueue<AppResponse>() {{
-                    setDefault(new StaticDefaultResponse<>(zombieResponse));
+                new DefaultingQueue() {{
+                    setDefault(staticDefault(zombieResponse));
                 }}
         ));
         when(deserializer.deserializeCollection(primingFileContent, PrimedMapping.class)).thenReturn(mappings);
@@ -137,7 +137,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(mappings);
 
-        verify(primingContext).addDefault(zombieRequest, new StaticDefaultResponse<>(zombieResponse));
+        verify(primingContext).addDefault(zombieRequest, staticDefault(zombieResponse));
     }
 
     @Test(expected = IllegalArgumentException.class)

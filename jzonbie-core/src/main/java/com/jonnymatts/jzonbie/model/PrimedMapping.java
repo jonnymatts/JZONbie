@@ -7,7 +7,7 @@ public class PrimedMapping {
 
     public PrimedMapping() {}
 
-    public PrimedMapping(AppRequest appRequest, DefaultingQueue<AppResponse> appResponses) {
+    public PrimedMapping(AppRequest appRequest, DefaultingQueue appResponses) {
         this.appRequest = appRequest;
         this.appResponses = appResponses;
     }
@@ -16,7 +16,7 @@ public class PrimedMapping {
     private AppRequest appRequest;
 
     @JsonProperty("responses")
-    private DefaultingQueue<AppResponse> appResponses;
+    private DefaultingQueue appResponses;
 
     public AppRequest getAppRequest() {
         return appRequest;
@@ -26,11 +26,11 @@ public class PrimedMapping {
         this.appRequest = appRequest;
     }
 
-    public DefaultingQueue<AppResponse> getAppResponses() {
+    public DefaultingQueue getAppResponses() {
         return appResponses;
     }
 
-    public void setAppResponses(DefaultingQueue<AppResponse> appResponses) {
+    public void setAppResponses(DefaultingQueue appResponses) {
         this.appResponses = appResponses;
     }
 

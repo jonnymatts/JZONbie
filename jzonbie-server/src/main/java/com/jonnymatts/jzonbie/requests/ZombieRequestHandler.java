@@ -2,10 +2,12 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonnymatts.jzonbie.JzonbieOptions;
-import com.jonnymatts.jzonbie.model.*;
+import com.jonnymatts.jzonbie.model.AppRequest;
+import com.jonnymatts.jzonbie.model.PrimedMapping;
+import com.jonnymatts.jzonbie.model.PrimingContext;
+import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -13,6 +15,7 @@ import com.jonnymatts.jzonbie.util.Deserializer;
 import java.util.List;
 import java.util.Map;
 
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
@@ -75,7 +78,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private ZombieResponse handleDefaultPrimingRequest(Request request) throws JsonProcessingException {
         final ZombiePriming zombiePriming = getZombiePriming(request);
 
-        primingContext.addDefault(zombiePriming.getAppRequest(), new StaticDefaultResponse<>(zombiePriming.getAppResponse()));
+        primingContext.addDefault(zombiePriming.getAppRequest(), staticDefault(zombiePriming.getAppResponse()));
 
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
@@ -84,7 +87,7 @@ public class ZombieRequestHandler implements RequestHandler {
         final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(request.getPrimingFileContent(), PrimedMapping.class);
 
         primedMappings.forEach(primedMapping -> {
-            final DefaultingQueue<AppResponse> defaultingQueue = primedMapping.getAppResponses();
+            final DefaultingQueue defaultingQueue = primedMapping.getAppResponses();
             defaultingQueue.getEntries().forEach(appResponse -> primingContext.add(primedMapping.getAppRequest(), appResponse));
             defaultingQueue.getDefault().map(defaultResponse -> primingContext.addDefault(primedMapping.getAppRequest(), defaultResponse));
         });

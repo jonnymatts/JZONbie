@@ -1,12 +1,14 @@
 package com.jonnymatts.jzonbie.response;
 
 import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.DynamicDefaultResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse;
 import org.junit.Test;
 
 import java.util.Iterator;
 
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,7 +19,7 @@ public class DefaultAppResponseTest {
 
     @Test
     public void getResponseFromStaticDefaultResponseReturnsResponse() throws Exception {
-        final StaticDefaultResponse<AppResponse> defaultResponse = new StaticDefaultResponse<>(response1);
+        final StaticDefaultAppResponse defaultResponse = staticDefault(response1);
 
         final AppResponse got = defaultResponse.getResponse();
 
@@ -25,7 +27,7 @@ public class DefaultAppResponseTest {
     }
     @Test
     public void isDynamicFromStaticDefaultResponseReturnsFalse() throws Exception {
-        final StaticDefaultResponse<AppResponse> defaultResponse = new StaticDefaultResponse<>(response1);
+        final StaticDefaultAppResponse defaultResponse = staticDefault(response1);
 
         final boolean got = defaultResponse.isDynamic();
 
@@ -36,7 +38,7 @@ public class DefaultAppResponseTest {
     public void getResponseFromDynamicDefaultResponseReturnsResponseFromSupplier() throws Exception {
         final Iterator<AppResponse> appResponses = asList(response1, response2).iterator();
 
-        final DynamicDefaultResponse<AppResponse> defaultResponse = new DynamicDefaultResponse<>(appResponses::next);
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(appResponses::next);
 
         final AppResponse got1 = defaultResponse.getResponse();
 
@@ -48,7 +50,7 @@ public class DefaultAppResponseTest {
     }
     @Test
     public void isDynamicFromDynamicDefaultResponseReturnsTrue() throws Exception {
-        final DynamicDefaultResponse<AppResponse> defaultResponse = new DynamicDefaultResponse<>(() -> response1);
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> response1);
 
         final boolean got = defaultResponse.isDynamic();
 

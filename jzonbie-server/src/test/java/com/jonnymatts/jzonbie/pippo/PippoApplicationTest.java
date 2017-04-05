@@ -12,7 +12,6 @@ import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import com.jonnymatts.jzonbie.util.Deserializer;
@@ -34,6 +33,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -132,7 +132,7 @@ public class PippoApplicationTest extends PippoTest {
 
         final PrimedMapping mapping = primingContext.getCurrentPriming().get(0);
 
-        assertThat(mapping.getAppResponses().getDefault()).contains(new StaticDefaultResponse<>(
+        assertThat(mapping.getAppResponses().getDefault()).contains(staticDefault(
                 AppResponse.builder(200)
                         .contentType("application/json")
                         .withBody(singletonMap("key", "val"))

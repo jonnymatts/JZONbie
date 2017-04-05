@@ -2,27 +2,32 @@ package com.jonnymatts.jzonbie.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jonnymatts.jzonbie.model.AppResponse;
 
 import java.util.function.Supplier;
 
-public abstract class DefaultResponse<T> {
+public abstract class DefaultAppResponse {
 
-    private DefaultResponse() {}
+    private DefaultAppResponse() {}
 
-    public abstract T getResponse();
+    public abstract AppResponse getResponse();
 
     @JsonIgnore
     public abstract boolean isDynamic();
 
-    public static class StaticDefaultResponse<T> extends DefaultResponse<T> {
-        private T response;
+    public static class StaticDefaultAppResponse extends DefaultAppResponse {
+        private AppResponse response;
 
-        public StaticDefaultResponse(@JsonProperty("response") T response) {
+        public StaticDefaultAppResponse(@JsonProperty("response") AppResponse response) {
             this.response = response;
+        }
+        
+        public static StaticDefaultAppResponse staticDefault(AppResponse response) {
+            return new StaticDefaultAppResponse(response);
         }
 
         @Override
-        public T getResponse() {
+        public AppResponse getResponse() {
             return response;
         }
 
@@ -36,7 +41,7 @@ public abstract class DefaultResponse<T> {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            StaticDefaultResponse<?> that = (StaticDefaultResponse<?>) o;
+            StaticDefaultAppResponse that = (StaticDefaultAppResponse) o;
 
             return response != null ? response.equals(that.response) : that.response == null;
         }
@@ -47,15 +52,19 @@ public abstract class DefaultResponse<T> {
         }
     }
 
-    public static class DynamicDefaultResponse<T> extends DefaultResponse<T> {
-        private Supplier<T> supplier;
+    public static class DynamicDefaultAppResponse extends DefaultAppResponse {
+        private Supplier<AppResponse> supplier;
 
-        public DynamicDefaultResponse(Supplier<T> supplier) {
+        public DynamicDefaultAppResponse(Supplier<AppResponse> supplier) {
             this.supplier = supplier;
         }
 
+        public static DynamicDefaultAppResponse dynamicDefault(Supplier<AppResponse> supplier) {
+            return new DynamicDefaultAppResponse(supplier);
+        }
+
         @Override
-        public T getResponse() {
+        public AppResponse getResponse() {
             return supplier.get();
         }
 
@@ -69,7 +78,7 @@ public abstract class DefaultResponse<T> {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            DynamicDefaultResponse<?> that = (DynamicDefaultResponse<?>) o;
+            DynamicDefaultAppResponse that = (DynamicDefaultAppResponse) o;
 
             return supplier != null ? supplier.equals(that.supplier) : that.supplier == null;
         }

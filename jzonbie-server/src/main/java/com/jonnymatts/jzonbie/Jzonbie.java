@@ -9,7 +9,8 @@ import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
-import com.jonnymatts.jzonbie.response.DefaultResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import ro.pippo.core.Pippo;
 
@@ -60,14 +61,14 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming primeZombieForDefault(AppRequest request, DefaultResponse<AppResponse> defaultResponse) {
+    public ZombiePriming primeZombieForDefault(AppRequest request, DefaultAppResponse defaultAppResponse) {
         final AppRequest appRequest = normalizeForPriming(request, AppRequest.class);
-        final DefaultResponse<AppResponse> appResponse = defaultResponse.isDynamic() ? defaultResponse :
-                normalizeForPriming(defaultResponse, DefaultResponse.StaticDefaultResponse.class);
+        final DefaultAppResponse appResponse = defaultAppResponse.isDynamic() ? defaultAppResponse :
+                normalizeForPriming(defaultAppResponse, StaticDefaultAppResponse.class);
 
         primingContext.addDefault(appRequest, appResponse);
 
-        final AppResponse returnResponse = defaultResponse.isDynamic() ? null : defaultResponse.getResponse();
+        final AppResponse returnResponse = defaultAppResponse.isDynamic() ? null : defaultAppResponse.getResponse();
         return new ZombiePriming(request, returnResponse);
     }
 

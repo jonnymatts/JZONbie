@@ -5,9 +5,8 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.response.DefaultResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.DynamicDefaultResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +15,8 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -134,7 +135,7 @@ public class JzonbieTest {
     public void jzonbieCanBePrimedForStaticDefault() throws Exception {
         final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
                 AppRequest.builder("GET", "/").build(),
-                new StaticDefaultResponse<>(AppResponse.builder(200).withBody(singletonMap("key", "val")).build())
+                staticDefault(AppResponse.builder(200).withBody(singletonMap("key", "val")).build())
         );
 
         final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
@@ -146,12 +147,12 @@ public class JzonbieTest {
         final PrimedMapping primedMapping = got.get(0);
 
         assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultResponse::getResponse)).contains(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(zombiePriming.getAppResponse());
     }
 
     @Test
     public void jzonbieCanBePrimedForDynamicDefault() throws Exception {
-        final DynamicDefaultResponse<AppResponse> defaultResponse = new DynamicDefaultResponse<>(() -> AppResponse.builder(200).withBody(singletonMap("key", "val")).build());
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> AppResponse.builder(200).withBody(singletonMap("key", "val")).build());
         final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
                 AppRequest.builder("GET", "/").build(),
                 defaultResponse

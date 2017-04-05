@@ -5,7 +5,6 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -20,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -71,7 +71,7 @@ public class ApacheJzonbieHttpClientTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, new StaticDefaultResponse<>(appResponse));
+        final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, staticDefault(appResponse));
 
         assertThat(got).isEqualTo(zombiePriming);
     }

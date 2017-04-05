@@ -4,11 +4,11 @@ import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.response.DefaultResponse;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
+import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Collections.singletonMap;
 
 public class JzonbieHttpClient implements JzonbieClient {
@@ -34,12 +34,12 @@ public class JzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming primeZombieForDefault(AppRequest request, DefaultResponse<AppResponse> response) {
+    public ZombiePriming primeZombieForDefault(AppRequest request, DefaultAppResponse response) {
         return httpClient.primeZombieForDefault(request, response);
     }
 
     public ZombiePriming primeZombieForDefault(AppRequest request, AppResponse response) {
-        return httpClient.primeZombieForDefault(request, new StaticDefaultResponse<>(response));
+        return httpClient.primeZombieForDefault(request, staticDefault(response));
     }
 
     @Override

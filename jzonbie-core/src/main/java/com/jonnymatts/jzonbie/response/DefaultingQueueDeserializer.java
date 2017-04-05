@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.node.*;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.AppResponseBuilder;
 import com.jonnymatts.jzonbie.model.content.BodyContent;
-import com.jonnymatts.jzonbie.response.DefaultResponse.StaticDefaultResponse;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -22,10 +21,11 @@ import static com.jonnymatts.jzonbie.model.content.BodyContent.TYPE_IDENTIFIER;
 import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue<AppResponse>> {
+public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue> {
 
     public DefaultingQueueDeserializer() {
         this(null);
@@ -36,20 +36,20 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
     }
 
     @Override
-    public DefaultingQueue<AppResponse> deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+    public DefaultingQueue deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
 
         final JsonNode defaultNode = node.get("default");
-        final DefaultResponse<AppResponse> defaultResponse = (defaultNode instanceof NullNode || defaultNode instanceof TextNode) ? null
-                : new StaticDefaultResponse<>(convertObjectNodeToAppResponse(defaultNode));
+        final DefaultAppResponse defaultAppResponse = (defaultNode instanceof NullNode || defaultNode instanceof TextNode) ? null
+                : staticDefault(convertObjectNodeToAppResponse(defaultNode));
 
         final List<AppResponse> appResponses = StreamSupport.stream(node.get("primed").spliterator(), false)
                 .map(this::convertObjectNodeToAppResponse)
                 .collect(toList());
 
-        return new DefaultingQueue<AppResponse>(){{
+        return new DefaultingQueue(){{
             add(appResponses);
-            setDefault(defaultResponse);
+            setDefault(defaultAppResponse);
         }};
     }
 
