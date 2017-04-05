@@ -23,7 +23,6 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
-import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +46,7 @@ public class ZombieRequestHandlerTest {
     @Mock private AppRequest zombieRequest;
     @Mock private AppResponse zombieResponse;
     @Mock private FileResponse fileResponse;
+    @Mock private PrimedMappingUploader primedMappingUploader;
 
     @Fixture private List<AppRequest> appRequests;
     @Fixture private List<AppResponse> appResponses;
@@ -69,7 +69,7 @@ public class ZombieRequestHandlerTest {
             add(zombiePriming3);
         }});
 
-        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory);
+        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
         defaultingQueue = new DefaultingQueue() {{
             add(appResponses);
         }};
@@ -123,32 +123,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(primedRequests);
 
-        primedRequests.forEach(primedMapping ->
-                appResponses.forEach(appResponse ->
-                        primingContext.add(primedMapping.getAppRequest(), appResponse)
-                )
-        );
-    }
-
-    @Test
-    public void handleAddsPrimingFromFileToPrimingContextWithDefaultIfZombieHeaderHasPrimingFileValue() throws JsonProcessingException {
-        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-file"));
-        when(request.getPrimingFileContent()).thenReturn(primingFileContent);
-        final List<PrimedMapping> mappings = singletonList(new PrimedMapping(
-                zombieRequest,
-                new DefaultingQueue() {{
-                    setDefault(staticDefault(zombieResponse));
-                }}
-        ));
-        when(deserializer.deserializeCollection(primingFileContent, PrimedMapping.class)).thenReturn(mappings);
-
-        final Response got = zombieRequestHandler.handle(request);
-
-        assertThat(got.getStatusCode()).isEqualTo(CREATED_201);
-        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
-        assertThat(got.getBody()).isEqualTo(mappings);
-
-        verify(primingContext).addDefault(zombieRequest, staticDefault(zombieResponse));
+        verify(primedMappingUploader).upload(primedRequests);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -245,7 +220,7 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void zombieHeaderNameCanBeSet() throws JsonProcessingException {
-        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory);
+        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
 
         when(request.getHeaders()).thenReturn(singletonMap(jzonbieOptions.getZombieHeaderName(), "history"));
 

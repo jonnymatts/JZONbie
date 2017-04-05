@@ -10,6 +10,7 @@ import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -22,9 +23,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
+import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.when;
@@ -91,6 +95,24 @@ public class ApacheJzonbieRequestFactoryTest {
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
         assertZombieHeader(primeZombieRequest, "zombie", "priming-default");
         assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
+    }
+
+    @Test
+    public void createPrimeZombieWithFileRequest() throws Exception {
+        final File file = new File(getClass().getClassLoader().getResource("example-priming.json").getFile());
+
+        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieWithFileRequest(file);
+
+        assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
+        assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(primeZombieRequest, "zombie", "priming-file");
+
+        final HttpEntityEnclosingRequest httpPost = (HttpEntityEnclosingRequest)primeZombieRequest;
+
+        final String entityString = IOUtils.toString(httpPost.getEntity().getContent(), defaultCharset());
+        final String fileString = IOUtils.toString(new FileInputStream(file), defaultCharset());
+
+        assertThat(entityString).contains(fileString);
     }
 
     @Test

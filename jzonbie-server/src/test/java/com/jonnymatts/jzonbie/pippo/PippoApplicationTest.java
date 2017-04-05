@@ -11,6 +11,7 @@ import com.jayway.restassured.response.Response;
 import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
+import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
@@ -59,7 +60,8 @@ public class PippoApplicationTest extends PippoTest {
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     private static final Deserializer deserializer = new Deserializer(objectMapper);
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, new AppRequestFactory(deserializer));
-    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new CurrentPrimingFileResponseFactory(objectMapper));
+    private static final PrimedMappingUploader primedMappingUploader = new PrimedMappingUploader(primingContext);
+    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader);
 
     private AppRequest appRequest;
     private AppResponse appResponse;

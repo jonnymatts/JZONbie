@@ -5,7 +5,6 @@ import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
-import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
 
@@ -27,17 +26,20 @@ public class ZombieRequestHandler implements RequestHandler {
     private final Deserializer deserializer;
     private final String zombieHeaderName;
     private final CurrentPrimingFileResponseFactory fileResponseFactory;
+    private final PrimedMappingUploader primedMappingUploader;
 
     public ZombieRequestHandler(JzonbieOptions options,
                                 PrimingContext primingContext,
                                 CallHistory callHistory,
                                 Deserializer deserializer,
-                                CurrentPrimingFileResponseFactory fileResponseFactory) {
+                                CurrentPrimingFileResponseFactory fileResponseFactory,
+                                PrimedMappingUploader primedMappingUploader) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
         this.deserializer = deserializer;
         this.zombieHeaderName = options.getZombieHeaderName();
         this.fileResponseFactory = fileResponseFactory;
+        this.primedMappingUploader = primedMappingUploader;
     }
 
     @Override
@@ -85,11 +87,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private ZombieResponse handleFilePrimingRequest(Request request) throws JsonProcessingException {
         final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(request.getPrimingFileContent(), PrimedMapping.class);
 
-        primedMappings.forEach(primedMapping -> {
-            final DefaultingQueue defaultingQueue = primedMapping.getAppResponses();
-            defaultingQueue.getEntries().forEach(appResponse -> primingContext.add(primedMapping.getAppRequest(), appResponse));
-            defaultingQueue.getDefault().map(defaultResponse -> primingContext.addDefault(primedMapping.getAppRequest(), defaultResponse));
-        });
+        primedMappingUploader.upload(primedMappings);
 
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, primedMappings);
     }

@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
+import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
@@ -14,7 +15,11 @@ import com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppRespon
 import com.jonnymatts.jzonbie.util.Deserializer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import ro.pippo.core.Pippo;
+import ro.pippo.core.util.IoUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -27,6 +32,7 @@ public class Jzonbie implements JzonbieClient {
     private final Pippo pippo;
     public Deserializer deserializer;
     public ObjectMapper objectMapper;
+    private PrimedMappingUploader primedMappingUploader;
 
     public Jzonbie() {
         this(options());
@@ -37,11 +43,11 @@ public class Jzonbie implements JzonbieClient {
         deserializer = new Deserializer(objectMapper);
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
+        primedMappingUploader = new PrimedMappingUploader(primingContext);
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, fileResponseFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, fileResponseFactory, primedMappingUploader);
 
         pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, options.getObjectMapper()));
-
 
         pippo.setServer(new JzonbieJettyServer());
         pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");
@@ -58,6 +64,18 @@ public class Jzonbie implements JzonbieClient {
         final ZombiePriming deserialized = normalizeForPriming(zombiePriming, ZombiePriming.class);
         primingContext.add(deserialized);
         return deserialized;
+    }
+
+    @Override
+    public List<PrimedMapping> primeZombie(File file) {
+        try {
+            final String mappingsString = IoUtils.toString(new FileInputStream(file));
+            final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(mappingsString, PrimedMapping.class);
+            primedMappingUploader.upload(primedMappings);
+            return primedMappings;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

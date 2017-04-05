@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import java.io.File;
 import java.util.List;
 import java.util.function.Function;
 
@@ -56,6 +57,12 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieRequest(request, response);
         return execute(primeZombieRequest, httpResponse -> deserializer.deserialize(httpResponse, ZombiePriming.class));
+    }
+
+    @Override
+    public List<PrimedMapping> primeZombie(File file) {
+        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieWithFileRequest(file);
+        return execute(primeZombieRequest, httpResponse -> deserializer.deserializeCollection(httpResponse, PrimedMapping.class));
     }
 
     @Override

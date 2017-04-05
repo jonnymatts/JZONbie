@@ -6,9 +6,14 @@ import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.VerificationRequest;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+
+import java.io.File;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
@@ -52,6 +57,16 @@ public class ApacheJzonbieRequestFactory {
         return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-default");
     }
 
+    public HttpUriRequest createPrimeZombieWithFileRequest(File file) {
+        final HttpEntity entity = MultipartEntityBuilder.create()
+                .addPart("priming", new FileBody(file))
+                .build();
+        return RequestBuilder.post(zombieBaseUrl)
+                .addHeader(zombieHeaderName, "priming-file")
+                .setEntity(entity)
+                .build();
+    }
+
     public HttpUriRequest createVerifyRequest(AppRequest appRequest, InvocationVerificationCriteria criteria) {
         return createPostRequest(new VerificationRequest(appRequest, criteria), "verify");
     }
@@ -74,11 +89,11 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
-    private HttpUriRequest createPostRequest(Object reuqestBody, String zombieHeader) {
+    private HttpUriRequest createPostRequest(Object requestBody, String zombieHeader) {
         try {
             return RequestBuilder.post(zombieBaseUrl)
                     .addHeader(zombieHeaderName, zombieHeader)
-                    .setEntity(new StringEntity(objectMapper.writeValueAsString(reuqestBody)))
+                    .setEntity(new StringEntity(objectMapper.writeValueAsString(requestBody)))
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 
+import java.io.File;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
@@ -32,6 +33,11 @@ public class JzonbieHttpClient implements JzonbieClient {
     @Override
     public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
         return httpClient.primeZombie(request, response);
+    }
+
+    @Override
+    public List<PrimedMapping> primeZombie(File file) {
+        return httpClient.primeZombie(file);
     }
 
     @Override

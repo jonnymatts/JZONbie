@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.File;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
@@ -41,6 +42,7 @@ public class ApacheJzonbieHttpClientTest {
     @Mock private AppResponse appResponse;
     @Mock private HttpUriRequest httpRequest;
     @Mock private CloseableHttpResponse httpResponse;
+    @Mock private File file;
 
     private RuntimeException runtimeException;
 
@@ -76,6 +78,19 @@ public class ApacheJzonbieHttpClientTest {
         final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, staticDefault(appResponse));
 
         assertThat(got).isEqualTo(zombiePriming);
+    }
+
+    @Test
+    public void primeZombieWithFileReturnsPrimedMappings() throws Exception {
+        final List<PrimedMapping> primedMappings = emptyList();
+
+        when(apacheJzonbieRequestFactory.createPrimeZombieWithFileRequest(file)).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserializeCollection(httpResponse, PrimedMapping.class)).thenReturn(primedMappings);
+
+        final List<PrimedMapping> got = jzonbieHttpClient.primeZombie(file);
+
+        assertThat(got).isEqualTo(primedMappings);
     }
 
     @Test

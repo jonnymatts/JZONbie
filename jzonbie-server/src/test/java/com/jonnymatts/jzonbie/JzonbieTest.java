@@ -16,6 +16,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -183,6 +184,22 @@ public class JzonbieTest {
         assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
 
         assertThat(primedMapping.getAppResponses().getDefault()).contains(defaultResponse);
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithAFile() throws Exception {
+        final File file = new File(getClass().getClassLoader().getResource("example-priming.json").getFile());
+
+        final List<PrimedMapping> got = jzonbie.primeZombie(file);
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest().getPath()).isEqualTo("/path");
+        assertThat(primedMapping.getAppResponses().getDefault()).isNotEmpty();
+        assertThat(primedMapping.getAppResponses().getEntries()).hasSize(1);
+        assertThat(primedMapping.getAppResponses().getEntries().get(0).getStatusCode()).isEqualTo(201);
     }
 
     @Test
