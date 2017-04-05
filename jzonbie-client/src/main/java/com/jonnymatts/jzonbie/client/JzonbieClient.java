@@ -5,6 +5,7 @@ import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 
 import java.util.List;
 
@@ -17,6 +18,10 @@ public interface JzonbieClient {
     List<PrimedMapping> getCurrentPriming();
 
     List<ZombiePriming> getHistory();
+
+    boolean verify(AppRequest appRequest);
+
+    boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria);
 
     void reset();
 }

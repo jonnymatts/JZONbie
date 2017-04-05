@@ -5,9 +5,11 @@ import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
+import com.jonnymatts.jzonbie.model.VerificationRequest;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -22,6 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 
+import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.when;
@@ -39,12 +42,15 @@ public class ApacheJzonbieRequestFactoryTest {
     @Fixture private String entityString;
 
     private AppRequest appRequest;
+    private InvocationVerificationCriteria criteria;
     private ApacheJzonbieRequestFactory requestFactory;
     private RuntimeException runtimeException;
 
     @Before
     public void setUp() throws Exception {
         appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
+
+        criteria = equalTo(2);
 
         appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
 
@@ -112,6 +118,19 @@ public class ApacheJzonbieRequestFactoryTest {
         assertThat(resetRequest.getMethod()).isEqualTo("DELETE");
         assertThat(resetRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
         assertZombieHeader(resetRequest, "zombie", "reset");
+    }
+
+    @Test
+    public void createVerifyRequest() throws Exception {
+        final VerificationRequest verificationRequest = new VerificationRequest(appRequest, criteria);
+        when(objectMapper.writeValueAsString(verificationRequest)).thenReturn(entityString);
+
+        final HttpUriRequest primeZombieRequest = requestFactory.createVerifyRequest(appRequest, criteria);
+
+        assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
+        assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(primeZombieRequest, "zombie", "verify");
+        assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
     }
 
     @Test

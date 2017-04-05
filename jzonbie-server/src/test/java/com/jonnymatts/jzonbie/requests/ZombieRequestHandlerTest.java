@@ -18,9 +18,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
@@ -46,18 +48,27 @@ public class ZombieRequestHandlerTest {
     @Mock private AppResponse zombieResponse;
     @Mock private FileResponse fileResponse;
 
-    @Fixture private List<ZombiePriming> callHistory;
     @Fixture private List<AppRequest> appRequests;
     @Fixture private List<AppResponse> appResponses;
     @Fixture private JzonbieOptions jzonbieOptions;
     @Fixture private String primingFileContent;
+    @Fixture private ZombiePriming zombiePriming1;
+    @Fixture private ZombiePriming zombiePriming2;
+    @Fixture private ZombiePriming zombiePriming3;
 
+    private CallHistory callHistory;
     private DefaultingQueue defaultingQueue;
     private List<PrimedMapping> primedRequests;
     private ZombieRequestHandler zombieRequestHandler;
 
     @Before
     public void setUp() throws Exception {
+        callHistory = new CallHistory(new ArrayList<ZombiePriming>(){{
+            add(zombiePriming1);
+            add(zombiePriming2);
+            add(zombiePriming3);
+        }});
+
         zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory);
         defaultingQueue = new DefaultingQueue() {{
             add(appResponses);
@@ -185,14 +196,14 @@ public class ZombieRequestHandlerTest {
     public void handleClearsPrimingContextAndCallHistoryIfZombieHeaderHasResetValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "reset"));
 
-        assertThat(callHistory).isNotEmpty();
+        assertThat(callHistory.getEntries()).isNotEmpty();
 
         final Response got = zombieRequestHandler.handle(request);
 
         assertThat(got.getStatusCode()).isEqualTo(OK_200);
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(singletonMap("message", "Zombie Reset"));
-        assertThat(callHistory).isEmpty();
+        assertThat(callHistory.getEntries()).isEmpty();
 
         verify(primingContext).clear();
     }
@@ -206,6 +217,20 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getStatusCode()).isEqualTo(OK_200);
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(callHistory);
+    }
+
+    @Test
+    public void handleReturnsVerificationResultIfZombieHeaderHasVerifyValue() throws Exception {
+        final VerificationRequest verificationRequest = new VerificationRequest(zombiePriming1.getAppRequest(), equalTo(3));
+
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "verify"));
+        when(deserializer.deserialize(request, VerificationRequest.class)).thenReturn(verificationRequest);
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(OK_200);
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(true);
     }
 
     @Test

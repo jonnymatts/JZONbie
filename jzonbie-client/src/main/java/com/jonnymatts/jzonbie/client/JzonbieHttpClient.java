@@ -5,6 +5,7 @@ import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 
 import java.util.List;
 
@@ -53,6 +54,16 @@ public class JzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
+    public boolean verify(AppRequest appRequest) {
+        return httpClient.verify(appRequest);
+    }
+
+    @Override
+    public boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria) {
+        return httpClient.verify(appRequest, criteria);
+    }
+
+    @Override
     public void reset() {
         httpClient.reset();
     }
@@ -70,11 +81,5 @@ public class JzonbieHttpClient implements JzonbieClient {
                 .build();
 
         final List<PrimedMapping> currentPriming = client.getCurrentPriming();
-
-        final PrimedMapping mapping = currentPriming.get(0);
-
-        mapping.getAppRequest();
-
-        currentPriming.clear();
     }
 }

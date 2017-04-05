@@ -2,10 +2,7 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonnymatts.jzonbie.JzonbieOptions;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.PrimingContext;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
@@ -26,14 +23,14 @@ public class ZombieRequestHandler implements RequestHandler {
     public static final Map<String, String> JSON_HEADERS_MAP = singletonMap("Content-Type", "application/json");
 
     private final PrimingContext primingContext;
-    private final List<ZombiePriming> callHistory;
+    private final CallHistory callHistory;
     private final Deserializer deserializer;
     private final String zombieHeaderName;
     private final CurrentPrimingFileResponseFactory fileResponseFactory;
 
     public ZombieRequestHandler(JzonbieOptions options,
                                 PrimingContext primingContext,
-                                List<ZombiePriming> callHistory,
+                                CallHistory callHistory,
                                 Deserializer deserializer,
                                 CurrentPrimingFileResponseFactory fileResponseFactory) {
         this.primingContext = primingContext;
@@ -54,6 +51,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleDefaultPrimingRequest(request);
             case "priming-file":
                 return handleFilePrimingRequest(request);
+            case "verify":
+                return handleVerifyRequest(request);
             case "current":
                 return handleCurrentPrimingRequest();
             case "current-file":
@@ -107,6 +106,12 @@ public class ZombieRequestHandler implements RequestHandler {
         return new ZombieResponse(OK_200, JSON_HEADERS_MAP, callHistory);
     }
 
+    private ZombieResponse handleVerifyRequest(Request request) throws JsonProcessingException {
+        final VerificationRequest verificationRequest = deserializer.deserialize(request, VerificationRequest.class);
+        final boolean verify = callHistory.verify(verificationRequest.getAppRequest(), verificationRequest.getCriteria());
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, verify);
+    }
+
     private ZombieResponse handleResetRequest() {
         primingContext.clear();
         callHistory.clear();
@@ -117,11 +122,11 @@ public class ZombieRequestHandler implements RequestHandler {
         final ZombiePriming zombiePriming = deserializer.deserialize(request, ZombiePriming.class);
         final AppRequest zombieRequest = zombiePriming.getAppRequest();
 
-        if(zombieRequest.getMethod() == null) {
+        if (zombieRequest.getMethod() == null) {
             throw new IllegalArgumentException("Method cannot be null");
         }
 
-        if(zombieRequest.getPath() == null) {
+        if (zombieRequest.getPath() == null) {
             throw new IllegalArgumentException("Path cannot be null");
         }
         return zombiePriming;

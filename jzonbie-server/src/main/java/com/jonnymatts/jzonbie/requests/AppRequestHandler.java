@@ -5,17 +5,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.Response;
 
-import java.util.List;
 import java.util.Optional;
 
 public class AppRequestHandler implements RequestHandler {
 
     private final PrimingContext primingContext;
-    private final List<ZombiePriming> callHistory;
+    private final CallHistory callHistory;
     private final AppRequestFactory appRequestFactory;
 
     public AppRequestHandler(PrimingContext primingContext,
-                             List<ZombiePriming> callHistory,
+                             CallHistory callHistory,
                              AppRequestFactory appRequestFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;

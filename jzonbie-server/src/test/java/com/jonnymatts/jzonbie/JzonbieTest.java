@@ -7,16 +7,23 @@ import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,10 +31,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JzonbieTest {
 
     private Jzonbie jzonbie;
+    private HttpUriRequest httpRequest;
+    private HttpClient client;
 
     @Before
     public void setUp() throws Exception {
         jzonbie = new Jzonbie();
+
+        httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build();
+
+        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        connectionManager.setMaxTotal(10);
+        connectionManager.setDefaultMaxPerRoute(10);
+        client = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
     }
 
     @After
@@ -194,5 +210,45 @@ public class JzonbieTest {
         assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
 
         jzonbieWithZombieHeaderNameSet.stop();
+    }
+
+    @Test
+    public void verifyReturnsFalseIfCallVerificationCriteriaIsFalse() throws Exception {
+        final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(3);
+
+        final boolean got = jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+
+        assertThat(got).isFalse();
+    }
+
+    @Test
+    public void verifyReturnsTrueIfCallVerificationCriteriaIsTrue() throws Exception {
+        final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(2);
+
+        final boolean got = jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+
+        assertThat(got).isTrue();
+    }
+
+    @Test
+    public void verifyReturnsTrueIfNoVerificationIsPassedAndCallIsMadeOnce() throws Exception {
+        final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(1);
+
+        final boolean got = jzonbie.verify(zombiePriming.getAppRequest());
+
+        assertThat(got).isTrue();
+    }
+
+    private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
+        final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
+                AppRequest.builder("GET", "/").build(),
+                staticDefault(AppResponse.builder(200).withBody(singletonMap("key", "val")).build())
+        );
+
+        for(int i = 0; i < times; i++) {
+            client.execute(httpRequest);
+        }
+
+        return zombiePriming;
     }
 }

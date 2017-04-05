@@ -3,7 +3,9 @@ package com.jonnymatts.jzonbie.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
+import com.jonnymatts.jzonbie.model.VerificationRequest;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
@@ -43,11 +45,15 @@ public class ApacheJzonbieRequestFactory {
     }
 
     public HttpUriRequest createPrimeZombieRequest(AppRequest appRequest, AppResponse appResponse) {
-        return createPrimingRequest(appRequest, appResponse, "priming");
+        return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming");
     }
 
     public HttpUriRequest createPrimeZombieForDefaultRequest(AppRequest appRequest, AppResponse appResponse) {
-        return createPrimingRequest(appRequest, appResponse, "priming-default");
+        return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-default");
+    }
+
+    public HttpUriRequest createVerifyRequest(AppRequest appRequest, InvocationVerificationCriteria criteria) {
+        return createPostRequest(new VerificationRequest(appRequest, criteria), "verify");
     }
 
     public HttpUriRequest createGetCurrentPrimingRequest() {
@@ -68,12 +74,11 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
-    private HttpUriRequest createPrimingRequest(AppRequest appRequest, AppResponse appResponse, String zombieHeader) {
-        final ZombiePriming zombiePriming = new ZombiePriming(appRequest, appResponse);
+    private HttpUriRequest createPostRequest(Object reuqestBody, String zombieHeader) {
         try {
             return RequestBuilder.post(zombieBaseUrl)
                     .addHeader(zombieHeaderName, zombieHeader)
-                    .setEntity(new StringEntity(objectMapper.writeValueAsString(zombiePriming)))
+                    .setEntity(new StringEntity(objectMapper.writeValueAsString(reuqestBody)))
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);

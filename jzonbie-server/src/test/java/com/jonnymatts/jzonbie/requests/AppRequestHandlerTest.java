@@ -15,8 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.List;
-
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +31,7 @@ public class AppRequestHandlerTest {
 
     @Mock private PrimingContext primingContext;
 
-    @Mock private List<ZombiePriming> callHistory;
+    @Mock private CallHistory callHistory;
 
     @Mock private AppRequestFactory appRequestFactory;
 

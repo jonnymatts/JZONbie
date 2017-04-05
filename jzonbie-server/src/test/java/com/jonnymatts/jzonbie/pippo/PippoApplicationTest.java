@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.pippo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -15,6 +16,8 @@ import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -25,7 +28,6 @@ import ro.pippo.test.PippoRule;
 import ro.pippo.test.PippoTest;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +36,7 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -48,7 +51,7 @@ import static org.hamcrest.Matchers.startsWith;
 public class PippoApplicationTest extends PippoTest {
 
     private static PrimingContext primingContext = new PrimingContext();
-    private static final List<ZombiePriming> callHistory = new ArrayList<>();
+    private static final CallHistory callHistory = new CallHistory();
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModules(new JavaTimeModule(), new Jdk8Module())
             .enable(INDENT_OUTPUT)
@@ -89,7 +92,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(201);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
-        pippoResponse.then().body("response.statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("response.statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
 
         assertThat(primingContext.getCurrentPriming()).hasSize(1);
     }
@@ -104,7 +107,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(201);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
-        pippoResponse.then().body("response.statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("response.statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
 
         assertThat(primingContext.getCurrentPriming()).hasSize(1);
 
@@ -123,9 +126,9 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(201);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo("/path"));
-        pippoResponse.then().body("[0].responses.default.statusCode", equalTo(200));
+        pippoResponse.then().body("[0].responses.default.statusCode", CoreMatchers.equalTo(200));
         pippoResponse.then().body("[0].responses.default.body.key", equalTo("val"));
-        pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(201));
+        pippoResponse.then().body("[0].responses.primed[0].statusCode", CoreMatchers.equalTo(201));
         pippoResponse.then().body("[0].responses.primed[0].body.key", equalTo("val"));
 
         assertThat(primingContext.getCurrentPriming()).hasSize(1);
@@ -159,7 +162,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(201);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
-        pippoResponse.then().body("response.statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("response.statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
         pippoResponse.then().body("response.delay", equalTo(10.0f));
 
         assertThat(primingContext.getCurrentPriming()).hasSize(1);
@@ -177,7 +180,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo(appRequest.getPath()));
         pippoResponse.then().body("[0].responses.default", nullValue());
-        pippoResponse.then().body("[0].responses.primed[0].statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("[0].responses.primed[0].statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
     }
 
     @Test
@@ -203,7 +206,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(200);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo(appRequest.getPath()));
-        pippoResponse.then().body("[0].response.statusCode", equalTo(appResponse.getStatusCode()));
+        pippoResponse.then().body("[0].response.statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
     }
 
     @Test
@@ -220,7 +223,7 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().body("message", equalTo("Zombie Reset"));
 
         assertThat(primingContext.getCurrentPriming()).isEmpty();
-        assertThat(callHistory).isEmpty();
+        assertThat(callHistory.getEntries()).isEmpty();
     }
 
     @Test
@@ -332,5 +335,34 @@ public class PippoApplicationTest extends PippoTest {
                 .get("/path");
         pippoResponse.then().statusCode(403);
         pippoResponse.then().body(equalTo("2"));
+    }
+
+    @Test
+    public void testVerificationWhenTrue() throws Exception {
+        testVerification(equalTo(1), true);
+    }
+
+    @Test
+    public void testVerificationWhenFalse() throws Exception {
+        testVerification(equalTo(3), false);
+    }
+
+    private void testVerification(InvocationVerificationCriteria criteria, boolean expectedValue) throws JsonProcessingException {
+        final AppRequest appRequest = AppRequest.builder("GET", "/")
+                .withBody(singletonMap("key", "val"))
+                .build();
+        final AppResponse appResponse = AppResponse.builder(200).build();
+
+        callHistory.add(new ZombiePriming(appRequest, appResponse));
+
+        final VerificationRequest verificationRequest = new VerificationRequest(appRequest, criteria);
+
+        final Response pippoResponse = given()
+                .header("zombie", "verify")
+                .contentType(ContentType.JSON)
+                .body(objectMapper.writeValueAsString(verificationRequest))
+                .post("/");
+        pippoResponse.then().statusCode(200);
+        pippoResponse.then().body(equalTo(String.valueOf(expectedValue)));
     }
 }

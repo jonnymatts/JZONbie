@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.function.Function.identity;
 
 public class ApacheJzonbieHttpClient implements JzonbieClient {
@@ -73,6 +75,17 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     public List<ZombiePriming> getHistory() {
         final HttpUriRequest getHistoryRequest = apacheJzonbieRequestFactory.createGetHistoryRequest();
         return execute(getHistoryRequest, response -> deserializer.deserializeCollection(response, ZombiePriming.class));
+    }
+
+    @Override
+    public boolean verify(AppRequest appRequest) {
+        return verify(appRequest, equalTo(1));
+    }
+
+    @Override
+    public boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria) {
+        final HttpUriRequest verifyRequest = apacheJzonbieRequestFactory.createVerifyRequest(appRequest, criteria);
+        return execute(verifyRequest, response -> deserializer.deserialize(response, Boolean.class));
     }
 
     @Override

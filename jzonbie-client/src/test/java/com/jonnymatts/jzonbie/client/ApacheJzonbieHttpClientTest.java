@@ -6,6 +6,7 @@ import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -20,6 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -153,5 +155,29 @@ public class ApacheJzonbieHttpClientTest {
         expectedException.expectCause(is(runtimeException));
 
         jzonbieHttpClient.reset();
+    }
+
+    @Test
+    public void verifyReturnsTrueWhenVerificationIsTrue() throws Exception {
+        final InvocationVerificationCriteria criteria = equalTo(2);
+
+        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest, criteria)).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, Boolean.class)).thenReturn(true);
+
+        final boolean got = jzonbieHttpClient.verify(appRequest, criteria);
+
+        assertThat(got).isTrue();
+    }
+
+    @Test
+    public void verifyReturnsTrueWhenVerificationIsTrueAndNoCriteriaIsPassedIn() throws Exception {
+        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest, equalTo(1))).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, Boolean.class)).thenReturn(true);
+
+        final boolean got = jzonbieHttpClient.verify(appRequest);
+
+        assertThat(got).isTrue();
     }
 }

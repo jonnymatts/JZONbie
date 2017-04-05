@@ -12,9 +12,9 @@ import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import ro.pippo.core.Pippo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -23,7 +23,7 @@ import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 public class Jzonbie implements JzonbieClient {
 
     private final PrimingContext primingContext = new PrimingContext();
-    private final List<ZombiePriming> callHistory = new ArrayList<>();
+    private final CallHistory callHistory = new CallHistory();
     private final Pippo pippo;
     public Deserializer deserializer;
     public ObjectMapper objectMapper;
@@ -87,7 +87,17 @@ public class Jzonbie implements JzonbieClient {
 
     @Override
     public List<ZombiePriming> getHistory() {
-        return callHistory;
+        return callHistory.getEntries();
+    }
+
+    @Override
+    public boolean verify(AppRequest appRequest) {
+        return callHistory.verify(appRequest);
+    }
+
+    @Override
+    public boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria) {
+        return callHistory.verify(appRequest, criteria);
     }
 
     @Override

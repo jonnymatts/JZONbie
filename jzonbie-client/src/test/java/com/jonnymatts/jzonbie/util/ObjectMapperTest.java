@@ -23,4 +23,13 @@ public class ObjectMapperTest {
         assertThat(got.get("blah")).isEqualTo("foo");
         assertThat(got.get("blah2")).isEqualTo(asList(1,2,3));
     }
+
+    @Test
+    public void readValueForBooleanStringReturnsCorrectBoolean() throws Exception {
+        final String json = "true";
+
+        final boolean got = objectMapper.readValue(json, Boolean.class);
+
+        assertThat(got).isTrue();
+    }
 }
