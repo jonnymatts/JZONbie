@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
@@ -18,7 +19,6 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.function.Function.identity;
 
@@ -29,16 +29,16 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     private final Deserializer deserializer;
 
     public ApacheJzonbieHttpClient(String zombieBaseUrl) {
-        final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(NON_NULL);
+        final ObjectMapper objectMapper = new JzonbieObjectMapper();
 
         this.apacheJzonbieRequestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
         this.httpClient = HttpClientBuilder.create().build();
-        this.deserializer = new Deserializer(objectMapper);
+        this.deserializer = new Deserializer();
     }
 
     public ApacheJzonbieHttpClient(String zombieBaseUrl,
                                    String zombieHeaderName) {
-        final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(NON_NULL);
+        final ObjectMapper objectMapper = new JzonbieObjectMapper();
 
         this.apacheJzonbieRequestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, zombieHeaderName, objectMapper);
         this.httpClient = HttpClientBuilder.create().build();

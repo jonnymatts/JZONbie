@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
 public class Jzonbie implements JzonbieClient {
@@ -39,7 +38,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public Jzonbie(JzonbieOptions options) {
-        objectMapper = options.getObjectMapper().setSerializationInclusion(NON_NULL);
+        objectMapper = options.getObjectMapper();
         deserializer = new Deserializer(objectMapper);
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
