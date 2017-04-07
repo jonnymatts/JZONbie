@@ -152,13 +152,13 @@ Another integral function of JZONbie is to allow for verification that a request
 
 ```java
 // Verifies that the request defined earlier was received by JZONbie at most 3 times 
-final boolean verified = jzonbie.verify(request, atMost(3))
+jzonbie.verify(request, atMost(3))
 ```
 
-As well as the `atMost` verification criteria, there are also `equalTo`, `atLeast` and `between`.
+As well as the `atMost` verification criteria, there are also `equalTo`, `atLeast` and `between`. If the verification fails, a VerificationException is thrown. 
 
 ### Verifying Over HTTP
-To verify over HTTP, the request and criteria must be sent in a request with the header `zombie:verify`. The above example would be sent with the following request body.
+There is no direct way to verify over HTTP. However, sending a request with the zombie header value `count` and a request in the body will return the number of times the JZONbie matched against the given request.
 
 ```json
 {
@@ -169,9 +169,6 @@ To verify over HTTP, the request and criteria must be sent in a request with the
             "JZONBIE_CONTENT_TYPE": "J_OBJECT",
             "one" : 1
     }
-  },
-  "criteria" : {
-    "atMost": 3
   }
 }
 ```
