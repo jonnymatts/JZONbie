@@ -68,7 +68,10 @@ public class JzonbieConcurrencyTest {
                     HttpClientUtils.closeQuietly(response);
 
                     assertThat(statusCode).isEqualTo(200);
-                    assertThat(stopwatch.elapsed(MILLISECONDS)).isLessThanOrEqualTo((i * 1000) + 1000);
+
+                    final long elapsed = stopwatch.elapsed(MILLISECONDS);
+
+                    assertThat(elapsed).as("Request with %d second delay duration: %d", i, elapsed).isLessThanOrEqualTo((i * 1000) + 1000);
                     return i;
                 }).collect(toList());
 
