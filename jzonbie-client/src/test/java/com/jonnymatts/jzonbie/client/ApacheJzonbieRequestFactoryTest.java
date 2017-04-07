@@ -5,7 +5,6 @@ import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.VerificationRequest;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
@@ -143,15 +142,14 @@ public class ApacheJzonbieRequestFactoryTest {
     }
 
     @Test
-    public void createVerifyRequest() throws Exception {
-        final VerificationRequest verificationRequest = new VerificationRequest(appRequest, criteria);
-        when(objectMapper.writeValueAsString(verificationRequest)).thenReturn(entityString);
+    public void createCountRequest() throws Exception {
+        when(objectMapper.writeValueAsString(appRequest)).thenReturn(entityString);
 
-        final HttpUriRequest primeZombieRequest = requestFactory.createVerifyRequest(appRequest, criteria);
+        final HttpUriRequest primeZombieRequest = requestFactory.createVerifyRequest(appRequest);
 
         assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
-        assertZombieHeader(primeZombieRequest, "zombie", "verify");
+        assertZombieHeader(primeZombieRequest, "zombie", "count");
         assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
     }
 

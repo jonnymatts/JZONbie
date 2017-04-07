@@ -6,7 +6,9 @@ import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.CountResult;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
+import com.jonnymatts.jzonbie.verification.VerificationException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -173,26 +175,50 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void verifyReturnsTrueWhenVerificationIsTrue() throws Exception {
+    public void verifyDoesNotThrowExceptionWhenVerificationIsTrue() throws Exception {
         final InvocationVerificationCriteria criteria = equalTo(2);
 
-        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest, criteria)).thenReturn(httpRequest);
+        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, Boolean.class)).thenReturn(true);
+        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(2));
 
-        final boolean got = jzonbieHttpClient.verify(appRequest, criteria);
-
-        assertThat(got).isTrue();
+        jzonbieHttpClient.verify(appRequest, criteria);
     }
 
     @Test
-    public void verifyReturnsTrueWhenVerificationIsTrueAndNoCriteriaIsPassedIn() throws Exception {
-        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest, equalTo(1))).thenReturn(httpRequest);
+    public void verifyDoesNotThrowExceptionWhenVerificationIsTrueAndNoCriteriaIsPassedIn() throws Exception {
+        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, Boolean.class)).thenReturn(true);
+        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(1));
 
-        final boolean got = jzonbieHttpClient.verify(appRequest);
+        jzonbieHttpClient.verify(appRequest);
+    }
 
-        assertThat(got).isTrue();
+    @Test
+    public void verifyThrowsVerificationExceptionWhenVerificationIsFalse() throws Exception {
+        final InvocationVerificationCriteria criteria = equalTo(2);
+
+        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(1));
+
+        expectedException.expect(VerificationException.class);
+        expectedException.expectMessage("1");
+        expectedException.expectMessage("equal to 2");
+
+        jzonbieHttpClient.verify(appRequest, criteria);
+    }
+
+    @Test
+    public void verifyThrowsVerificationExceptionWhenVerificationIsFalseAndNoCriteriaIsPassedIn() throws Exception {
+        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(2));
+
+        expectedException.expect(VerificationException.class);
+        expectedException.expectMessage("2");
+        expectedException.expectMessage("equal to 1");
+
+        jzonbieHttpClient.verify(appRequest);
     }
 }

@@ -3,9 +3,7 @@ package com.jonnymatts.jzonbie.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.VerificationRequest;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -67,8 +65,8 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
-    public HttpUriRequest createVerifyRequest(AppRequest appRequest, InvocationVerificationCriteria criteria) {
-        return createPostRequest(new VerificationRequest(appRequest, criteria), "verify");
+    public HttpUriRequest createVerifyRequest(AppRequest appRequest) {
+        return createPostRequest(appRequest, "count");
     }
 
     public HttpUriRequest createGetCurrentPrimingRequest() {

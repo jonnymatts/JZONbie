@@ -7,6 +7,7 @@ import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.CountResult;
 
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleDefaultPrimingRequest(request);
             case "priming-file":
                 return handleFilePrimingRequest(request);
-            case "verify":
-                return handleVerifyRequest(request);
+            case "count":
+                return handleCountRequest(request);
             case "current":
                 return handleCurrentPrimingRequest();
             case "current-file":
@@ -104,10 +105,10 @@ public class ZombieRequestHandler implements RequestHandler {
         return new ZombieResponse(OK_200, JSON_HEADERS_MAP, callHistory);
     }
 
-    private ZombieResponse handleVerifyRequest(Request request) throws JsonProcessingException {
-        final VerificationRequest verificationRequest = deserializer.deserialize(request, VerificationRequest.class);
-        final boolean verify = callHistory.verify(verificationRequest.getAppRequest(), verificationRequest.getCriteria());
-        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, verify);
+    private ZombieResponse handleCountRequest(Request request) throws JsonProcessingException {
+        final AppRequest appRequest = deserializer.deserialize(request, AppRequest.class);
+        final int count = callHistory.count(appRequest);
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, new CountResult(count));
     }
 
     private ZombieResponse handleResetRequest() {

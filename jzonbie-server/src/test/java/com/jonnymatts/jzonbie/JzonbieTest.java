@@ -1,20 +1,21 @@
 package com.jonnymatts.jzonbie;
 
-import com.jonnymatts.jzonbie.client.JzonbieHttpClient;
+import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
+import com.jonnymatts.jzonbie.client.JzonbieClient;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse;
+import com.jonnymatts.jzonbie.verification.VerificationException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +32,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieTest {
 
-    private Jzonbie jzonbie;
+    @Rule public ExpectedException expectedException = ExpectedException.none();
+
+    private static Jzonbie jzonbie;
     private HttpUriRequest httpRequest;
     private HttpClient client;
 
+    @BeforeClass
+    public static void init() throws Exception {
+        jzonbie = new Jzonbie();
+    }
+
     @Before
     public void setUp() throws Exception {
-        jzonbie = new Jzonbie();
-
         httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build();
 
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
@@ -49,6 +55,11 @@ public class JzonbieTest {
 
     @After
     public void tearDown() throws Exception {
+        jzonbie.reset();
+    }
+
+    @AfterClass
+    public static void finish() throws Exception {
         jzonbie.stop();
     }
 
@@ -59,9 +70,9 @@ public class JzonbieTest {
                 AppResponse.builder(200).withBody(singletonMap("key", "val")).build()
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -78,9 +89,9 @@ public class JzonbieTest {
                 AppResponse.builder(200).withBody("<response>message</response>").build()
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -97,9 +108,9 @@ public class JzonbieTest {
                 AppResponse.builder(200).withBody(singletonList("response")).build()
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -116,9 +127,9 @@ public class JzonbieTest {
                 AppResponse.builder(200).withBody(stringBody("response")).build()
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -136,9 +147,9 @@ public class JzonbieTest {
                 AppResponse.builder(200).withBody(2).build()
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -155,9 +166,9 @@ public class JzonbieTest {
                 staticDefault(AppResponse.builder(200).withBody(singletonMap("key", "val")).build())
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient("http://localhost:" + jzonbie.getPort());
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -212,12 +223,12 @@ public class JzonbieTest {
                 AppResponse.builder(200).withBody(singletonMap("key", "val")).build()
         );
 
-        final JzonbieHttpClient jzonbieHttpClient = new JzonbieHttpClient(
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
                 "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
                 zombieHeaderName
         );
 
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -230,30 +241,28 @@ public class JzonbieTest {
     }
 
     @Test
-    public void verifyReturnsFalseIfCallVerificationCriteriaIsFalse() throws Exception {
+    public void verifyThrowsVerificationExceptionIfCallVerificationCriteriaIsFalse() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(3);
 
-        final boolean got = jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+        expectedException.expect(VerificationException.class);
+        expectedException.expectMessage("3");
+        expectedException.expectMessage("equal to 2");
 
-        assertThat(got).isFalse();
+        jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
     }
 
     @Test
-    public void verifyReturnsTrueIfCallVerificationCriteriaIsTrue() throws Exception {
+    public void verifyDoesNotThrowExceptionIfCallVerificationCriteriaIsTrue() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(2);
 
-        final boolean got = jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
-
-        assertThat(got).isTrue();
+        jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
     }
 
     @Test
-    public void verifyReturnsTrueIfNoVerificationIsPassedAndCallIsMadeOnce() throws Exception {
+    public void verifyDoesNotThrowExceptionIfNoVerificationIsPassedAndCallIsMadeOnce() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(1);
 
-        final boolean got = jzonbie.verify(zombiePriming.getAppRequest());
-
-        assertThat(got).isTrue();
+        jzonbie.verify(zombiePriming.getAppRequest());
     }
 
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {

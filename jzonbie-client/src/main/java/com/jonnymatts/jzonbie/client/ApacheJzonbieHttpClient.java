@@ -8,7 +8,9 @@ import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.CountResult;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
+import com.jonnymatts.jzonbie.verification.VerificationException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -19,10 +21,9 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.function.Function.identity;
 
-public class ApacheJzonbieHttpClient implements JzonbieClient {
+public class ApacheJzonbieHttpClient extends JzonbieClient {
 
     private final ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
     private final CloseableHttpClient httpClient;
@@ -85,14 +86,10 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public boolean verify(AppRequest appRequest) {
-        return verify(appRequest, equalTo(1));
-    }
-
-    @Override
-    public boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria) {
-        final HttpUriRequest verifyRequest = apacheJzonbieRequestFactory.createVerifyRequest(appRequest, criteria);
-        return execute(verifyRequest, response -> deserializer.deserialize(response, Boolean.class));
+    public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
+        final HttpUriRequest verifyRequest = apacheJzonbieRequestFactory.createVerifyRequest(appRequest);
+        final CountResult count = execute(verifyRequest, response -> deserializer.deserialize(response, CountResult.class));
+        criteria.verify(count.getCount());
     }
 
     @Override

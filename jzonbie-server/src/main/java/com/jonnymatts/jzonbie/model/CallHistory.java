@@ -1,12 +1,9 @@
 package com.jonnymatts.jzonbie.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 
 
 public class CallHistory {
@@ -34,12 +31,7 @@ public class CallHistory {
         history.clear();
     }
 
-    public boolean verify(AppRequest appRequest) {
-        return verify(appRequest, equalTo(1));
-    }
-
-    public boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria) {
-        final int callCount = (int)history.stream().filter(priming -> appRequest.matches(priming.getAppRequest())).count();
-        return criteria.accept(callCount);
+    public int count(AppRequest appRequest) {
+        return (int)history.stream().filter(priming -> appRequest.matches(priming.getAppRequest())).count();
     }
 }

@@ -14,6 +14,7 @@ import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
+import com.jonnymatts.jzonbie.verification.VerificationException;
 import ro.pippo.core.Pippo;
 import ro.pippo.core.util.IoUtils;
 
@@ -24,7 +25,7 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
-public class Jzonbie implements JzonbieClient {
+public class Jzonbie extends JzonbieClient {
 
     private final PrimingContext primingContext = new PrimingContext();
     private final CallHistory callHistory = new CallHistory();
@@ -108,13 +109,9 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public boolean verify(AppRequest appRequest) {
-        return callHistory.verify(appRequest);
-    }
-
-    @Override
-    public boolean verify(AppRequest appRequest, InvocationVerificationCriteria criteria) {
-        return callHistory.verify(appRequest, criteria);
+    public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
+        final int count = callHistory.count(appRequest);
+        criteria.verify(count);
     }
 
     @Override

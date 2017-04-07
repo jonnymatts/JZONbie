@@ -1,6 +1,5 @@
 package com.jonnymatts.jzonbie.pippo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -17,7 +16,6 @@ import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
 import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
 import com.jonnymatts.jzonbie.util.Deserializer;
-import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -37,7 +35,6 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
-import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -340,16 +337,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testVerificationWhenTrue() throws Exception {
-        testVerification(equalTo(1), true);
-    }
-
-    @Test
-    public void testVerificationWhenFalse() throws Exception {
-        testVerification(equalTo(3), false);
-    }
-
-    private void testVerification(InvocationVerificationCriteria criteria, boolean expectedValue) throws JsonProcessingException {
+    public void testCount() throws Exception {
         final AppRequest appRequest = AppRequest.builder("GET", "/")
                 .withBody(singletonMap("key", "val"))
                 .build();
@@ -357,14 +345,14 @@ public class PippoApplicationTest extends PippoTest {
 
         callHistory.add(new ZombiePriming(appRequest, appResponse));
 
-        final VerificationRequest verificationRequest = new VerificationRequest(appRequest, criteria);
-
         final Response pippoResponse = given()
-                .header("zombie", "verify")
+                .header("zombie", "count")
                 .contentType(ContentType.JSON)
-                .body(objectMapper.writeValueAsString(verificationRequest))
+                .body(objectMapper.writeValueAsString(appRequest))
                 .post("/");
-        pippoResponse.then().statusCode(200);
-        pippoResponse.then().body(equalTo(String.valueOf(expectedValue)));
+
+        pippoResponse.then().assertThat()
+                .statusCode(200)
+                .body("count", equalTo(1));
     }
 }

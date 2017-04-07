@@ -10,6 +10,7 @@ import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileRes
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import com.jonnymatts.jzonbie.response.Response;
 import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.verification.CountResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
-import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -195,17 +195,15 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsVerificationResultIfZombieHeaderHasVerifyValue() throws Exception {
-        final VerificationRequest verificationRequest = new VerificationRequest(zombiePriming1.getAppRequest(), equalTo(3));
-
-        when(request.getHeaders()).thenReturn(singletonMap("zombie", "verify"));
-        when(deserializer.deserialize(request, VerificationRequest.class)).thenReturn(verificationRequest);
+    public void handleReturnsRequestCountForMatchingRequestResultIfZombieHeaderHasCountValue() throws Exception {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "count"));
+        when(deserializer.deserialize(request, AppRequest.class)).thenReturn(zombiePriming1.getAppRequest());
 
         final Response got = zombieRequestHandler.handle(request);
 
         assertThat(got.getStatusCode()).isEqualTo(OK_200);
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
-        assertThat(got.getBody()).isEqualTo(true);
+        assertThat(got.getBody()).isEqualTo(new CountResult(3));
     }
 
     @Test
