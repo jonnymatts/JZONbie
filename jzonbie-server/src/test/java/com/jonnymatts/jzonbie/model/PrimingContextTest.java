@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static com.jonnymatts.jzonbie.model.Cloner.cloneRequest;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -186,7 +187,7 @@ public class PrimingContextTest {
     public void getResponseRemovesPrimingFromContextIfSingleResponseExistsForPrimingOfAppRequestIgnoringExtraHeadersOnIncomingRequest() throws Exception {
         primingContext.add(zombiePriming);
 
-        final AppRequest copy = AppRequestCloner.clone(zombiePriming.getAppRequest());
+        final AppRequest copy = cloneRequest(zombiePriming.getAppRequest());
         final HashMap<String, String> headersCopy = new HashMap<>(zombiePriming.getAppRequest().getHeaders());
         headersCopy.put("extra", "header");
         copy.setHeaders(headersCopy);
@@ -221,7 +222,7 @@ public class PrimingContextTest {
         primingContext.add(zombiePriming);
 
         final AppRequest appRequest = zombiePriming.getAppRequest();
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = cloneRequest(appRequest);
         copy.setHeaders(singletonMap("key", "val"));
         final AppResponse response = AppResponse.builder(500).build();
         primingContext.add(new ZombiePriming(copy, response));

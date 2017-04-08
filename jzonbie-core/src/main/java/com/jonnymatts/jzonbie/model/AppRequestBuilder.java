@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jonnymatts.jzonbie.model.Cloner.cloneRequest;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
 
 
 public class AppRequestBuilder {
-    private final AppRequest request;
+    private AppRequest request;
 
     public AppRequestBuilder(String method, String path) {
         this.request = new AppRequest();
@@ -27,6 +28,7 @@ public class AppRequestBuilder {
     }
 
     public AppRequestBuilder withHeader(String name, String value) {
+        request = cloneRequest(request);
         if(request.getHeaders() == null)
             request.setHeaders(new HashMap<>());
         request.getHeaders().put(name, value);
@@ -34,31 +36,37 @@ public class AppRequestBuilder {
     }
 
     public AppRequestBuilder withBody(Map<String, ?> body) {
+        request = cloneRequest(request);
         request.setBody(objectBody(body));
         return this;
     }
 
     public AppRequestBuilder withBody(String body) {
+        request = cloneRequest(request);
         request.setBody(literalBody(body));
         return this;
     }
 
     public AppRequestBuilder withBody(List<?> body) {
+        request = cloneRequest(request);
         request.setBody(arrayBody(body));
         return this;
     }
 
     public AppRequestBuilder withBody(Number body) {
+        request = cloneRequest(request);
         request.setBody(literalBody(new BigDecimal(body.doubleValue())));
         return this;
     }
 
     public AppRequestBuilder withBody(BodyContent body) {
+        request = cloneRequest(request);
         request.setBody(body);
         return this;
     }
 
     public AppRequestBuilder withQueryParam(String name, String value) {
+        request = cloneRequest(request);
         Map<String, List<String>> queryParams = request.getQueryParams();
         if (queryParams == null) {
             queryParams = new HashMap<>();
@@ -75,6 +83,7 @@ public class AppRequestBuilder {
     }
 
     public AppRequestBuilder withBasicAuth(String username, String password) {
+        request = cloneRequest(request);
         request.setBasicAuth(username, password);
         return this;
     }

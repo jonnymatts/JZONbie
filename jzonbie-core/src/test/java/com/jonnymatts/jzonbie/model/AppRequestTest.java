@@ -56,7 +56,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsFalseIfPathsDoNotMatch() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         copy.setPath(appRequest.getPath() + "notEqual");
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -66,7 +66,7 @@ public class AppRequestTest {
     public void matchesReturnsTrueIfPathsMatchRegex() throws Exception {
         appRequest.setPath("path.*");
 
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         copy.setPath(appRequest.getPath() + "extraStuff");
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -74,7 +74,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsFalseIfMethodsDoNotMatch() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         copy.setMethod(appRequest.getMethod() + "notEqual");
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -82,7 +82,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsFalseIfQueryParamsDoNotMatch() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         copy.getQueryParams().clear();
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -94,7 +94,7 @@ public class AppRequestTest {
         appRequestQueryParams.clear();
         appRequestQueryParams.put("key", asList("val.*", "foo.*"));
 
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
 
         copy.getQueryParams().put("key", asList("value", "foobar"));
 
@@ -105,7 +105,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         appRequest.getHeaders().put("var", "val");
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -113,7 +113,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsTrueIfHeadersOfThisRequestIsEmptyAndEverythingElseMatches() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         appRequest.getHeaders().clear();
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -121,7 +121,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsTrueIfHeadersOfThatRequestContainsTheHeadersOfThisRequest() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         appRequest.getHeaders().remove(appRequest.getHeaders().keySet().iterator().next());
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -133,7 +133,7 @@ public class AppRequestTest {
         appRequestHeaders.clear();
         appRequestHeaders.put("key", "val.*");
 
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
 
         copy.getHeaders().put("key", "value");
 
@@ -142,7 +142,7 @@ public class AppRequestTest {
 
     @Test
     public void matchesReturnsTrueIfEveryFieldMatches() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
@@ -151,14 +151,14 @@ public class AppRequestTest {
     public void matchesReturnsTrueIfBodyOfThisRequestIsNullAndBodyOfThatRequestIsNull() throws Exception {
         appRequest.setBody(null);
 
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
 
     @Test
     public void matchesReturnsTrueIfBodyOfThisRequestIsNullAndBodyOfThatRequestIsNotNull() throws Exception {
-        final AppRequest copy = AppRequestCloner.clone(appRequest);
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
         appRequest.setBody(null);
 
         assertThat(appRequest.matches(copy)).isTrue();

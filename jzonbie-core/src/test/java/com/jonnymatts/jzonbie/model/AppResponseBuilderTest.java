@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie.model;
 import com.jonnymatts.jzonbie.model.content.ObjectBodyContent;
 import org.junit.Test;
 
+import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
@@ -28,5 +29,16 @@ public class AppResponseBuilderTest {
                 .build();
 
         assertThat(response.getHeaders()).contains(entry("Content-Type", "header-value"));
+    }
+
+    @Test
+    public void builderCanBeReused() throws Exception {
+        final AppResponseBuilder builder = AppResponse.builder(201);
+
+        final AppResponse response1 = builder.withBody(1).build();
+        final AppResponse response2 = builder.withBody(2).build();
+
+        assertThat(response1.getBody()).isEqualTo(literalBody(1));
+        assertThat(response2.getBody()).isEqualTo(literalBody(2));
     }
 }

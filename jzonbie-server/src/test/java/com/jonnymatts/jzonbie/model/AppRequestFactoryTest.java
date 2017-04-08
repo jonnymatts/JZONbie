@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jonnymatts.jzonbie.model.Cloner.cloneRequest;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
@@ -74,7 +75,7 @@ public class AppRequestFactoryTest {
         when(request.getBody()).thenReturn(requestBody);
 
         when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -93,7 +94,7 @@ public class AppRequestFactoryTest {
         when(request.getBody()).thenReturn(requestBody);
 
         when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -112,7 +113,7 @@ public class AppRequestFactoryTest {
         when(request.getBody()).thenReturn(requestBody);
 
         when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -127,7 +128,7 @@ public class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn(null);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -142,7 +143,7 @@ public class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn("");
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -160,7 +161,7 @@ public class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn(bodyString);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -181,7 +182,7 @@ public class AppRequestFactoryTest {
 
         when(deserializer.deserialize(eq(bodyString), any(TypeReference.class))).thenReturn(bodyList);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -199,7 +200,7 @@ public class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn(bodyString);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(AppRequestCloner.clone(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
