@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
+import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import org.apache.http.HttpResponse;
@@ -10,8 +11,8 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -23,6 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
+import static com.jonnymatts.jzonbie.junit.JzonbieRule.port;
+import static com.jonnymatts.jzonbie.junit.JzonbieRule.prime;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
@@ -30,24 +33,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieConcurrencyTest {
 
-    private Jzonbie jzonbie;
+    @Rule public JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
+
     private HttpClient httpClient;
 
     @Before
     public void setUp() throws Exception {
-        jzonbie = new Jzonbie();
-
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(10);
         connectionManager.setDefaultMaxPerRoute(10);
         httpClient = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
 
         IntStream.range(0, 10).boxed().forEach(this::primeZombieWithDelay);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        jzonbie.stop();
     }
 
     @Test
@@ -97,11 +94,11 @@ public class JzonbieConcurrencyTest {
     }
 
     private HttpUriRequest createRequest(int i) {
-        return RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/" + i).build();
+        return RequestBuilder.get("http://localhost:" + port() + "/" + i).build();
     }
 
     private void primeZombieWithDelay(int i) {
-        jzonbie.primeZombie(AppRequest.builder("GET", "/" + i).build(),
+        prime(AppRequest.builder("GET", "/" + i).build(),
                 AppResponse.builder(200).withDelay(Duration.of(i, SECONDS)).build()
         );
     }

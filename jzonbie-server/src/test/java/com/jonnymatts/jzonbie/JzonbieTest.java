@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie;
 
 import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
 import com.jonnymatts.jzonbie.client.JzonbieClient;
+import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
+import static com.jonnymatts.jzonbie.junit.JzonbieRule.*;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
@@ -32,20 +34,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieTest {
 
+    @ClassRule public static JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    private static Jzonbie jzonbie;
+    private JzonbieClient jzonbieClient;
     private HttpUriRequest httpRequest;
     private HttpClient client;
 
-    @BeforeClass
-    public static void init() throws Exception {
-        jzonbie = new Jzonbie();
-    }
-
     @Before
     public void setUp() throws Exception {
-        httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build();
+        jzonbieClient = new ApacheJzonbieHttpClient("http://localhost:" + port());
+        httpRequest = RequestBuilder.get("http://localhost:" + port() + "/").build();
 
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(10);
@@ -55,24 +54,17 @@ public class JzonbieTest {
 
     @After
     public void tearDown() throws Exception {
-        jzonbie.reset();
-    }
-
-    @AfterClass
-    public static void finish() throws Exception {
-        jzonbie.stop();
+        reset();
     }
 
     @Test
     public void jzonbieCanBePrimed() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("GET", "/").build(),
                 AppResponse.builder(200).withBody(singletonMap("key", "val")).build()
         );
 
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -84,14 +76,12 @@ public class JzonbieTest {
 
     @Test
     public void jzonbieCanBePrimedWithStringBodyContent() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("POST", "/").withBody("<jzonbie>message</jzonbie>").build(),
                 AppResponse.builder(200).withBody("<response>message</response>").build()
         );
 
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -103,14 +93,12 @@ public class JzonbieTest {
 
     @Test
     public void jzonbieCanBePrimedWithListBodyContent() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("POST", "/").withBody(singletonList("request")).build(),
                 AppResponse.builder(200).withBody(singletonList("response")).build()
         );
 
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -122,14 +110,12 @@ public class JzonbieTest {
 
     @Test
     public void jzonbieCanBePrimedWithJsonStringListBodyContent() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("POST", "/").withBody(stringBody("request")).build(),
                 AppResponse.builder(200).withBody(stringBody("response")).build()
         );
 
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -142,14 +128,12 @@ public class JzonbieTest {
 
     @Test
     public void jzonbieCanBePrimedWithNumberBodyContent() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.primeZombie(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("POST", "/").withBody(1).build(),
                 AppResponse.builder(200).withBody(2).build()
         );
 
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -161,14 +145,12 @@ public class JzonbieTest {
 
     @Test
     public void jzonbieCanBePrimedForStaticDefault() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("GET", "/").build(),
                 staticDefault(AppResponse.builder(200).withBody(singletonMap("key", "val")).build())
         );
 
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -181,12 +163,12 @@ public class JzonbieTest {
     @Test
     public void jzonbieCanBePrimedForDynamicDefault() throws Exception {
         final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> AppResponse.builder(200).withBody(singletonMap("key", "val")).build());
-        final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("GET", "/").build(),
                 defaultResponse
         );
 
-        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
+        final List<PrimedMapping> got = currentPriming();
 
         assertThat(got).hasSize(1);
 
@@ -201,7 +183,7 @@ public class JzonbieTest {
     public void jzonbieCanBePrimedWithAFile() throws Exception {
         final File file = new File(getClass().getClassLoader().getResource("example-priming.json").getFile());
 
-        final List<PrimedMapping> got = jzonbie.primeZombie(file);
+        final List<PrimedMapping> got = prime(file);
 
         assertThat(got).hasSize(1);
 
@@ -248,25 +230,25 @@ public class JzonbieTest {
         expectedException.expectMessage("3");
         expectedException.expectMessage("equal to 2");
 
-        jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+        verify(zombiePriming.getAppRequest(), equalTo(2));
     }
 
     @Test
     public void verifyDoesNotThrowExceptionIfCallVerificationCriteriaIsTrue() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(2);
 
-        jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+        verify(zombiePriming.getAppRequest(), equalTo(2));
     }
 
     @Test
     public void verifyDoesNotThrowExceptionIfNoVerificationIsPassedAndCallIsMadeOnce() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(1);
 
-        jzonbie.verify(zombiePriming.getAppRequest());
+        verify(zombiePriming.getAppRequest());
     }
 
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
-        final ZombiePriming zombiePriming = jzonbie.primeZombieForDefault(
+        final ZombiePriming zombiePriming = prime(
                 AppRequest.builder("GET", "/").build(),
                 staticDefault(AppResponse.builder(200).withBody(singletonMap("key", "val")).build())
         );
