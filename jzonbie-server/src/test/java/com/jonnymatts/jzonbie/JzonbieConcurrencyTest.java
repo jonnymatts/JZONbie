@@ -24,8 +24,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
-import static com.jonnymatts.jzonbie.junit.JzonbieRule.port;
-import static com.jonnymatts.jzonbie.junit.JzonbieRule.prime;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
@@ -33,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieConcurrencyTest {
 
-    @Rule public JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
+    @Rule public JzonbieRule jzonbie = JzonbieRule.jzonbie();
 
     private HttpClient httpClient;
 
@@ -94,11 +92,11 @@ public class JzonbieConcurrencyTest {
     }
 
     private HttpUriRequest createRequest(int i) {
-        return RequestBuilder.get("http://localhost:" + port() + "/" + i).build();
+        return RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/" + i).build();
     }
 
     private void primeZombieWithDelay(int i) {
-        prime(AppRequest.builder("GET", "/" + i).build(),
+        jzonbie.prime(AppRequest.builder("GET", "/" + i).build(),
                 AppResponse.builder(200).withDelay(Duration.of(i, SECONDS)).build()
         );
     }

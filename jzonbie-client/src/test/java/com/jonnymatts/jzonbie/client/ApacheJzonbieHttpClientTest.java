@@ -64,7 +64,7 @@ public class ApacheJzonbieHttpClientTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        final ZombiePriming got = jzonbieHttpClient.primeZombie(appRequest, appResponse);
+        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, appResponse);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
@@ -77,7 +77,7 @@ public class ApacheJzonbieHttpClientTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        final ZombiePriming got = jzonbieHttpClient.primeZombieForDefault(appRequest, staticDefault(appResponse));
+        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, staticDefault(appResponse));
 
         assertThat(got).isEqualTo(zombiePriming);
     }
@@ -90,7 +90,7 @@ public class ApacheJzonbieHttpClientTest {
         when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
         when(deserializer.deserializeCollection(httpResponse, PrimedMapping.class)).thenReturn(primedMappings);
 
-        final List<PrimedMapping> got = jzonbieHttpClient.primeZombie(file);
+        final List<PrimedMapping> got = jzonbieHttpClient.prime(file);
 
         assertThat(got).isEqualTo(primedMappings);
     }
@@ -103,7 +103,7 @@ public class ApacheJzonbieHttpClientTest {
         expectedException.expect(RuntimeException.class);
         expectedException.expectCause(is(runtimeException));
 
-        jzonbieHttpClient.primeZombie(appRequest, appResponse);
+        jzonbieHttpClient.prime(appRequest, appResponse);
     }
 
     @Test

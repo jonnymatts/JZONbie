@@ -13,23 +13,23 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 
-public abstract class JzonbieClient {
+public interface JzonbieClient {
 
-    public abstract ZombiePriming primeZombie(AppRequest request, AppResponse response);
+    ZombiePriming prime(AppRequest request, AppResponse response);
 
-    public abstract List<PrimedMapping> primeZombie(File file);
+    List<PrimedMapping> prime(File file);
 
-    public abstract ZombiePriming primeZombieForDefault(AppRequest request, DefaultAppResponse response);
+    ZombiePriming prime(AppRequest request, DefaultAppResponse response);
 
-    public abstract List<PrimedMapping> getCurrentPriming();
+    List<PrimedMapping> getCurrentPriming();
 
-    public abstract List<ZombiePriming> getHistory();
+    List<ZombiePriming> getHistory();
 
-    public abstract void reset();
+    void reset();
 
-    public abstract void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException;
+    void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException;
 
-    public void verify(AppRequest appRequest) throws VerificationException {
+    default void verify(AppRequest appRequest) throws VerificationException {
         verify(appRequest, equalTo(1));
     }
 }

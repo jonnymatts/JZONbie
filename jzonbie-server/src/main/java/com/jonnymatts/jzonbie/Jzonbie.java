@@ -25,7 +25,7 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
-public class Jzonbie extends JzonbieClient {
+public class Jzonbie implements JzonbieClient {
 
     private final PrimingContext primingContext = new PrimingContext();
     private final CallHistory callHistory = new CallHistory();
@@ -59,7 +59,7 @@ public class Jzonbie extends JzonbieClient {
     }
 
     @Override
-    public ZombiePriming primeZombie(AppRequest request, AppResponse response) {
+    public ZombiePriming prime(AppRequest request, AppResponse response) {
         final ZombiePriming zombiePriming = new ZombiePriming(request, response);
         final ZombiePriming deserialized = normalizeForPriming(zombiePriming, ZombiePriming.class);
         primingContext.add(deserialized);
@@ -67,7 +67,7 @@ public class Jzonbie extends JzonbieClient {
     }
 
     @Override
-    public List<PrimedMapping> primeZombie(File file) {
+    public List<PrimedMapping> prime(File file) {
         try {
             final String mappingsString = IoUtils.toString(new FileInputStream(file));
             final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(mappingsString, PrimedMapping.class);
@@ -79,7 +79,7 @@ public class Jzonbie extends JzonbieClient {
     }
 
     @Override
-    public ZombiePriming primeZombieForDefault(AppRequest request, DefaultAppResponse defaultAppResponse) {
+    public ZombiePriming prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
         final AppRequest appRequest = normalizeForPriming(request, AppRequest.class);
         final DefaultAppResponse appResponse = defaultAppResponse.isDynamic() ? defaultAppResponse :
                 normalizeForPriming(defaultAppResponse, StaticDefaultAppResponse.class);

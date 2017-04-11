@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.junit;
 
 import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieOptions;
+import com.jonnymatts.jzonbie.client.JzonbieClient;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
@@ -16,10 +17,10 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
-public class JzonbieRule extends ExternalResource {
+public class JzonbieRule extends ExternalResource implements JzonbieClient {
 
     private final JzonbieOptions options;
-    private static Jzonbie jzonbie;
+    private Jzonbie jzonbie;
 
     private JzonbieRule(JzonbieOptions options) {
         this.options = options;
@@ -33,35 +34,39 @@ public class JzonbieRule extends ExternalResource {
         return new JzonbieRule(options);
     }
 
-    public static int port() {
+    public int getPort() {
         return jzonbie.getPort();
     }
 
-    public static ZombiePriming prime(AppRequest appRequest, AppResponse appResponse) {
-        return jzonbie.primeZombie(appRequest, appResponse);
+    public ZombiePriming prime(AppRequest appRequest, AppResponse appResponse) {
+        return jzonbie.prime(appRequest, appResponse);
     }
 
-    public static ZombiePriming prime(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {
-        return jzonbie.primeZombieForDefault(appRequest, defaultAppResponse);
+    public ZombiePriming prime(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {
+        return jzonbie.prime(appRequest, defaultAppResponse);
     }
 
-    public static List<PrimedMapping> prime(File file) {
-        return jzonbie.primeZombie(file);
+    public List<PrimedMapping> prime(File file) {
+        return jzonbie.prime(file);
     }
 
-    public static void verify(AppRequest appRequest) throws VerificationException {
+    public void verify(AppRequest appRequest) throws VerificationException {
         jzonbie.verify(appRequest);
     }
 
-    public static void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
+    public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
         jzonbie.verify(appRequest, criteria);
     }
 
-    public static List<PrimedMapping> currentPriming() {
+    public List<PrimedMapping> getCurrentPriming() {
         return jzonbie.getCurrentPriming();
     }
 
-    public static void reset() {
+    public List<ZombiePriming> getHistory() {
+        return jzonbie.getHistory();
+    }
+
+    public void reset() {
         jzonbie.reset();
     }
 
