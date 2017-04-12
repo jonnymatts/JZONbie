@@ -77,7 +77,7 @@ Once the app request and response have been created, they can then be used to pr
 
 ```java
 // Using the request and response objects defined above
-jzonbie.primeZombie(request, response);
+jzonbie.prime(request, response);
 ```
 
 The above snippet will prime the jzonbie to respond with a 200 response with a JSON object body for a POST request to `/blah` with a JSON object request body. Once this primed request has been matched and the corresponding request has been returned, the priming will be removed from the JZONbie instance.
@@ -86,7 +86,7 @@ As this may not be the desired functionality, JZONbie can also be primed to resp
 
 ```java
 // Using the request and response objects defined above
-jzonbie.primeZombieForDefault(request, new StaticDefaultResponse(response));
+jzonbie.prime(request, new StaticDefaultResponse(response));
 ```
 
 This will prime the zombie to return the default response whenever the primed request is matched. If the JZONbie is primed with a standard response while also primed with a default response, when the primed request is matched the standard priming will always be consumed first.
@@ -98,7 +98,7 @@ In addition to the StaticDefaultResponse used above, there is also a DynamicDefa
 Iterator<Integer> iterator;
 
 // Using the request and response objects defined above
-jzonbie.primeZombieForDefault(request, new DynamicDefaultResponse(() -> response.contentType("application/xml").withBody("<number>" + iterator.next() + "</number>")));
+jzonbie.prime(request, new DynamicDefaultResponse(() -> response.contentType("application/xml").withBody("<number>" + iterator.next() + "</number>")));
 ```
 
 This is useful for defining sequences that can be returned for similar primed requests. It's constructor takes a supplier of AppResponse.
@@ -142,7 +142,7 @@ final File primingfile = new File("/path/to/file");
 // Interacts with a local JZONbie instance serving on port 8080
 final JzonbieClient client = new JzonbieHttpClient("http://localhost:8080");
 
-client.primeZombie(file);
+client.prime(file);
 ```
 
 ## Verification
