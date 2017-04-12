@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.util.AppRequestBuilderUtil.getFixturedAppRequest;
+import static com.jonnymatts.jzonbie.util.AppResponseBuilderUtil.getFixturedAppResponse;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,13 +51,14 @@ public class ZombieRequestHandlerTest {
     @Mock private FileResponse fileResponse;
     @Mock private PrimedMappingUploader primedMappingUploader;
 
-    @Fixture private List<AppRequest> appRequests;
-    @Fixture private List<AppResponse> appResponses;
     @Fixture private JzonbieOptions jzonbieOptions;
     @Fixture private String primingFileContent;
-    @Fixture private ZombiePriming zombiePriming1;
-    @Fixture private ZombiePriming zombiePriming2;
-    @Fixture private ZombiePriming zombiePriming3;
+
+    private List<AppRequest> appRequests;
+    private List<AppResponse> appResponses;
+    private ZombiePriming zombiePriming1;
+    private ZombiePriming zombiePriming2;
+    private ZombiePriming zombiePriming3;
 
     private CallHistory callHistory;
     private DefaultingQueue defaultingQueue;
@@ -63,6 +67,33 @@ public class ZombieRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
+        appRequests = asList(
+                getFixturedAppRequest(),
+                getFixturedAppRequest(),
+                getFixturedAppRequest()
+        );
+
+        appResponses = asList(
+                getFixturedAppResponse(),
+                getFixturedAppResponse(),
+                getFixturedAppResponse()
+        );
+
+        zombiePriming1 = new ZombiePriming(
+                getFixturedAppRequest(),
+                getFixturedAppResponse()
+        );
+
+        zombiePriming2 = new ZombiePriming(
+                getFixturedAppRequest(),
+                getFixturedAppResponse()
+        );
+
+        zombiePriming3 = new ZombiePriming(
+                getFixturedAppRequest(),
+                getFixturedAppResponse()
+        );
+
         callHistory = new CallHistory(new ArrayList<ZombiePriming>(){{
             add(zombiePriming1);
             add(zombiePriming2);
@@ -203,7 +234,7 @@ public class ZombieRequestHandlerTest {
 
         assertThat(got.getStatusCode()).isEqualTo(OK_200);
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
-        assertThat(got.getBody()).isEqualTo(new CountResult(3));
+        assertThat(got.getBody()).isEqualTo(new CountResult(1));
     }
 
     @Test

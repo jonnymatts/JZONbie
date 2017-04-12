@@ -41,10 +41,10 @@ public class ApacheJzonbieRequestFactoryTest {
     @Mock private ObjectMapper objectMapper;
 
     @Fixture private String zombieBaseUrl;
-    @Fixture private AppResponse appResponse;
     @Fixture private String entityString;
 
     private AppRequest appRequest;
+    private AppResponse appResponse;
     private InvocationVerificationCriteria criteria;
     private ApacheJzonbieRequestFactory requestFactory;
     private RuntimeException runtimeException;
@@ -52,10 +52,9 @@ public class ApacheJzonbieRequestFactoryTest {
     @Before
     public void setUp() throws Exception {
         appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
+        appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
 
         criteria = equalTo(2);
-
-        appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
 
         requestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
 
