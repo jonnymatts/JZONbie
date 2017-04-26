@@ -8,7 +8,7 @@ A JZONbie instance can be started within a JVM application by using the Jzonbie 
 
 ```java
 // Default Jzonbie: Random port, zombie header name 'zombie', and default object mapper  
-final Jzonbie default = new Jzonbie();
+final Jzonbie defaultJzonbie = new Jzonbie();
 
 // Jzonbie with port 8080
 final Jzonbie customPort = new Jzonbie(options().withPort(8080));
@@ -26,6 +26,25 @@ The standalone server within the docker container will default to starting on po
 ```bash
 # Runs latest JZONbie with server started within container on port 30000 mapped to port 8080 on the host
 docker run -p 8080:30000 -e JZONBIE_PORT=30000 jonnymatts/jzonbie:latest
+```
+
+### JUnit Rule
+When you are using the embedded JZONbie instance within a test, you must initialize and destroy it yourself. Instead of handling this yourself you can use the JzonbieRule JUnit rule. An example usage is shown below.
+
+```java
+@Rule public JzonbieRule jzonbie = JzonbieRule.jzonbie();
+```
+This example will create a jzonbie instance with the default options before, and stop the instance after each test case. The JZONbie instance can be configured with the same options the standard JZONbie is configured with.
+You can create a JZONbie instance to be used for all test cases by using the `@ClassRule` annotation, though you will need to reset the instance before each test is ran.
+
+```java
+@ClassRule public static JzonbieRule jzonbie = JzonbieRule.jzonbie();
+
+// Reset JZONbie before each test
+@Before
+public void setUp() {
+    jzonbie.reset();
+}
 ```
 
 ## Stubbing
@@ -86,7 +105,7 @@ As this may not be the desired functionality, JZONbie can also be primed to resp
 
 ```java
 // Using the request and response objects defined above
-jzonbie.prime(request, new StaticDefaultResponse(response));
+jzonbie.prime(request, staticDefault(response));
 ```
 
 This will prime the zombie to return the default response whenever the primed request is matched. If the JZONbie is primed with a standard response while also primed with a default response, when the primed request is matched the standard priming will always be consumed first.
@@ -98,7 +117,7 @@ In addition to the StaticDefaultResponse used above, there is also a DynamicDefa
 Iterator<Integer> iterator;
 
 // Using the request and response objects defined above
-jzonbie.prime(request, new DynamicDefaultResponse(() -> response.contentType("application/xml").withBody("<number>" + iterator.next() + "</number>")));
+jzonbie.prime(request, dynamicDefault(() -> response.contentType("application/xml").withBody("<number>" + iterator.next() + "</number>")));
 ```
 
 This is useful for defining sequences that can be returned for similar primed requests. It's constructor takes a supplier of AppResponse.
@@ -140,7 +159,7 @@ As trying to stub a JZONbie instance over HTTP can become complicated, a Java cl
 final File primingfile = new File("/path/to/file");
 
 // Interacts with a local JZONbie instance serving on port 8080
-final JzonbieClient client = new JzonbieHttpClient("http://localhost:8080");
+final JzonbieClient client = new ApacheJzonbieHttpClient("http://localhost:8080");
 
 client.prime(file);
 ```
