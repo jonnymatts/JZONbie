@@ -46,4 +46,11 @@ public class LiteralBodyContent extends BodyContent<String> {
     public int hashCode() {
         return content != null ? content.hashCode() : 0;
     }
+
+    @Override
+    public String toString() {
+        return "LiteralBodyContent{" +
+                "content='" + content + '\'' +
+                '}';
+    }
 }

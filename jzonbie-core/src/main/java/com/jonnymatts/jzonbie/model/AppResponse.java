@@ -78,6 +78,16 @@ public class AppResponse implements Response {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "AppResponse{" +
+                "statusCode=" + statusCode +
+                ", headers=" + headers +
+                ", delay=" + delay +
+                ", body=" + body +
+                '}';
+    }
+
     public static AppResponseBuilder builder(int statusCode) {
         return new AppResponseBuilder(statusCode);
     }
