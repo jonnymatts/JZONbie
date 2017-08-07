@@ -17,17 +17,17 @@ public class PrimingContext {
         this.primedMappings = new HashMap<>();
     }
 
-    public List<PrimedMapping> getCurrentPriming() {
+    synchronized public List<PrimedMapping> getCurrentPriming() {
         return primedMappings.entrySet().stream().map(e -> e.getValue().entrySet()).flatMap(Collection::stream)
                 .map(e -> new PrimedMapping(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
     }
 
-    synchronized public PrimingContext add(ZombiePriming zombiePriming) {
+    public PrimingContext add(ZombiePriming zombiePriming) {
         return add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
     }
 
-    public PrimingContext add(AppRequest appRequest, AppResponse appResponse) {
+    synchronized public PrimingContext add(AppRequest appRequest, AppResponse appResponse) {
         final DefaultingQueue responseQueue = getAppResponseQueueForAdd(appRequest);
 
         responseQueue.add(appResponse);
@@ -35,7 +35,7 @@ public class PrimingContext {
         return this;
     }
 
-    public PrimingContext addDefault(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {
+    synchronized public PrimingContext addDefault(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {
         final DefaultingQueue responseQueue = getAppResponseQueueForAdd(appRequest);
 
         responseQueue.setDefault(defaultAppResponse);
