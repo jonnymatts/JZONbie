@@ -246,6 +246,26 @@ public class JzonbieTest {
         jzonbie.verify(zombiePriming.getAppRequest());
     }
 
+    @Test
+    public void getFailedRequestReturnsRequestForWhichThereIsNoPriming() throws Exception {
+        client.execute(httpRequest);
+
+        final AppRequest expectedRequest = AppRequest.builder("GET", "/").build();
+
+        final List<AppRequest> got = jzonbie.getFailedRequests();
+
+        assertThat(got).hasSize(1);
+
+        assertThat(expectedRequest.matches(got.get(0))).isTrue();
+    }
+
+    @Test
+    public void getFailedRequestReturnsEmptyListIfThereAreNoFailedRequests() throws Exception {
+        final List<AppRequest> got = jzonbie.getFailedRequests();
+
+        assertThat(got).isEmpty();
+    }
+
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
         final ZombiePriming zombiePriming = jzonbie.prime(
                 AppRequest.builder("GET", "/").build(),

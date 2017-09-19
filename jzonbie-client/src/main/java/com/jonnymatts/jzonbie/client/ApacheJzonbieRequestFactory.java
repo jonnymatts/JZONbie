@@ -81,6 +81,12 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
+    public HttpUriRequest createGetFailedRequestsRequest() {
+        return RequestBuilder.get(zombieBaseUrl)
+                .addHeader(zombieHeaderName, "failed")
+                .build();
+    }
+
     public HttpUriRequest createResetRequest() {
         return RequestBuilder.delete(zombieBaseUrl)
                 .addHeader(zombieHeaderName, "reset")

@@ -193,7 +193,7 @@ There is no direct way to verify over HTTP. However, sending a request with the 
 ```
 
 ## Other Commands
-The other values for the zombie header are: `current`, `current-file`, `history`, and `reset` 
+The other values for the zombie header are: `current`, `current-file`, `history`, `failed`, and `reset` 
 
 ### Get Current Mapping
 There are two methods for getting the current mapping of the JZONbie, either using the zombie header value `current` or `current-file`. Using `current` will return the list of primed mappings for the JZONbie instance, an example of which is shown below.
@@ -244,6 +244,15 @@ Using the following snippet will return the call history of the current JZONbie 
 ```java
 final List<ZombiePriming> history = jzonbie.getHistory()
 ```
+
+### Get Failed Requests
+In addition to getting the successful requests received by JZONbie, it is also possible to get the requests for which JZONbie could find nor priming.
+
+Using the following snippet will return the failed requests received during the current JZONbie session using the Java implementations.
+```java
+final List<AppRequest> failedRequests = jzonbie.getFailedRequests()
+```
+
 
 ### Resetting The Session
 The current session state can be cleared from the JZONbie instance by using the `reset` zombie header value over HTTP, or via the following code snippet using the embedded JZONbie or HTTP client:

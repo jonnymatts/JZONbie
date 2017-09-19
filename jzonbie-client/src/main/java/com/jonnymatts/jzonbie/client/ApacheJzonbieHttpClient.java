@@ -86,6 +86,12 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
+    public List<AppRequest> getFailedRequests() {
+        final HttpUriRequest getFailedRequestsRequest = apacheJzonbieRequestFactory.createGetFailedRequestsRequest();
+        return execute(getFailedRequestsRequest, response -> deserializer.deserializeCollection(response, AppRequest.class));
+    }
+
+    @Override
     public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
         final HttpUriRequest verifyRequest = apacheJzonbieRequestFactory.createVerifyRequest(appRequest);
         final CountResult count = execute(verifyRequest, response -> deserializer.deserialize(response, CountResult.class));

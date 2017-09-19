@@ -61,6 +61,7 @@ public class ZombieRequestHandlerTest {
     private ZombiePriming zombiePriming3;
 
     private CallHistory callHistory;
+    private List<AppRequest> failedRequests;
     private DefaultingQueue defaultingQueue;
     private List<PrimedMapping> primedRequests;
     private ZombieRequestHandler zombieRequestHandler;
@@ -100,7 +101,11 @@ public class ZombieRequestHandlerTest {
             add(zombiePriming3);
         }});
 
-        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
+        failedRequests = new ArrayList<AppRequest>(){{
+            add(appRequests.get(0));
+        }};
+
+        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
         defaultingQueue = new DefaultingQueue() {{
             add(appResponses);
         }};
@@ -199,10 +204,11 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleClearsPrimingContextAndCallHistoryIfZombieHeaderHasResetValue() throws JsonProcessingException {
+    public void handleClearsPrimingContextCallHistoryAndFailedRequestsIfZombieHeaderHasResetValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "reset"));
 
         assertThat(callHistory.getEntries()).isNotEmpty();
+        assertThat(failedRequests).isNotEmpty();
 
         final Response got = zombieRequestHandler.handle(request);
 
@@ -210,6 +216,7 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(singletonMap("message", "Zombie Reset"));
         assertThat(callHistory.getEntries()).isEmpty();
+        assertThat(failedRequests).isEmpty();
 
         verify(primingContext).clear();
     }
@@ -223,6 +230,17 @@ public class ZombieRequestHandlerTest {
         assertThat(got.getStatusCode()).isEqualTo(OK_200);
         assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
         assertThat(got.getBody()).isEqualTo(callHistory);
+    }
+
+    @Test
+    public void handleReturnsFailedRequestsIfZombieHeaderHasFailedValue() throws JsonProcessingException {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "failed"));
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(OK_200);
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(failedRequests);
     }
 
     @Test
@@ -249,7 +267,7 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void zombieHeaderNameCanBeSet() throws JsonProcessingException {
-        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
+        zombieRequestHandler = new ZombieRequestHandler(jzonbieOptions, primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
 
         when(request.getHeaders()).thenReturn(singletonMap(jzonbieOptions.getZombieHeaderName(), "history"));
 

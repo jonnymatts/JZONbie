@@ -25,6 +25,8 @@ public interface JzonbieClient {
 
     List<ZombiePriming> getHistory();
 
+    List<AppRequest> getFailedRequests();
+
     void reset();
 
     void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException;

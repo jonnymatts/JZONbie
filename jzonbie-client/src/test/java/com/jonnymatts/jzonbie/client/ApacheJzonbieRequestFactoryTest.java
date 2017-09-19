@@ -132,6 +132,15 @@ public class ApacheJzonbieRequestFactoryTest {
     }
 
     @Test
+    public void createGetFailedRequestsRequest() throws Exception {
+        final HttpUriRequest getFailedRequestsRequest = requestFactory.createGetFailedRequestsRequest();
+
+        assertThat(getFailedRequestsRequest.getMethod()).isEqualTo("GET");
+        assertThat(getFailedRequestsRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(getFailedRequestsRequest, "zombie", "failed");
+    }
+
+    @Test
     public void createResetRequest() throws Exception {
         final HttpUriRequest resetRequest = requestFactory.createResetRequest();
 

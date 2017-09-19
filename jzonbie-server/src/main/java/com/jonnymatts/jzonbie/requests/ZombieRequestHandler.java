@@ -22,8 +22,10 @@ public class ZombieRequestHandler implements RequestHandler {
 
     public static final Map<String, String> JSON_HEADERS_MAP = singletonMap("Content-Type", "application/json");
 
+    private final JzonbieOptions options;
     private final PrimingContext primingContext;
     private final CallHistory callHistory;
+    private final List<AppRequest> failedRequests;
     private final Deserializer deserializer;
     private final String zombieHeaderName;
     private final CurrentPrimingFileResponseFactory fileResponseFactory;
@@ -32,11 +34,14 @@ public class ZombieRequestHandler implements RequestHandler {
     public ZombieRequestHandler(JzonbieOptions options,
                                 PrimingContext primingContext,
                                 CallHistory callHistory,
+                                List<AppRequest> failedRequests,
                                 Deserializer deserializer,
                                 CurrentPrimingFileResponseFactory fileResponseFactory,
                                 PrimedMappingUploader primedMappingUploader) {
+        this.options = options;
         this.primingContext = primingContext;
         this.callHistory = callHistory;
+        this.failedRequests = failedRequests;
         this.deserializer = deserializer;
         this.zombieHeaderName = options.getZombieHeaderName();
         this.fileResponseFactory = fileResponseFactory;
@@ -62,6 +67,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleCurrentPrimingFileRequest();
             case "history":
                 return handleHistoryRequest();
+            case "failed":
+                return handleFailedRequest();
             case "reset":
                 return handleResetRequest();
             default:
@@ -105,6 +112,10 @@ public class ZombieRequestHandler implements RequestHandler {
         return new ZombieResponse(OK_200, JSON_HEADERS_MAP, callHistory);
     }
 
+    private ZombieResponse handleFailedRequest() throws JsonProcessingException {
+        return new ZombieResponse(OK_200, JSON_HEADERS_MAP, failedRequests);
+    }
+
     private ZombieResponse handleCountRequest(Request request) throws JsonProcessingException {
         final AppRequest appRequest = deserializer.deserialize(request, AppRequest.class);
         final int count = callHistory.count(appRequest);
@@ -114,6 +125,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private ZombieResponse handleResetRequest() {
         primingContext.clear();
         callHistory.clear();
+        failedRequests.clear();
         return new ZombieResponse(OK_200, JSON_HEADERS_MAP, singletonMap("message", "Zombie Reset"));
     }
 

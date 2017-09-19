@@ -144,6 +144,19 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
+    public void getFailedRequestsReturnsFailedRequests() throws Exception {
+        final List<AppRequest> failedRequests = emptyList();
+
+        when(apacheJzonbieRequestFactory.createGetFailedRequestsRequest()).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserializeCollection(httpResponse, AppRequest.class)).thenReturn(failedRequests);
+
+        final List<AppRequest> got = jzonbieHttpClient.getFailedRequests();
+
+        assertThat(got).isEqualTo(failedRequests);
+    }
+
+    @Test
     public void getHistoryThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
         when(apacheJzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
         when(httpClient.execute(httpRequest)).thenThrow(runtimeException);

@@ -27,6 +27,7 @@ import ro.pippo.test.PippoRule;
 import ro.pippo.test.PippoTest;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -50,15 +51,16 @@ public class PippoApplicationTest extends PippoTest {
 
     private static PrimingContext primingContext = new PrimingContext();
     private static final CallHistory callHistory = new CallHistory();
+    private static final List<AppRequest> failedRequests = new ArrayList<>();
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModules(new JavaTimeModule(), new Jdk8Module())
             .enable(INDENT_OUTPUT)
             .setSerializationInclusion(NON_NULL)
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     private static final Deserializer deserializer = new Deserializer(objectMapper);
-    private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, new AppRequestFactory(deserializer));
+    private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, new AppRequestFactory(deserializer));
     private static final PrimedMappingUploader primedMappingUploader = new PrimedMappingUploader(primingContext);
-    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader);
+    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(JzonbieOptions.options(), primingContext, callHistory, failedRequests, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader);
 
     private AppRequest appRequest;
     private AppResponse appResponse;
@@ -209,9 +211,24 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
+    public void testFailedRequests() throws Exception {
+        failedRequests.add(appRequest);
+
+        final Response pippoResponse = given()
+                .header("zombie", "failed")
+                .contentType(ContentType.JSON)
+                .post("/");
+        pippoResponse.then().statusCode(200);
+        pippoResponse.then().contentType(ContentType.JSON);
+        pippoResponse.then().body("[0].path", equalTo(appRequest.getPath()));
+        pippoResponse.then().body("[0].method", equalTo(appRequest.getMethod()));
+    }
+
+    @Test
     public void testReset() throws Exception {
         primingContext.add(zombiePriming);
         callHistory.add(zombiePriming);
+        failedRequests.add(appRequest);
 
         final Response pippoResponse = given()
                 .header("zombie", "reset")
@@ -223,6 +240,7 @@ public class PippoApplicationTest extends PippoTest {
 
         assertThat(primingContext.getCurrentPriming()).isEmpty();
         assertThat(callHistory.getEntries()).isEmpty();
+        assertThat(failedRequests).isEmpty();
     }
 
     @Test

@@ -21,6 +21,7 @@ import ro.pippo.core.util.IoUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
@@ -29,6 +30,7 @@ public class Jzonbie implements JzonbieClient {
 
     private final PrimingContext primingContext = new PrimingContext();
     private final CallHistory callHistory = new CallHistory();
+    private final List<AppRequest> failedRequests = new ArrayList<>();
     private final Pippo pippo;
     public Deserializer deserializer;
     public ObjectMapper objectMapper;
@@ -44,8 +46,8 @@ public class Jzonbie implements JzonbieClient {
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
         primedMappingUploader = new PrimedMappingUploader(primingContext);
-        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, deserializer, fileResponseFactory, primedMappingUploader);
+        final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader);
 
         pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, options.getObjectMapper()));
 
@@ -109,6 +111,11 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
+    public List<AppRequest> getFailedRequests() {
+        return failedRequests;
+    }
+
+    @Override
     public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
         final int count = callHistory.count(appRequest);
         criteria.verify(count);
@@ -118,6 +125,7 @@ public class Jzonbie implements JzonbieClient {
     public void reset() {
         primingContext.clear();
         callHistory.clear();
+        failedRequests.clear();
     }
 
     public void stop() {

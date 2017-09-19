@@ -66,6 +66,10 @@ public class JzonbieRule extends ExternalResource implements JzonbieClient {
         return jzonbie.getHistory();
     }
 
+    public List<AppRequest> getFailedRequests() {
+        return jzonbie.getFailedRequests();
+    }
+
     public void reset() {
         jzonbie.reset();
     }

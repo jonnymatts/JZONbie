@@ -15,6 +15,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.List;
+
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +35,8 @@ public class AppRequestHandlerTest {
 
     @Mock private CallHistory callHistory;
 
+    @Mock private List<AppRequest> failedRequests;
+
     @Mock private AppRequestFactory appRequestFactory;
 
     @Mock private Request request;
@@ -47,7 +51,7 @@ public class AppRequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        appRequestHandler = new AppRequestHandler(primingContext, callHistory, appRequestFactory);
+        appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
 
         appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
         appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
@@ -94,5 +98,16 @@ public class AppRequestHandlerTest {
         expectedException.expect(Matchers.hasProperty("request", equalTo(appRequest)));
 
         appRequestHandler.handle(request);
+    }
+
+    @Test
+    public void handleAddsRequestToFailedRequestsIfPrimingIsNotFound() throws Exception {
+        when(primingContext.getResponse(appRequest)).thenReturn(empty());
+
+        try{
+            appRequestHandler.handle(request);
+        } catch (Exception e) {
+            verify(failedRequests).add(appRequest);
+        }
     }
 }
