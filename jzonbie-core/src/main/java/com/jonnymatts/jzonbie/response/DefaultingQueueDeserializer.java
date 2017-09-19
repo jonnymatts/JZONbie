@@ -40,7 +40,7 @@ public class DefaultingQueueDeserializer extends StdDeserializer<DefaultingQueue
         JsonNode node = jp.getCodec().readTree(jp);
 
         final JsonNode defaultNode = node.get("default");
-        final DefaultAppResponse defaultAppResponse = (defaultNode instanceof NullNode || defaultNode instanceof TextNode) ? null
+        final DefaultAppResponse defaultAppResponse = (defaultNode == null || defaultNode instanceof NullNode || defaultNode instanceof TextNode) ? null
                 : staticDefault(convertObjectNodeToAppResponse(defaultNode));
 
         final List<AppResponse> appResponses = StreamSupport.stream(node.get("primed").spliterator(), false)
