@@ -50,7 +50,7 @@ public class PippoApplication extends Application {
 
     @Override
     protected void onInit() {
-        ALL(".*", this::handleRequest);
+        ANY(".*", this::handleRequest);
     }
 
     private void handleRequest(RouteContext routeContext) {
