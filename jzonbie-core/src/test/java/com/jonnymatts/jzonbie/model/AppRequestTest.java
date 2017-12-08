@@ -101,7 +101,18 @@ public class AppRequestTest {
         assertThat(appRequest.matches(copy)).isTrue();
     }
 
+    @Test
+    public void matchesReturnsFalseIfOtherQueryParamsIsNull() throws Exception {
+        final Map<String, List<String>> appRequestQueryParams = appRequest.getQueryParams();
+        appRequestQueryParams.clear();
+        appRequestQueryParams.put("key", asList("val.*", "foo.*"));
 
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
+
+        copy.setQueryParams(null);
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
 
     @Test
     public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {

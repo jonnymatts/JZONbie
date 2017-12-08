@@ -144,7 +144,7 @@ public class AppRequest {
     }
 
     private boolean queryParametersMatchWithRegex(Map<String, List<String>> otherQueryParams) {
-        return queryParams.entrySet().parallelStream().allMatch(e -> {
+        return otherQueryParams != null && !otherQueryParams.isEmpty() && queryParams.entrySet().parallelStream().allMatch(e -> {
             final List<String> otherValues = otherQueryParams.get(e.getKey());
             return otherValues != null && e.getValue() != null && listsMatchesRegex(e.getValue(), otherValues);
         });
