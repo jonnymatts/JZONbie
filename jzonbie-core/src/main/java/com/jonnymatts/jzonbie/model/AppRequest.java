@@ -20,6 +20,7 @@ public class AppRequest {
 
     AppRequest() {
         this.headers = new HashMap<>();
+        this.queryParams = new HashMap<>();
     }
 
     public static AppRequestBuilder builder(String method, String path) {
@@ -113,8 +114,8 @@ public class AppRequest {
 
         if(path != null ? !that.path.matches(path) : that.path != null) return false;
         if(method != null ? !method.equals(that.method) : that.method != null) return false;
-        if(queryParams != null ? !queryParametersMatchWithRegex(that.queryParams) : that.queryParams != null) return false;
-        if(headers != null ? !headersAreContainedWithinOtherRequestsHeaders(that.headers) : that.headers != null) return false;
+        if(queryParams != null ? !primedMapValuesAreContainedWithinOtherMap(queryParams, that.queryParams) : that.queryParams != null) return false;
+        if(headers != null ? !primedMapValuesAreContainedWithinOtherMap(headers, that.headers) : that.headers != null) return false;
 
         return bodyContentsMatch(body, that.body);
     }
@@ -131,22 +132,15 @@ public class AppRequest {
                 '}';
     }
 
-    private boolean headersAreContainedWithinOtherRequestsHeaders(Map<String, String> otherHeaders) {
-        final Set<String> primedHeaderKeys = headers.keySet();
-        final Set<String> otherHeaderKeys = otherHeaders.keySet();
+    private boolean primedMapValuesAreContainedWithinOtherMap(Map<String, ?> primedParams, Map<String, ?> otherParams) {
+        final Set<String> primedParamsKeys = primedParams.keySet();
+        final Set<String> otherParamsKeys = otherParams.keySet();
 
-        if(!otherHeaderKeys.containsAll(primedHeaderKeys)) return false;
+        if(!otherParamsKeys.containsAll(primedParamsKeys)) return false;
 
-        final HashMap<String, String> copy = new HashMap<>(otherHeaders);
-        Sets.difference(otherHeaderKeys, primedHeaderKeys).forEach(copy::remove);
+        final HashMap<String, ?> copy = new HashMap<>(otherParams);
+        Sets.difference(otherParamsKeys, primedParamsKeys).forEach(copy::remove);
 
-        return mapValuesMatchWithRegex(headers, copy);
-    }
-
-    private boolean queryParametersMatchWithRegex(Map<String, List<String>> otherQueryParams) {
-        return otherQueryParams != null && !otherQueryParams.isEmpty() && queryParams.entrySet().parallelStream().allMatch(e -> {
-            final List<String> otherValues = otherQueryParams.get(e.getKey());
-            return otherValues != null && e.getValue() != null && listsMatchesRegex(e.getValue(), otherValues);
-        });
+        return mapValuesMatchWithRegex(primedParams, copy);
     }
 }

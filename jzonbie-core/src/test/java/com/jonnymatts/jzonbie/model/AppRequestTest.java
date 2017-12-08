@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -81,40 +82,6 @@ public class AppRequestTest {
     }
 
     @Test
-    public void matchesReturnsFalseIfQueryParamsDoNotMatch() throws Exception {
-        final AppRequest copy = Cloner.cloneRequest(appRequest);
-        copy.getQueryParams().clear();
-
-        assertThat(appRequest.matches(copy)).isFalse();
-    }
-
-    @Test
-    public void matchesReturnsTrueIfQueryParamsMatchRegex() throws Exception {
-        final Map<String, List<String>> appRequestQueryParams = appRequest.getQueryParams();
-        appRequestQueryParams.clear();
-        appRequestQueryParams.put("key", asList("val.*", "foo.*"));
-
-        final AppRequest copy = Cloner.cloneRequest(appRequest);
-
-        copy.getQueryParams().put("key", asList("value", "foobar"));
-
-        assertThat(appRequest.matches(copy)).isTrue();
-    }
-
-    @Test
-    public void matchesReturnsFalseIfOtherQueryParamsIsNull() throws Exception {
-        final Map<String, List<String>> appRequestQueryParams = appRequest.getQueryParams();
-        appRequestQueryParams.clear();
-        appRequestQueryParams.put("key", asList("val.*", "foo.*"));
-
-        final AppRequest copy = Cloner.cloneRequest(appRequest);
-
-        copy.setQueryParams(null);
-
-        assertThat(appRequest.matches(copy)).isFalse();
-    }
-
-    @Test
     public void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
         final AppRequest copy = Cloner.cloneRequest(appRequest);
         appRequest.getHeaders().put("var", "val");
@@ -147,6 +114,43 @@ public class AppRequestTest {
         final AppRequest copy = Cloner.cloneRequest(appRequest);
 
         copy.getHeaders().put("key", "value");
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsFalseIfQueryParamsOfThatRequestDoesNotContainTheQueryParamsOfThisRequest() throws Exception {
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
+        appRequest.getQueryParams().put("var", singletonList("val"));
+
+        assertThat(appRequest.matches(copy)).isFalse();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfQueryParamsOfThisRequestIsEmptyAndEverythingElseMatches() throws Exception {
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
+        appRequest.getQueryParams().clear();
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfQueryParamsOfThatRequestContainsTheQueryParamsOfThisRequest() throws Exception {
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
+        appRequest.getQueryParams().remove(appRequest.getQueryParams().keySet().iterator().next());
+
+        assertThat(appRequest.matches(copy)).isTrue();
+    }
+
+    @Test
+    public void matchesReturnsTrueIfQueryParamsValuesMatchRegex() throws Exception {
+        final Map<String, List<String>> appRequestParams = appRequest.getQueryParams();
+        appRequestParams.clear();
+        appRequestParams.put("key", singletonList("val.*"));
+
+        final AppRequest copy = Cloner.cloneRequest(appRequest);
+
+        copy.getQueryParams().put("key", singletonList("value"));
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
