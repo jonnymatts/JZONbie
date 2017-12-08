@@ -24,7 +24,6 @@ public class AppRequestFactory {
     }
 
     public AppRequest create(Request request) {
-        final Map<String, List<String>> queryParams = request.getQueryParams();
 
         final String bodyString = request.getBody();
         final BodyContent bodyContent = getBodyContent(bodyString);
@@ -32,7 +31,7 @@ public class AppRequestFactory {
         final Map<String, Object> primedRequestMap = new HashMap<String, Object>(){{
             put("path", request.getPath());
             put("method", request.getMethod());
-            put("queryParams", (queryParams == null || queryParams.isEmpty()) ? null : queryParams);
+            put("queryParams", request.getQueryParams());
             put("headers", request.getHeaders());
         }};
 

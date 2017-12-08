@@ -83,44 +83,6 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createReturnsNullQueryParamsIfQueryParamsIsEmpty() throws Exception {
-        appRequest.setBody(objectBody(bodyMap));
-        expectedMap.put("queryParams", null);
-
-        when(request.getPath()).thenReturn(path);
-        when(request.getMethod()).thenReturn(requestMethod);
-        when(request.getHeaders()).thenReturn(headers);
-        when(request.getQueryParams()).thenReturn(emptyMap());
-        when(request.getBody()).thenReturn(requestBody);
-
-        when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
-
-        final AppRequest got = appRequestFactory.create(request);
-
-        assertThat(got).isEqualTo(appRequest);
-    }
-
-    @Test
-    public void createReturnsNullQueryParamsIfQueryParamsIsnull() throws Exception {
-        appRequest.setBody(objectBody(bodyMap));
-        expectedMap.put("queryParams", null);
-
-        when(request.getPath()).thenReturn(path);
-        when(request.getMethod()).thenReturn(requestMethod);
-        when(request.getHeaders()).thenReturn(headers);
-        when(request.getQueryParams()).thenReturn(null);
-        when(request.getBody()).thenReturn(requestBody);
-
-        when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
-
-        final AppRequest got = appRequestFactory.create(request);
-
-        assertThat(got).isEqualTo(appRequest);
-    }
-
-    @Test
     public void createReturnsNullBodyIfBodyIsNull() throws Exception {
         when(request.getPath()).thenReturn(path);
         when(request.getMethod()).thenReturn(requestMethod);
