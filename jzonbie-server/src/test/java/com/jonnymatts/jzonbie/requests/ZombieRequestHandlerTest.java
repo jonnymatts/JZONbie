@@ -67,7 +67,7 @@ public class ZombieRequestHandlerTest {
     private ZombieRequestHandler zombieRequestHandler;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         appRequests = asList(
                 getFixturedAppRequest(),
                 getFixturedAppRequest(),
@@ -174,6 +174,7 @@ public class ZombieRequestHandlerTest {
     @Test(expected = IllegalArgumentException.class)
     public void handleThrowsExceptionIfPathNotPresentInPrimedRequest() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
+        when(zombieRequest.getMethod()).thenReturn("GET");
         when(zombieRequest.getPath()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 

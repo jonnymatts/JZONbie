@@ -1,4 +1,4 @@
 dependencies {
     compile project(':jzonbie-core')
-    compile group: 'com.flextrade.jfixture', name: 'jfixture', version: '2.6.3'
+    compile group: 'com.flextrade.jfixture', name: 'jfixture', version: '2.7.2'
 }
