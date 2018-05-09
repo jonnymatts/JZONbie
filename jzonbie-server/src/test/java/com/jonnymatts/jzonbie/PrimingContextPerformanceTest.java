@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.jonnymatts.jzonbie.model.AppRequest.get;
+
 @Ignore("Run this only if you are changing the priming context")
 public class PrimingContextPerformanceTest {
 
@@ -32,7 +34,7 @@ public class PrimingContextPerformanceTest {
         System.out.println("Fixturing data...");
         primings = IntStream.range(0, 100_000).boxed().map(
                 i -> new ZombiePriming(
-                        AppRequest.builder("GET", "/path")
+                        get("/path")
                                 .withBody(fixture.collections().createMap(String.class, String.class, 50))
                                 .withHeader("key1", fixtureString())
                                 .withHeader("key2", fixtureString())

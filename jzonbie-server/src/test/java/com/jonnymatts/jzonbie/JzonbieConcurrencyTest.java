@@ -24,6 +24,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
+import static com.jonnymatts.jzonbie.model.AppRequest.get;
+import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
@@ -96,8 +98,9 @@ public class JzonbieConcurrencyTest {
     }
 
     private void primeZombieWithDelay(int i) {
-        jzonbie.prime(AppRequest.builder("GET", "/" + i).build(),
-                AppResponse.builder(200).withDelay(Duration.of(i, SECONDS)).build()
+        jzonbie.prime(
+                get("/" + i).build(),
+                ok().withDelay(Duration.of(i, SECONDS)).build()
         );
     }
 }

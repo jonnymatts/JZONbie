@@ -51,7 +51,7 @@ public void setUp() {
 The main usage of JZONbie is the stubbing of external services required by your application within integration tests.
 
 ### Embedded Stubbing
-To prime JZONbie using the embedded instance, a request and response must first be created. This can be deon easily using the included builders as shown below.
+To prime JZONbie using the embedded instance, a request and response must first be created. This can be done easily using the included builders as shown below.
 
 ```java
 final AppRequest appRequest = AppRequest.builder("POST", "/blah")
@@ -59,6 +59,19 @@ final AppRequest appRequest = AppRequest.builder("POST", "/blah")
     .build();
 
 final AppResponse appResponse = AppResponse.builder(200)
+    .contentType("application/json")
+    .withBody(singletonMap("message", "Well done!"))
+    .build();
+```
+
+There are builders for common request methods and response codes, allowing the above to be rewritten.
+
+```java
+final AppRequest appRequest = post("/blah")
+    .withBody(singletonMap("one", 1))
+    .build();
+
+final AppResponse appResponse = ok()
     .contentType("application/json")
     .withBody(singletonMap("message", "Well done!"))
     .build();

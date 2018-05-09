@@ -33,6 +33,9 @@ import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.jonnymatts.jzonbie.model.AppResponse.created;
+import static com.jonnymatts.jzonbie.model.AppResponse.forbidden;
+import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
@@ -137,14 +140,14 @@ public class PippoApplicationTest extends PippoTest {
         final PrimedMapping mapping = primingContext.getCurrentPriming().get(0);
 
         assertThat(mapping.getAppResponses().getDefault()).contains(staticDefault(
-                AppResponse.builder(200)
+                ok()
                         .contentType("application/json")
                         .withBody(singletonMap("key", "val"))
                         .build()
         ));
 
         assertThat(mapping.getAppResponses().getEntries()).contains(
-                AppResponse.builder(201)
+                created()
                         .contentType("application/json")
                         .withBody(singletonMap("key", "val"))
                         .build()
@@ -245,8 +248,8 @@ public class PippoApplicationTest extends PippoTest {
 
     @Test
     public void testAppRequest() throws Exception {
-        final AppRequest request = AppRequest.builder("GET", "/path").build();
-        final AppResponse response = AppResponse.builder(403).build();
+        final AppRequest request = AppRequest.get("/path").build();
+        final AppResponse response = forbidden().build();
 
         primingContext.add(request, response);
 
@@ -258,8 +261,8 @@ public class PippoApplicationTest extends PippoTest {
 
     @Test
     public void testAppRequestWithResponseDelay() throws Exception {
-        final AppRequest request = AppRequest.builder("GET", "/path").build();
-        final AppResponse response = AppResponse.builder(403).withDelay(Duration.of(5, SECONDS)).build();
+        final AppRequest request = AppRequest.get("/path").build();
+        final AppResponse response = forbidden().withDelay(Duration.of(5, SECONDS)).build();
 
         primingContext.add(request, response);
 
@@ -279,8 +282,8 @@ public class PippoApplicationTest extends PippoTest {
     public void testAppRequestWithMapBodyPriming() throws Exception {
         final Map<String, String> requestBody = singletonMap("key", "val");
         final String errorMessage = "Something bad happened!";
-        final AppRequest request = AppRequest.builder("GET", "/path").withBody(requestBody).build();
-        final AppResponse response = AppResponse.builder(403).contentType("application/json").withBody(singletonMap("error", errorMessage)).build();
+        final AppRequest request = AppRequest.get("/path").withBody(requestBody).build();
+        final AppResponse response = forbidden().contentType("application/json").withBody(singletonMap("error", errorMessage)).build();
 
         primingContext.add(request, response);
 
@@ -299,8 +302,8 @@ public class PippoApplicationTest extends PippoTest {
     public void testAppRequestWithStringBodyPriming() throws Exception {
         final String requestBody = "<jzonbie>message</jzonbie>";
         final String responseBody = "<error>Something bad happened!</error>";
-        final AppRequest request = AppRequest.builder("GET", "/path").withBody(requestBody).build();
-        final AppResponse response = AppResponse.builder(403).contentType("application/xml").withBody(responseBody).build();
+        final AppRequest request = AppRequest.get("/path").withBody(requestBody).build();
+        final AppResponse response = forbidden().contentType("application/xml").withBody(responseBody).build();
 
         primingContext.add(request, response);
 
@@ -313,8 +316,8 @@ public class PippoApplicationTest extends PippoTest {
 
     @Test
     public void testAppRequestWithJsonStringBodyPriming() throws Exception {
-        final AppRequest request = AppRequest.builder("GET", "/path").withBody(stringBody("request")).build();
-        final AppResponse response = AppResponse.builder(403).withBody(stringBody("response")).build();
+        final AppRequest request = AppRequest.get("/path").withBody(stringBody("request")).build();
+        final AppResponse response = forbidden().withBody(stringBody("response")).build();
 
         primingContext.add(request, response);
 
@@ -328,8 +331,8 @@ public class PippoApplicationTest extends PippoTest {
     @Test
     public void testAppRequestWithListBodyPriming() throws Exception {
         final List<String> responseBody = singletonList("response1");
-        final AppRequest request = AppRequest.builder("GET", "/path").withBody(arrayBody(singletonList("request1"))).build();
-        final AppResponse response = AppResponse.builder(403).contentType("application/json").withBody(arrayBody(responseBody)).build();
+        final AppRequest request = AppRequest.get("/path").withBody(arrayBody(singletonList("request1"))).build();
+        final AppResponse response = forbidden().contentType("application/json").withBody(arrayBody(responseBody)).build();
 
         primingContext.add(request, response);
 
@@ -342,8 +345,8 @@ public class PippoApplicationTest extends PippoTest {
 
     @Test
     public void testAppRequestWithNumberBodyPriming() throws Exception {
-        final AppRequest request = AppRequest.builder("GET", "/path").withBody(1).build();
-        final AppResponse response = AppResponse.builder(403).contentType("text/plain").withBody(2).build();
+        final AppRequest request = AppRequest.get("/path").withBody(1).build();
+        final AppResponse response = forbidden().contentType("text/plain").withBody(2).build();
 
         primingContext.add(request, response);
 
@@ -356,10 +359,10 @@ public class PippoApplicationTest extends PippoTest {
 
     @Test
     public void testCount() throws Exception {
-        final AppRequest appRequest = AppRequest.builder("GET", "/")
+        final AppRequest appRequest = AppRequest.get("/")
                 .withBody(singletonMap("key", "val"))
                 .build();
-        final AppResponse appResponse = AppResponse.builder(200).build();
+        final AppResponse appResponse = ok().build();
 
         callHistory.add(new ZombiePriming(appRequest, appResponse));
 

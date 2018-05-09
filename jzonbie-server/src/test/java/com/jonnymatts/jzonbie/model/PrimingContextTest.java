@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static com.jonnymatts.jzonbie.model.AppRequest.get;
+import static com.jonnymatts.jzonbie.model.AppResponse.internalServerError;
+import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.model.Cloner.cloneRequest;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Collections.singletonMap;
@@ -29,12 +32,12 @@ public class PrimingContextTest {
     public void setUp() throws Exception {
         primingContext = new PrimingContext();
         zombiePriming = new ZombiePriming(
-                AppRequest.builder("GET", "/path")
+                get("/path")
                         .withHeader("header", "value")
                         .withQueryParam("param", "value")
                         .withBody(singletonMap("bodyKey", "bodyVal"))
                         .build(),
-                AppResponse.builder(200).build()
+                ok().build()
         );
     }
 
@@ -224,7 +227,7 @@ public class PrimingContextTest {
         final AppRequest appRequest = zombiePriming.getAppRequest();
         final AppRequest copy = cloneRequest(appRequest);
         copy.setHeaders(singletonMap("key", "val"));
-        final AppResponse response = AppResponse.builder(500).build();
+        final AppResponse response = internalServerError().build();
         primingContext.add(new ZombiePriming(copy, response));
 
         final Optional<AppResponse> got = primingContext.getResponse(copy);

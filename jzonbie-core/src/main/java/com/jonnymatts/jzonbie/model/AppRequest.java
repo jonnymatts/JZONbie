@@ -23,6 +23,30 @@ public class AppRequest {
         this.queryParams = new HashMap<>();
     }
 
+    public static AppRequestBuilder get(String path) {
+        return new AppRequestBuilder("GET", path);
+    }
+
+    public static AppRequestBuilder post(String path) {
+        return new AppRequestBuilder("POST", path);
+    }
+
+    public static AppRequestBuilder head(String path) {
+        return new AppRequestBuilder("HEAD", path);
+    }
+
+    public static AppRequestBuilder put(String path) {
+        return new AppRequestBuilder("PUT", path);
+    }
+
+    public static AppRequestBuilder options(String path) {
+        return new AppRequestBuilder("OPTIONS", path);
+    }
+
+    public static AppRequestBuilder delete(String path) {
+        return new AppRequestBuilder("DELETE", path);
+    }
+
     public static AppRequestBuilder builder(String method, String path) {
         return new AppRequestBuilder(method, path);
     }

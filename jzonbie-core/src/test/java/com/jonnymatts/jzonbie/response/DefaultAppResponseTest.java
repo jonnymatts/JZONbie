@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import java.util.Iterator;
 
+import static com.jonnymatts.jzonbie.model.AppResponse.notFound;
+import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
@@ -14,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DefaultAppResponseTest {
 
-    private final AppResponse response1 = AppResponse.builder(100).build();
-    private final AppResponse response2 = AppResponse.builder(200).build();
+    private final AppResponse response1 = ok().build();
+    private final AppResponse response2 = notFound().build();
 
     @Test
     public void getResponseFromStaticDefaultResponseReturnsResponse() throws Exception {

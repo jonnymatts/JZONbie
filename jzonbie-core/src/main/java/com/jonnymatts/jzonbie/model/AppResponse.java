@@ -17,6 +17,58 @@ public class AppResponse implements Response {
     private Duration delay;
     private BodyContent body;
 
+    public static AppResponseBuilder ok() {
+        return new AppResponseBuilder(200);
+    }
+
+    public static AppResponseBuilder created() {
+        return new AppResponseBuilder(201);
+    }
+
+    public static AppResponseBuilder accepted() {
+        return new AppResponseBuilder(202);
+    }
+
+    public static AppResponseBuilder noContent() {
+        return new AppResponseBuilder(204);
+    }
+
+    public static AppResponseBuilder badRequest() {
+        return new AppResponseBuilder(400);
+    }
+
+    public static AppResponseBuilder unauthorized() {
+        return new AppResponseBuilder(401);
+    }
+
+    public static AppResponseBuilder forbidden() {
+        return new AppResponseBuilder(403);
+    }
+
+    public static AppResponseBuilder notFound() {
+        return new AppResponseBuilder(404);
+    }
+
+    public static AppResponseBuilder methodNotAllowed() {
+        return new AppResponseBuilder(405);
+    }
+
+    public static AppResponseBuilder conflict() {
+        return new AppResponseBuilder(409);
+    }
+
+    public static AppResponseBuilder internalServerError() {
+        return new AppResponseBuilder(500);
+    }
+
+    public static AppResponseBuilder serviceUnavailable() {
+        return new AppResponseBuilder(503);
+    }
+
+    public static AppResponseBuilder gatewayTimeout() {
+        return new AppResponseBuilder(504);
+    }
+
     public Map<String, String> getHeaders() {
         return headers;
     }
