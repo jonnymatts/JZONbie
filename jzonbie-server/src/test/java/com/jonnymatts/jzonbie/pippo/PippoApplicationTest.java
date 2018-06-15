@@ -257,6 +257,7 @@ public class PippoApplicationTest extends PippoTest {
                 .contentType(ContentType.JSON)
                 .get("/path");
         pippoResponse.then().statusCode(403);
+        pippoResponse.then().body(equalTo(""));
     }
 
     @Test

@@ -82,7 +82,9 @@ public class PippoApplication extends Application {
 
                 final Object body = response.getBody();
 
-                if(body instanceof LiteralBodyContent) {
+                if(body == null) {
+                    routeContext.getResponse().commit();
+                } else if(body instanceof LiteralBodyContent) {
                     routeContext.send(((LiteralBodyContent) body).getContent());
                 } else {
                     final Object o = (body instanceof BodyContent) ? ((BodyContent) body).getContent() : body;
