@@ -21,8 +21,10 @@ import ro.pippo.core.util.IoUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
@@ -31,16 +33,20 @@ public class Jzonbie implements JzonbieClient {
     private final PrimingContext primingContext = new PrimingContext();
     private final CallHistory callHistory = new CallHistory();
     private final List<AppRequest> failedRequests = new ArrayList<>();
+    private final int port;
     private final Pippo pippo;
-    public Deserializer deserializer;
-    public ObjectMapper objectMapper;
+    private Deserializer deserializer;
+    private ObjectMapper objectMapper;
     private PrimedMappingUploader primedMappingUploader;
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private Optional<Duration> waitAfterStop;
 
     public Jzonbie() {
         this(options());
     }
 
     public Jzonbie(JzonbieOptions options) {
+        waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
         deserializer = new Deserializer(objectMapper);
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
@@ -54,10 +60,12 @@ public class Jzonbie implements JzonbieClient {
         pippo.setServer(new JzonbieJettyServer());
         pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");
         pippo.start();
+
+        port = pippo.getServer().getPort();
     }
 
     public int getPort() {
-        return pippo.getServer().getPort();
+        return port;
     }
 
     @Override
@@ -130,9 +138,11 @@ public class Jzonbie implements JzonbieClient {
 
     public void stop() {
         pippo.stop();
-        try {
-            Thread.sleep(2000); // TODO: This should be made better, though NOTHING has worked so far. And we did a LOT
-        } catch(InterruptedException ignored) {}
+        waitAfterStop.ifPresent(wait -> {
+            try {
+                Thread.sleep(wait.toMillis());
+            } catch (InterruptedException ignored) {}
+        });
     }
 
     public static void main(String[] args) {

@@ -4,7 +4,7 @@
 JZONbie can be started either as an embedded server within any JVM application, or as a standalone process.
 
 ### Embedded JZONbie
-A JZONbie instance can be started within a JVM application by using the Jzonbie class. This JZONbie instance can be configured with options for port, zombie header name (explained later), and custom object mapper to be used for deserialization.
+A JZONbie instance can be started within a JVM application by using the Jzonbie class. This JZONbie instance can be configured with options for port, zombie header name (explained later), and custom object mapper to be used for deserialization. There is also an option to define a duration to wait after calling stop on the JZONbie instance. This may be required where multiple JZONbie instances are created in quick succession using the same port, which can start a JZONbie instance that is not ready to handle traffic instantly. In most cases of JZONbie usage, this option should not be required. 
 
 ```java
 // Default Jzonbie: Random port, zombie header name 'zombie', and default object mapper  
@@ -12,6 +12,9 @@ final Jzonbie defaultJzonbie = new Jzonbie();
 
 // Jzonbie with port 8080
 final Jzonbie customPort = new Jzonbie(options().withPort(8080));
+
+// Jzonbie that blocks for 1 second after stopping
+final Jzonbie customPort = new Jzonbie(options().withWaitAfterStopping(Duaration.ofSeconds(1)));
 ```
 
 ### Standalone JZONbie

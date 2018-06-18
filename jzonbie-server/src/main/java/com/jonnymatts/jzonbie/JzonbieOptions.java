@@ -3,6 +3,9 @@ package com.jonnymatts.jzonbie;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 
+import java.time.Duration;
+import java.util.Optional;
+
 public class JzonbieOptions {
     public static final int DEFAULT_PORT = 0;
     public static final String DEFAULT_ZOMBIE_HEADER_NAME = "zombie";
@@ -11,6 +14,7 @@ public class JzonbieOptions {
     private int port;
     private String zombieHeaderName;
     private ObjectMapper objectMapper;
+    private Duration waitAfterStopping;
 
     private JzonbieOptions() {
         this.port = DEFAULT_PORT;
@@ -37,6 +41,11 @@ public class JzonbieOptions {
         return this;
     }
 
+    public JzonbieOptions withWaitAfterStopping(Duration waitAfterStopFor) {
+        this.waitAfterStopping = waitAfterStopFor;
+        return this;
+    }
+
     public int getPort() {
         return port;
     }
@@ -47,5 +56,9 @@ public class JzonbieOptions {
 
     public ObjectMapper getObjectMapper() {
         return objectMapper;
+    }
+
+    public Optional<Duration> getWaitAfterStopping() {
+        return Optional.ofNullable(waitAfterStopping);
     }
 }

@@ -1,10 +1,10 @@
 package com.jonnymatts.jzonbie;
 
+import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
 import com.jonnymatts.jzonbie.client.JzonbieClient;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
@@ -20,6 +20,7 @@ import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
@@ -264,6 +265,29 @@ public class JzonbieTest {
         final List<AppRequest> got = jzonbie.getFailedRequests();
 
         assertThat(got).isEmpty();
+    }
+
+    @Test
+    public void stopDoesNotDelayIfNotConfiguredTo() {
+        final Jzonbie jzonbie = new Jzonbie(options());
+
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+        jzonbie.stop();
+        stopwatch.stop();
+
+        assertThat(stopwatch.elapsed()).isLessThan(Duration.ofMillis(50));
+    }
+
+    @Test
+    public void waitAfterStopCanBeConfigured() {
+        final Duration waitAfterStopFor = Duration.ofSeconds(2);
+        final Jzonbie jzonbie = new Jzonbie(options().withWaitAfterStopping(waitAfterStopFor));
+
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+        jzonbie.stop();
+        stopwatch.stop();
+
+        assertThat(stopwatch.elapsed()).isGreaterThan(waitAfterStopFor);
     }
 
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
