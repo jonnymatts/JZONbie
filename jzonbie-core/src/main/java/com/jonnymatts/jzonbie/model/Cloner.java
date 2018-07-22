@@ -27,7 +27,7 @@ class Cloner {
         copy.setStatusCode(appResponse.getStatusCode());
         copy.setHeaders(copyMap(appResponse.getHeaders()));
         copy.setBody(copyBodyContent(appResponse.getBody()));
-        appResponse.getDelay().ifPresent(appResponse::setDelay);
+        appResponse.getDelay().ifPresent(copy::setDelay);
         return copy;
     }
 

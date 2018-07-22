@@ -15,7 +15,6 @@ public class AppRequest {
     private Map<String, String> headers;
     private String method;
     private BodyContent body;
-    private Map<String, String> basicAuth;
     private Map<String, List<String>> queryParams;
 
     AppRequest() {
@@ -83,10 +82,6 @@ public class AppRequest {
         this.body = body;
     }
 
-    public Map<String, String> getBasicAuth() {
-        return basicAuth;
-    }
-
     void setBasicAuth(Map<String, String> basicAuth) {
         if(basicAuth != null) {
             basicAuth.entrySet().forEach(entry -> {
@@ -151,7 +146,6 @@ public class AppRequest {
                 ", headers=" + headers +
                 ", method='" + method + '\'' +
                 ", body=" + body +
-                ", basicAuth=" + basicAuth +
                 ", queryParams=" + queryParams +
                 '}';
     }
