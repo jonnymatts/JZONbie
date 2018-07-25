@@ -25,6 +25,10 @@ public class Deserializer {
         this.objectMapper = objectMapper;
     }
 
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
     public <T> T deserialize(Request request, Class<T> clazz) {
         return deserialize(request.getBody(), clazz);
     }

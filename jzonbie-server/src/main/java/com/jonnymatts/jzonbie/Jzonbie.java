@@ -55,7 +55,12 @@ public class Jzonbie implements JzonbieClient {
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
         final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader);
 
-        pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, options.getObjectMapper()));
+        options.getRoutes().forEach(route -> {
+            route.setJzonbieClient(this);
+            route.setDeserializer(deserializer);
+        });
+
+        pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, options.getObjectMapper(), options.getRoutes()));
 
         pippo.setServer(new JzonbieJettyServer());
         pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");

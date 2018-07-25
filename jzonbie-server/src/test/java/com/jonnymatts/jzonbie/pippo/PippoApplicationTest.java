@@ -33,9 +33,7 @@ import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.jonnymatts.jzonbie.model.AppResponse.created;
-import static com.jonnymatts.jzonbie.model.AppResponse.forbidden;
-import static com.jonnymatts.jzonbie.model.AppResponse.ok;
+import static com.jonnymatts.jzonbie.model.AppResponse.*;
 import static com.jonnymatts.jzonbie.model.content.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
@@ -70,7 +68,7 @@ public class PippoApplicationTest extends PippoTest {
     private ZombiePriming zombiePriming;
 
     @ClassRule
-    public static PippoRule pippoRule = new PippoRule(new PippoApplication(JzonbieOptions.options(), appRequestHandler, zombieRequestHandler, objectMapper));
+    public static PippoRule pippoRule = new PippoRule(new PippoApplication(JzonbieOptions.options(), appRequestHandler, zombieRequestHandler, objectMapper, singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok()))));
 
 
     @Before
@@ -376,5 +374,14 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().assertThat()
                 .statusCode(200)
                 .body("count", equalTo(1));
+    }
+
+    @Test
+    public void additionalRoutesCanBeAdded() throws Exception {
+        final Response pippoResponse = given()
+                .get("/ready");
+
+        pippoResponse.then().assertThat()
+                .statusCode(200);
     }
 }

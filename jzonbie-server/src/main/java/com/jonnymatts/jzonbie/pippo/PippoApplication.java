@@ -1,6 +1,5 @@
 package com.jonnymatts.jzonbie.pippo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.JzonbieOptions;
@@ -20,6 +19,7 @@ import ro.pippo.core.Application;
 import ro.pippo.core.route.RouteContext;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -36,20 +36,24 @@ public class PippoApplication extends Application {
     private final ZombieRequestHandler zombieRequestHandler;
     private final ObjectMapper objectMapper;
     private final String zombieHeaderName;
+    private final List<JzonbieRoute> additionalRoutes;
 
     public PippoApplication(JzonbieOptions options,
                             AppRequestHandler appRequestHandler,
                             ZombieRequestHandler zombieRequestHandler,
-                            ObjectMapper objectMapper) {
+                            ObjectMapper objectMapper,
+                            List<JzonbieRoute> additionalRoutes) {
 
         this.appRequestHandler = appRequestHandler;
         this.zombieRequestHandler = zombieRequestHandler;
         this.objectMapper = objectMapper;
         this.zombieHeaderName = options.getZombieHeaderName();
+        this.additionalRoutes = additionalRoutes;
     }
 
     @Override
     protected void onInit() {
+        additionalRoutes.forEach(route -> route.accept(this));
         ANY(".*", this::handleRequest);
     }
 
@@ -103,13 +107,13 @@ public class PippoApplication extends Application {
         }
     }
 
-    private void primeResponse(ro.pippo.core.Response response, Response r) throws JsonProcessingException {
+    private void primeResponse(ro.pippo.core.Response response, Response r) {
         response.status(r.getStatusCode());
 
         final Map<String, String> headers = r.getHeaders();
 
         if(headers != null) {
-            headers.entrySet().forEach(entry -> response.header(entry.getKey(), entry.getValue()));
+            headers.forEach(response::header);
         }
     }
 

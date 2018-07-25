@@ -7,9 +7,11 @@ import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.PrimedMapping;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.VerificationException;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -26,6 +28,7 @@ import java.util.List;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.model.AppRequest.get;
 import static com.jonnymatts.jzonbie.model.AppRequest.post;
+import static com.jonnymatts.jzonbie.model.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
@@ -33,6 +36,7 @@ import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAp
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieTest {
@@ -288,6 +292,29 @@ public class JzonbieTest {
         stopwatch.stop();
 
         assertThat(stopwatch.elapsed()).isGreaterThan(waitAfterStopFor);
+    }
+
+    @Test
+    public void additionalRoutesCanBeAdded() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
+
+        final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
+
+        assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+
+        jzonbie.stop();
+    }
+
+    @Test
+    public void additionalRoutesOverridePriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
+        jzonbie.prime(get("/ready").build(), internalServerError().build());
+
+        final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
+
+        assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+
+        jzonbie.stop();
     }
 
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
