@@ -4,7 +4,7 @@
 JZONbie can be started either as an embedded server within any JVM application, or as a standalone process.
 
 ### Embedded JZONbie
-A JZONbie instance can be started within a JVM application by using the Jzonbie class. This JZONbie instance can be configured with options for port, zombie header name (explained later), and custom object mapper to be used for deserialization. There is also an option to define a duration to wait after calling stop on the JZONbie instance. This may be required where multiple JZONbie instances are created in quick succession using the same port, which can start a JZONbie instance that is not ready to handle traffic instantly. In most cases of JZONbie usage, this option should not be required. 
+A JZONbie instance can be started within a JVM application by using the Jzonbie class. This JZONbie instance can be configured with options for port, zombie header name, additional routes (both explained later), and a custom object mapper to be used for deserialization. There is also an option to define a duration to wait after calling stop on the JZONbie instance. This may be required where multiple JZONbie instances are created in quick succession using the same port, which can start a JZONbie instance that is not ready to handle traffic instantly. In most cases of JZONbie usage, this option should not be required. 
 
 ```java
 // Default Jzonbie: Random port, zombie header name 'zombie', and default object mapper  
@@ -49,6 +49,18 @@ public void setUp() {
     jzonbie.reset();
 }
 ```
+
+## Adding Additional Routes
+One option only available when using the embedded JZONbie instance is the ability to add custom handlers for additional routes. These custom handlers have access to the JZONbie instance, a Deserializer (and the underlying ObjectMapper for serialization), and both the request and response.
+An simple example of a custom handler is shown below:
+
+```java
+final JzonbieRoute readyRoute = get("/ready", ctx -> ctx.getRouteContext().getResponse().ok());
+```
+
+The route above will configure the JZONbie to always return a `200(OK)` response. With access to the Deserializer and JZONbie instance, much more complex routes can be added, such as a custom priming endpoint that receives your own domain objects and transforms them.
+
+One caveat to adding a custom route is that it will always ignore any priming on that route.
 
 ## Stubbing
 The main usage of JZONbie is the stubbing of external services required by your application within integration tests.
