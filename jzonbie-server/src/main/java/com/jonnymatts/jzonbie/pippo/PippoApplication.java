@@ -96,7 +96,7 @@ public class PippoApplication extends Application {
                 }
             }
         } catch (PrimingNotFoundException e) {
-            LOGGER.error("Priming not found", e);
+            LOGGER.error("Priming not found for request {}", e.getRequest());
             sendErrorResponse(routeContext, SC_NOT_FOUND, new PrimingNotFoundErrorResponse(e.getRequest()));
         } catch (Exception e) {
             LOGGER.error("Exception occurred: " + e.getClass().getSimpleName(), e);
