@@ -23,6 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.File;
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.emptyList;
@@ -70,6 +71,19 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
+    public void primeZombieForTemplateReturnsPrimingRequest() throws Exception {
+        final ZombiePriming zombiePriming = new ZombiePriming();
+
+        when(apacheJzonbieRequestFactory.createPrimeZombieForTemplateRequest(appRequest, templated(appResponse))).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
+
+        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, templated(appResponse));
+
+        assertThat(got).isEqualTo(zombiePriming);
+    }
+
+    @Test
     public void primeZombieForDefaultReturnsPrimingRequest() throws Exception {
         final ZombiePriming zombiePriming = new ZombiePriming();
 
@@ -78,6 +92,19 @@ public class ApacheJzonbieHttpClientTest {
         when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
 
         final ZombiePriming got = jzonbieHttpClient.prime(appRequest, staticDefault(appResponse));
+
+        assertThat(got).isEqualTo(zombiePriming);
+    }
+
+    @Test
+    public void primeZombieForDefaultTemplateReturnsPrimingRequest() throws Exception {
+        final ZombiePriming zombiePriming = new ZombiePriming();
+
+        when(apacheJzonbieRequestFactory.createPrimeZombieForDefaultTemplateRequest(appRequest, templated(appResponse))).thenReturn(httpRequest);
+        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
+        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
+
+        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, staticDefault(templated(appResponse)));
 
         assertThat(got).isEqualTo(zombiePriming);
     }

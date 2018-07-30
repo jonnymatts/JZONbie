@@ -2,10 +2,7 @@ package com.jonnymatts.jzonbie.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import com.jonnymatts.jzonbie.verification.CountResult;
@@ -61,6 +58,12 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
+    public ZombiePriming prime(AppRequest request, TemplatedAppResponse response) {
+        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForTemplateRequest(request, response);
+        return execute(primeZombieRequest, httpResponse -> deserializer.deserialize(httpResponse, ZombiePriming.class));
+    }
+
+    @Override
     public List<PrimedMapping> prime(File file) {
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieWithFileRequest(file);
         return execute(primeZombieRequest, httpResponse -> deserializer.deserializeCollection(httpResponse, PrimedMapping.class));
@@ -69,7 +72,8 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     @Override
     public ZombiePriming prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
         if(defaultAppResponse.isDynamic()) throw new UnsupportedOperationException("Priming dynamic default for zombie over HTTP not supported");
-        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, defaultAppResponse.getResponse());
+        final HttpUriRequest primeZombieRequest = defaultAppResponse.isTemplated() ? apacheJzonbieRequestFactory.createPrimeZombieForDefaultTemplateRequest(request, (TemplatedAppResponse)defaultAppResponse.getResponse())
+                : apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, defaultAppResponse.getResponse());
         return execute(primeZombieRequest, response -> deserializer.deserialize(response, ZombiePriming.class));
     }
 

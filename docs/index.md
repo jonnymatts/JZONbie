@@ -150,6 +150,41 @@ jzonbie.prime(request, dynamicDefault(() -> response.contentType("application/xm
 
 This is useful for defining sequences that can be returned for similar primed requests. It's constructor takes a supplier of AppResponse.
 
+##### Templating App Responses
+
+It is possible to populate the headers and bodies of app responses with attributes from the app request using [Handlebars templates](http://handlebarsjs.com/). To use this functionality, a TemplatingAppResponse must be used instead of a standard AppResponse.
+An example of this shown below.
+
+```java
+// Match any GET request with a  number following '/resources/'
+final AppRequest request = get("/resources/\\d+").build();
+
+// Return an object with a value of the second segment of the requests path. In this case, the number following '/resources/'
+final TemplatedAppResponse templatedResponse = templated(ok().withBody(objectBody(singletonMap("id", "{{ request.pathSegment.[1] }}"))).build());
+
+jzonbie.prime(request, templatedResponse);
+```
+
+From the example above, if JZONbie was hit with a request to `/resources/12345` then the response body would be `{"id": "12345"}`. As can be seen, it is trivial to convert an app response into a templating app response, simply by wrapping the response in a call to `templated`. TemplatingAppResponses can be used in place of a standard AppResponse, including in default responses.
+
+###### Request Attributes
+The following are all the attributes that can be extracted from the incoming request. Examples are for an incoming `GET` request to `http://jzonbie.example.com:8080/resources/12345/entries?state=ACTIVE` with the request header `"version":"2"`:
+
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `request.url` | The full URL of the request. | http://jzonbie.example.com:8080/resources/12345/entries?state=ACTIVE |
+| `request.protocol` | The protocol of the request. | http |
+| `request.host` | The hostname of the request. | jzonbie.example.com |
+| `request.port` | The port of the request. | 8080 |
+| `request.baseUrl` | The URL of the request excluding the path. | http://jzonbie.example.com:8080 |
+| `request.path` | The full path of the request. | /resources/12345/entries |
+| `request.pathSegment.[<i>]` | The segment of the requests path, zero-based. | 12345 (given \<i> is 1) |
+| `request.queryParam.<paramName>.[<i>]` | The ith value of the query parameter with the name `<paramName>`, zero-based. | ACTIVE (given \<paramName> is state and \<i> is 1) |
+| `request.header.<headerName>` | The value of the header with the name `<headerName>`. | 2 (given \<headerName> is version) |
+| `request.method` | The method of the request. | GET |
+| `request.body` | The body of the request. | "" |
+
 ### Stubbing Over HTTP
 To prime the JZONbie using HTTP with the same priming as used above, a request containing the following body must be sent to the server.
 
@@ -178,7 +213,7 @@ To prime the JZONbie using HTTP with the same priming as used above, a request c
 
 The HTTP method used when sending this can be either POST, PATCH or PUT. It is necessary to put the header `zombie:priming` when sending this request so that JZONbie can see that it is a priming request. This is a usage of the previously mentioned zombie header name.
 
-There are two other usages of this header when priming, `priming-default` and `priming-file`. Using `priming-default` with the above request body will prime the JZONbie to respond with the response as the default for the request. Currently, this only supports static default responses. The `priming-file` value can be used to prime the JZONbie instance with multiple mappings defined in a file via a multi-part form request. A common use case for this is to prime JZONbie with the same priming from a previous test scenario. Downloading the current mappings into a file will be shown later.
+There are other usages of this header when priming, `priming-template`, `priming-default`, `priming-default-template` and `priming-file`. The `priming-template` header will tell JZONbie to process this response as a template. Using `priming-default` and `priming-default-template` headers will prime the JZONbie to respond with the response as the default for the request, with and without template processing respectively. Currently, this only supports static default responses. The `priming-file` value can be used to prime the JZONbie instance with multiple mappings defined in a file via a multi-part form request. A common use case for this is to prime JZONbie with the same priming from a previous test scenario. Downloading the current mappings into a file will be shown later.
 
 ### Stubbing Using HTTP Client
 As trying to stub a JZONbie instance over HTTP can become complicated, a Java client has been provided. The client has the same interface as the embedded JZONbie, and can be used interchangeably.

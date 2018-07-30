@@ -3,10 +3,7 @@ package com.jonnymatts.jzonbie.junit;
 import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.client.JzonbieClient;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
@@ -40,6 +37,11 @@ public class JzonbieRule extends ExternalResource implements JzonbieClient {
 
     public ZombiePriming prime(AppRequest appRequest, AppResponse appResponse) {
         return jzonbie.prime(appRequest, appResponse);
+    }
+
+    @Override
+    public ZombiePriming prime(AppRequest appRequest, TemplatedAppResponse templatedAppResponse) {
+        return jzonbie.prime(appRequest, templatedAppResponse);
     }
 
     public ZombiePriming prime(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {

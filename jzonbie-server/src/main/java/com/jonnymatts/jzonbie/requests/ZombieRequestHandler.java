@@ -12,6 +12,7 @@ import com.jonnymatts.jzonbie.verification.CountResult;
 import java.util.List;
 import java.util.Map;
 
+import static com.jonnymatts.jzonbie.model.Cloner.createTemplatedResponse;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
@@ -55,8 +56,12 @@ public class ZombieRequestHandler implements RequestHandler {
         switch(zombieHeaderValue) {
             case "priming":
                 return handlePrimingRequest(request);
+            case "priming-template":
+                return handleTemplatedPrimingRequest(request);
             case "priming-default":
                 return handleDefaultPrimingRequest(request);
+            case "priming-default-template":
+                return handleTemplatedDefaultPrimingRequest(request);
             case "priming-file":
                 return handleFilePrimingRequest(request);
             case "count":
@@ -84,8 +89,30 @@ public class ZombieRequestHandler implements RequestHandler {
         return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
     }
 
+    private ZombieResponse handleTemplatedPrimingRequest(Request request) throws JsonProcessingException {
+        final ZombiePriming zombiePriming = getZombiePriming(request);
+
+        final TemplatedAppResponse templatedAppResponse = createTemplatedResponse(zombiePriming.getAppResponse());
+        zombiePriming.setAppResponse(templatedAppResponse);
+
+        primingContext.add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
+
+        return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
+    }
+
     private ZombieResponse handleDefaultPrimingRequest(Request request) throws JsonProcessingException {
         final ZombiePriming zombiePriming = getZombiePriming(request);
+
+        primingContext.addDefault(zombiePriming.getAppRequest(), staticDefault(zombiePriming.getAppResponse()));
+
+        return new ZombieResponse(CREATED_201, JSON_HEADERS_MAP, zombiePriming);
+    }
+
+    private ZombieResponse handleTemplatedDefaultPrimingRequest(Request request) throws JsonProcessingException {
+        final ZombiePriming zombiePriming = getZombiePriming(request);
+
+        final TemplatedAppResponse templatedAppResponse = createTemplatedResponse(zombiePriming.getAppResponse());
+        zombiePriming.setAppResponse(templatedAppResponse);
 
         primingContext.addDefault(zombiePriming.getAppRequest(), staticDefault(zombiePriming.getAppResponse()));
 

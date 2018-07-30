@@ -1,9 +1,6 @@
 package com.jonnymatts.jzonbie.client;
 
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
@@ -16,6 +13,8 @@ import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria
 public interface JzonbieClient {
 
     ZombiePriming prime(AppRequest request, AppResponse response);
+
+    ZombiePriming prime(AppRequest request, TemplatedAppResponse response);
 
     List<PrimedMapping> prime(File file);
 

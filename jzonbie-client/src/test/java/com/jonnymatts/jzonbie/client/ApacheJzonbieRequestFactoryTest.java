@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.nio.charset.Charset.defaultCharset;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,6 +75,18 @@ public class ApacheJzonbieRequestFactoryTest {
     }
 
     @Test
+    public void createPrimeZombieForTemplateRequest() throws Exception {
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, templated(appResponse)))).thenReturn(entityString);
+
+        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieForTemplateRequest(appRequest, templated(appResponse));
+
+        assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
+        assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(primeZombieRequest, "zombie", "priming-template");
+        assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
+    }
+
+    @Test
     public void createPrimeZombieRequestThrowsRuntimeExceptionIfAnyExceptionIsThrown() throws Exception {
         when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, appResponse))).thenThrow(runtimeException);
 
@@ -92,6 +105,18 @@ public class ApacheJzonbieRequestFactoryTest {
         assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
         assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
         assertZombieHeader(primeZombieRequest, "zombie", "priming-default");
+        assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
+    }
+
+    @Test
+    public void createPrimeZombieForDefaultTemplateRequest() throws Exception {
+        when(objectMapper.writeValueAsString(new ZombiePriming(appRequest, templated(appResponse)))).thenReturn(entityString);
+
+        final HttpUriRequest primeZombieRequest = requestFactory.createPrimeZombieForDefaultTemplateRequest(appRequest, templated(appResponse));
+
+        assertThat(primeZombieRequest.getMethod()).isEqualTo("POST");
+        assertThat(primeZombieRequest.getURI().toString()).isEqualTo(zombieBaseUrl);
+        assertZombieHeader(primeZombieRequest, "zombie", "priming-default-template");
         assertRequestBodyIsEqualTo(primeZombieRequest, entityString);
     }
 

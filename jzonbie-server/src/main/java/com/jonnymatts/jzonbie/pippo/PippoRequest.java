@@ -17,6 +17,9 @@ public class PippoRequest implements Request {
 
     private static final String FILE_CONTENT_TYPE = "multipart/form-data";
 
+    private final String protocol;
+    private final String url;
+    private final int port;
     private final String path;
     private final String method;
     private final Map<String, String> headers;
@@ -25,6 +28,9 @@ public class PippoRequest implements Request {
     private final String primingFileContent;
 
     public PippoRequest(ro.pippo.core.Request request) {
+        protocol = request.getScheme();
+        url = request.getUrl();
+        port = request.getPort();
         path = request.getPath();
         method = request.getMethod();
         headers = createHeaders(request);
@@ -61,6 +67,18 @@ public class PippoRequest implements Request {
     @Override
     public String getPrimingFileContent() {
         return primingFileContent;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public int getPort() {
+        return port;
     }
 
     private Map<String,String> createHeaders(ro.pippo.core.Request request) {

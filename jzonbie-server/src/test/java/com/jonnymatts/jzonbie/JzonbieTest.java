@@ -4,9 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
 import com.jonnymatts.jzonbie.client.JzonbieClient;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse;
@@ -30,6 +28,7 @@ import static com.jonnymatts.jzonbie.model.AppRequest.get;
 import static com.jonnymatts.jzonbie.model.AppRequest.post;
 import static com.jonnymatts.jzonbie.model.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.model.AppResponse.ok;
+import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
@@ -79,6 +78,24 @@ public class JzonbieTest {
 
         assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
         assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithTemplatedResponse() throws Exception {
+        final AppResponse response = ok().withBody(singletonMap("key", " {{ request.path }}")).build();
+        final ZombiePriming zombiePriming = jzonbie.prime(
+                get("/").build(),
+                templated(response)
+        );
+
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(response);
     }
 
     @Test
@@ -167,6 +184,23 @@ public class JzonbieTest {
     }
 
     @Test
+    public void jzonbieCanBePrimedForStaticDefaultTemplatedResponse() throws Exception {
+        final AppResponse response = ok().withBody(singletonMap("key", "{{ request.path }}")).build();
+        final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
+                staticDefault(templated(response))
+        );
+
+        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(response);
+    }
+
+    @Test
     public void jzonbieCanBePrimedForDynamicDefault() throws Exception {
         final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().withBody(singletonMap("key", "val")).build());
         final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
@@ -182,6 +216,28 @@ public class JzonbieTest {
         assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
 
         assertThat(primedMapping.getAppResponses().getDefault()).contains(defaultResponse);
+    }
+
+
+
+    @Test
+    public void jzonbieCanBePrimedForDynamicDefaultTemplatedResponse() throws Exception {
+        final TemplatedAppResponse response = templated(ok().withBody(singletonMap("key", "{{ request.path }}")).build());
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> response);
+        final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
+                defaultResponse
+        );
+
+        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+
+        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse).get()).isInstanceOf(TemplatedAppResponse.class);
+        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(response);
     }
 
     @Test

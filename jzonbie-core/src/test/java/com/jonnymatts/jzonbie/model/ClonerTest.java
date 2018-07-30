@@ -7,8 +7,7 @@ import org.junit.Test;
 
 import java.time.Duration;
 
-import static com.jonnymatts.jzonbie.model.Cloner.cloneRequest;
-import static com.jonnymatts.jzonbie.model.Cloner.cloneResponse;
+import static com.jonnymatts.jzonbie.model.Cloner.*;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -49,5 +48,16 @@ public class ClonerTest {
         final AppRequest got = cloneRequest(request);
 
         assertThat(got).isEqualTo(request);
+    }
+
+
+    @Test
+    public void createTemplatedResponseClonesResponseSuccessfully() {
+        final TemplatedAppResponse got = createTemplatedResponse(response);
+
+        assertThat(got.getStatusCode()).isEqualTo(response.getStatusCode());
+        assertThat(got.getBody()).isEqualTo(response.getBody());
+        assertThat(got.getHeaders()).isEqualTo(response.getHeaders());
+        assertThat(got.getDelay()).isEqualTo(response.getDelay());
     }
 }

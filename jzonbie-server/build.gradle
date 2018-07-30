@@ -10,6 +10,8 @@ dependencies {
     compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.8.0'
     compile group: 'ch.qos.logback', name:'logback-classic', version : '1.2.3'
     compile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'com.github.jknack', name: 'handlebars', version: '4.1.0'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
     testCompile project(':jzonbie-test-util')
     testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.8.0'
 }

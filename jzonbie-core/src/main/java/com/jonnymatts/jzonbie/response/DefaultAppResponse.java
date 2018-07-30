@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie.response;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jonnymatts.jzonbie.model.AppResponse;
+import com.jonnymatts.jzonbie.model.TemplatedAppResponse;
 
 import java.util.function.Supplier;
 
@@ -14,6 +15,11 @@ public abstract class DefaultAppResponse {
 
     @JsonIgnore
     public abstract boolean isDynamic();
+
+    @JsonIgnore
+    public boolean isTemplated() {
+        return getResponse() instanceof TemplatedAppResponse;
+    }
 
     public static class StaticDefaultAppResponse extends DefaultAppResponse {
         private AppResponse response;

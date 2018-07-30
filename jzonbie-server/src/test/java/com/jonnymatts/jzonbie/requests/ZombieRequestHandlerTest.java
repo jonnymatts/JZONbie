@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 import static org.eclipse.jetty.http.HttpStatus.OK_200;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -132,8 +133,40 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
+    public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingTemplateValue() throws JsonProcessingException {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-template"));
+        when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
+        when(zombieRequest.getPath()).thenReturn("path");
+        when(zombieRequest.getMethod()).thenReturn("method");
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(CREATED_201);
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(zombiePriming);
+
+        verify(zombiePriming).setAppResponse(any(TemplatedAppResponse.class));
+    }
+
+    @Test
     public void handleAddsDefaultRequestToPrimingContextIfZombieHeaderHasDefaultPrimingValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-default"));
+        when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
+        when(zombieRequest.getPath()).thenReturn("path");
+        when(zombieRequest.getMethod()).thenReturn("method");
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got.getStatusCode()).isEqualTo(CREATED_201);
+        assertThat(got.getHeaders()).containsOnly(entry("Content-Type", "application/json"));
+        assertThat(got.getBody()).isEqualTo(zombiePriming);
+
+        verify(primingContext).addDefault(zombiePriming.getAppRequest(), staticDefault(zombiePriming.getAppResponse()));
+    }
+
+    @Test
+    public void handleAddsDefaultRequestToPrimingContextIfZombieHeaderHasDefaultPrimingTemplateValue() throws JsonProcessingException {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-default-template"));
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
         when(zombieRequest.getPath()).thenReturn("path");
         when(zombieRequest.getMethod()).thenReturn("method");

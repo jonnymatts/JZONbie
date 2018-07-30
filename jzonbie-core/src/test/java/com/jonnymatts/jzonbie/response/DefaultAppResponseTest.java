@@ -9,6 +9,7 @@ import java.util.Iterator;
 
 import static com.jonnymatts.jzonbie.model.AppResponse.notFound;
 import static com.jonnymatts.jzonbie.model.AppResponse.ok;
+import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
@@ -57,5 +58,19 @@ public class DefaultAppResponseTest {
         final boolean got = defaultResponse.isDynamic();
 
         assertThat(got).isTrue();
+    }
+
+    @Test
+    public void isTemplatedReturnsFalseIfResponseIsNotTemplated() {
+        final StaticDefaultAppResponse defaultResponse = staticDefault(response1);
+
+        assertThat(defaultResponse.isTemplated()).isFalse();
+    }
+
+    @Test
+    public void isTemplatedReturnsTrueIfResponseIsTemplated() {
+        final StaticDefaultAppResponse defaultResponse = staticDefault(templated(response1));
+
+        assertThat(defaultResponse.isTemplated()).isTrue();
     }
 }

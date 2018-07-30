@@ -10,7 +10,7 @@ import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBod
 import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 
-class Cloner {
+public class Cloner {
 
     static AppRequest cloneRequest(AppRequest appRequest) {
         final AppRequest copy = new AppRequest();
@@ -24,6 +24,15 @@ class Cloner {
 
     static AppResponse cloneResponse(AppResponse appResponse) {
         final AppResponse copy = new AppResponse();
+        copy.setStatusCode(appResponse.getStatusCode());
+        copy.setHeaders(copyMap(appResponse.getHeaders()));
+        copy.setBody(copyBodyContent(appResponse.getBody()));
+        appResponse.getDelay().ifPresent(copy::setDelay);
+        return copy;
+    }
+
+    public static TemplatedAppResponse createTemplatedResponse(AppResponse appResponse) {
+        final TemplatedAppResponse copy = new TemplatedAppResponse();
         copy.setStatusCode(appResponse.getStatusCode());
         copy.setHeaders(copyMap(appResponse.getHeaders()));
         copy.setBody(copyBodyContent(appResponse.getBody()));

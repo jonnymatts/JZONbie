@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jonnymatts.jzonbie.model.AppRequest;
 import com.jonnymatts.jzonbie.model.AppResponse;
+import com.jonnymatts.jzonbie.model.TemplatedAppResponse;
 import com.jonnymatts.jzonbie.model.ZombiePriming;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -51,8 +52,16 @@ public class ApacheJzonbieRequestFactory {
         return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming");
     }
 
+    public HttpUriRequest createPrimeZombieForTemplateRequest(AppRequest appRequest, TemplatedAppResponse appResponse) {
+        return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-template");
+    }
+
     public HttpUriRequest createPrimeZombieForDefaultRequest(AppRequest appRequest, AppResponse appResponse) {
         return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-default");
+    }
+
+    public HttpUriRequest createPrimeZombieForDefaultTemplateRequest(AppRequest appRequest, TemplatedAppResponse appResponse) {
+        return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-default-template");
     }
 
     public HttpUriRequest createPrimeZombieWithFileRequest(File file) {
