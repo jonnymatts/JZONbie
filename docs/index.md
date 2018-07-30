@@ -185,6 +185,19 @@ The following are all the attributes that can be extracted from the incoming req
 | `request.method` | The method of the request. | GET |
 | `request.body` | The body of the request. | "" |
 
+###### JsonPath Helper
+The `jsonPath` hepler has been provided to extract JSON values from app requests. For example, given a request with the body:
+```json
+{
+  "field": "value"
+}
+```
+
+the following template will extract `value`:
+```json
+{{jsonPath request.body '$.field'}}
+```
+
 ### Stubbing Over HTTP
 To prime the JZONbie using HTTP with the same priming as used above, a request containing the following body must be sent to the server.
 

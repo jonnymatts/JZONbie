@@ -23,7 +23,7 @@ public class JzonbieHandlebarsTest {
 
     @Before
     public void setUp() throws Exception {
-        transformationContext = new TransformationContext("http", "http://hostname:8080/a/long/path", 8080, "/a/long/path", singletonMap("param1", singletonList("paramValue")), singletonMap("header1", "headerValue"), "METHOD", "body");
+        transformationContext = new TransformationContext("http", "http://hostname:8080/a/long/path", 8080, "/a/long/path", singletonMap("param1", singletonList("paramValue")), singletonMap("header1", "headerValue"), "METHOD", "{\"field\": \"value\"}");
 
         underTest = new JzonbieHandlebars();
     }
@@ -39,7 +39,8 @@ public class JzonbieHandlebarsTest {
             new Data("method", "{{ request.method }}", "METHOD"),
             new Data("header", "{{ request.header.header1 }}", "headerValue"),
             new Data("queryParam", "{{ request.queryParam.param1.[0] }}", "paramValue"),
-            new Data("body", "{{ request.body }}", "body"),
+            new Data("body", "{{{ request.body }}}", "{\"field\": \"value\"}"),
+            new Data("jsonPath", "{{jsonPath request.body '$.field'}}", "value"),
     };
 
     @Theory

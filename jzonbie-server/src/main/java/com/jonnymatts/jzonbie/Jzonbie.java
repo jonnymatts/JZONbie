@@ -28,12 +28,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
-import static com.jonnymatts.jzonbie.model.AppRequest.get;
-import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
-import static com.jonnymatts.jzonbie.model.content.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
-import static java.util.Collections.singletonMap;
 
 public class Jzonbie implements JzonbieClient {
 
@@ -173,8 +169,5 @@ public class Jzonbie implements JzonbieClient {
 
     public static void main(String[] args) {
         final Jzonbie jzonbie = new Jzonbie(options().withPort(30000));
-        final AppRequest request = get("/resource/\\d+").build();
-        final TemplatedAppResponse templatedResponse = templated(ok().withBody(objectBody(singletonMap("id", "{{ request.pathSegment.[1] }}"))).build());
-        jzonbie.prime(request, templatedResponse);
     }
 }
