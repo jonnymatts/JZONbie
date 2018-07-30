@@ -194,7 +194,7 @@ The `jsonPath` hepler has been provided to extract JSON values from app requests
 ```
 
 the following template will extract `value`:
-```json
+```
 {{jsonPath request.body '$.field'}}
 ```
 
