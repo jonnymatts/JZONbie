@@ -15,6 +15,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
@@ -24,17 +25,21 @@ import java.time.Duration;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
+import static com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming.defaultResponseDefaultPriming;
+import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
 import static com.jonnymatts.jzonbie.model.AppRequest.get;
 import static com.jonnymatts.jzonbie.model.AppRequest.post;
 import static com.jonnymatts.jzonbie.model.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
+import static com.jonnymatts.jzonbie.model.content.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.model.content.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -354,23 +359,103 @@ public class JzonbieTest {
     public void additionalRoutesCanBeAdded() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
 
-        final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
+        try {
+            final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
 
-        assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
-
-        jzonbie.stop();
+            assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        } catch(Exception e) {
+            throw e;
+        } finally {
+            jzonbie.stop();
+        }
     }
 
     @Test
     public void additionalRoutesOverridePriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
-        jzonbie.prime(get("/ready").build(), internalServerError().build());
 
-        final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
+        try {
+            jzonbie.prime(get("/ready").build(), internalServerError().build());
 
-        assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
 
-        jzonbie.stop();
+            assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        } catch(Exception e) {
+            throw e;
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithDefaultPriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withDefaultPriming(
+                        defaultPriming(get("/").build(), ok().build()),
+                        defaultPriming(get("/templated/.*").build(), templated(ok().withBody(literalBody("{{ request.path }}")).build())),
+                        defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
+                )
+        );
+
+        try {
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_NOT_FOUND);
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithDefaultResponseDefaultPriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withDefaultPriming(
+                        defaultPriming(get("/").build(), ok().build()),
+                        defaultPriming(get("/templated/.*").build(), templated(ok().withBody(literalBody("{{ request.path }}")).build())),
+                        defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
+                )
+        );
+
+        try {
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/default").build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/default").build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    public void jzonbieCanBePrimedWithTemplatedResponseDefaultPriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withDefaultPriming(
+                        defaultPriming(get("/").build(), ok().build()),
+                        defaultPriming(get("/templated/path").build(), templated(ok().withBody(literalBody("{{ request.path }}")).build())),
+                        defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
+                )
+        );
+
+        try {
+            final String path = "/templated/path";
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + path).build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo(path);
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + path).build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_NOT_FOUND);
+        } finally {
+            jzonbie.stop();
+        }
     }
 
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {

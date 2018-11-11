@@ -1,5 +1,8 @@
 package com.jonnymatts.jzonbie.model;
 
+import com.jonnymatts.jzonbie.defaults.DefaultPriming;
+import com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming;
+import com.jonnymatts.jzonbie.defaults.StandardDefaultPriming;
 import com.jonnymatts.jzonbie.model.content.BodyContent;
 import com.jonnymatts.jzonbie.response.DefaultAppResponse;
 import com.jonnymatts.jzonbie.response.DefaultingQueue;
@@ -7,14 +10,22 @@ import com.jonnymatts.jzonbie.response.DefaultingQueue;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 public class PrimingContext {
+    private final List<DefaultPriming> defaultPriming;
     private Map<HeaderlessAppRequest, Map<AppRequest, DefaultingQueue>> primedMappings;
 
-    public PrimingContext() {
+    public PrimingContext(List<DefaultPriming> defaultPriming) {
+        this.defaultPriming = defaultPriming;
         this.primedMappings = new HashMap<>();
+        addDefaultPriming();
+    }
+
+    public PrimingContext() {
+        this(emptyList());
     }
 
     synchronized public List<PrimedMapping> getCurrentPriming() {
@@ -101,6 +112,18 @@ public class PrimingContext {
         return empty();
     }
 
+    private void addDefaultPriming() {
+        for (DefaultPriming priming : defaultPriming) {
+            if(priming instanceof StandardDefaultPriming) {
+                final StandardDefaultPriming defaultPriming = (StandardDefaultPriming) priming;
+                add(defaultPriming.getRequest(), defaultPriming.getResponse());
+            } else {
+                final DefaultResponseDefaultPriming defaultPriming = (DefaultResponseDefaultPriming) priming;
+                addDefault(defaultPriming.getRequest(), defaultPriming.getResponse());
+            }
+        }
+    }
+
     private static class MapAppRequestAndQueue {
         private final Map<AppRequest, DefaultingQueue> map;
         private final AppRequest appRequest;
@@ -131,8 +154,9 @@ public class PrimingContext {
                 .findFirst();
     }
 
-    synchronized public void clear() {
+    synchronized public void reset() {
         primedMappings.clear();
+        addDefaultPriming();
     }
 
     private static class HeaderlessAppRequest {

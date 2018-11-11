@@ -150,7 +150,7 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     private ZombieResponse handleResetRequest() {
-        primingContext.clear();
+        primingContext.reset();
         callHistory.clear();
         failedRequests.clear();
         return new ZombieResponse(OK_200, JSON_HEADERS_MAP, singletonMap("message", "Zombie Reset"));

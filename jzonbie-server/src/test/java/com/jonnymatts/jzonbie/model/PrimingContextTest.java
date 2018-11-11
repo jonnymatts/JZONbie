@@ -11,18 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
 import static com.jonnymatts.jzonbie.model.AppRequest.get;
 import static com.jonnymatts.jzonbie.model.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.model.AppResponse.ok;
 import static com.jonnymatts.jzonbie.model.Cloner.cloneRequest;
 import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PrimingContextTest {
 
-    @Rule
-    public FixtureRule fixtureRule = FixtureRule.initFixtures();
+    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
     private ZombiePriming zombiePriming;
 
@@ -210,12 +211,12 @@ public class PrimingContextTest {
     }
 
     @Test
-    public void clearResetsTheCurrentPriming() throws Exception {
+    public void resetResetsTheCurrentPriming() throws Exception {
         primingContext.add(zombiePriming);
 
         assertThat(primingContext.getCurrentPriming()).hasSize(1);
 
-        primingContext.clear();
+        primingContext.reset();
 
         assertThat(primingContext.getCurrentPriming()).hasSize(0);
     }
@@ -233,5 +234,42 @@ public class PrimingContextTest {
         final Optional<AppResponse> got = primingContext.getResponse(copy);
 
         assertThat(got).contains(response);
+    }
+
+    @Test
+    public void defaultPrimingIsAdded() {
+        primingContext = new PrimingContext(singletonList(defaultPriming(zombiePriming.getAppRequest(), zombiePriming.getAppResponse())));
+
+        final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
+
+        assertThat(currentPriming).hasSize(1);
+
+        final PrimedMapping primedMapping = currentPriming.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+
+        final List<AppResponse> entries = primedMapping.getAppResponses().getEntries();
+
+        assertThat(entries).hasSize(1);
+        assertThat(entries).containsExactly(zombiePriming.getAppResponse());
+    }
+
+    @Test
+    public void defaultPrimingIsAddedAfterReset() {
+        primingContext = new PrimingContext(singletonList(defaultPriming(zombiePriming.getAppRequest(), zombiePriming.getAppResponse())));
+        primingContext.reset();
+
+        final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
+
+        assertThat(currentPriming).hasSize(1);
+
+        final PrimedMapping primedMapping = currentPriming.get(0);
+
+        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+
+        final List<AppResponse> entries = primedMapping.getAppResponses().getEntries();
+
+        assertThat(entries).hasSize(1);
+        assertThat(entries).containsExactly(zombiePriming.getAppResponse());
     }
 }

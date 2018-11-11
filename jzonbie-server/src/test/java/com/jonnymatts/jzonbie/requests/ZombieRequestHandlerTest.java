@@ -252,7 +252,7 @@ public class ZombieRequestHandlerTest {
         assertThat(callHistory.getEntries()).isEmpty();
         assertThat(failedRequests).isEmpty();
 
-        verify(primingContext).clear();
+        verify(primingContext).reset();
     }
 
     @Test

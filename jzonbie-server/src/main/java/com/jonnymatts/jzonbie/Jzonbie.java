@@ -33,7 +33,7 @@ import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAp
 
 public class Jzonbie implements JzonbieClient {
 
-    private final PrimingContext primingContext = new PrimingContext();
+    private final PrimingContext primingContext;
     private final CallHistory callHistory = new CallHistory();
     private final List<AppRequest> failedRequests = new ArrayList<>();
     private final int port;
@@ -49,6 +49,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public Jzonbie(JzonbieOptions options) {
+        primingContext = new PrimingContext(options.getDefaultPriming());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
         deserializer = new Deserializer(objectMapper);
@@ -153,7 +154,7 @@ public class Jzonbie implements JzonbieClient {
 
     @Override
     public void reset() {
-        primingContext.clear();
+        primingContext.reset();
         callHistory.clear();
         failedRequests.clear();
     }

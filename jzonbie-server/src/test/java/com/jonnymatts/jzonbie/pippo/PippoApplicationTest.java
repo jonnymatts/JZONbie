@@ -77,7 +77,7 @@ public class PippoApplicationTest extends PippoTest {
 
     @Before
     public void setUp() throws Exception {
-        primingContext.clear();
+        primingContext.reset();
         callHistory.clear();
 
         appRequest = AppRequestBuilderUtil.getFixturedAppRequest();

@@ -1,3 +1,6 @@
+#TODO
+* Document default priming
+
 # Usage
 
 ## Starting JZONbie
