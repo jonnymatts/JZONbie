@@ -1,4 +1,5 @@
 dependencies {
-    compile project(':jzonbie-core')
+    compile project(':jzonbie-new-core')
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
     compile group: 'com.flextrade.jfixture', name: 'jfixture', version: '2.7.2'
 }

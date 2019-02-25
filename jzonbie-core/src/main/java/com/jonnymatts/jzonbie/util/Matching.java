@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.util;
 
-import com.jonnymatts.jzonbie.model.content.BodyContent;
+import com.jonnymatts.jzonbie.priming.content.BodyContent;
 
 import java.math.BigDecimal;
 import java.util.List;

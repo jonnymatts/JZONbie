@@ -1,12 +1,9 @@
 package com.jonnymatts.jzonbie.requests;
 
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.PrimingContext;
-import com.jonnymatts.jzonbie.response.DefaultingQueue;
-import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
-import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
+import com.jonnymatts.jzonbie.priming.AppResponse;
+import com.jonnymatts.jzonbie.priming.PrimedMapping;
+import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.responses.DefaultingQueue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
 

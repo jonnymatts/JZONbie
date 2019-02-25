@@ -1,10 +1,10 @@
 package com.jonnymatts.jzonbie;
 
 import com.flextrade.jfixture.JFixture;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimingContext;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.priming.AppRequest;
+import com.jonnymatts.jzonbie.priming.AppResponse;
+import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Before;
@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.jonnymatts.jzonbie.model.AppRequest.get;
+import static com.jonnymatts.jzonbie.priming.AppRequest.get;
 
 @Ignore("Run this only if you are changing the priming context")
 public class PrimingContextPerformanceTest {

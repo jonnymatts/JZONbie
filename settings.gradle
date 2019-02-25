@@ -1,5 +1,6 @@
 rootProject.name = 'jzonbie'
 
+include ':jzonbie-new-core'
 include ':jzonbie-core'
 include ':jzonbie-server'
 include ':jzonbie-client'

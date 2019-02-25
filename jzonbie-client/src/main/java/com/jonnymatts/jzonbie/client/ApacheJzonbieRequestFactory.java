@@ -1,10 +1,10 @@
 package com.jonnymatts.jzonbie.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.TemplatedAppResponse;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
+import com.jonnymatts.jzonbie.priming.AppRequest;
+import com.jonnymatts.jzonbie.priming.AppResponse;
+import com.jonnymatts.jzonbie.priming.TemplatedAppResponse;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;

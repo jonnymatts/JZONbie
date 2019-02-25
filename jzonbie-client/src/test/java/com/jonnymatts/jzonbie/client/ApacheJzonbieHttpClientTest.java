@@ -1,264 +1,281 @@
 package com.jonnymatts.jzonbie.client;
 
-import com.flextrade.jfixture.rules.FixtureRule;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.ZombiePriming;
-import com.jonnymatts.jzonbie.util.Deserializer;
-import com.jonnymatts.jzonbie.verification.CountResult;
+import com.jonnymatts.jzonbie.junit.JzonbieRule;
+import com.jonnymatts.jzonbie.priming.*;
+import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.DefaultingQueue;
+import com.jonnymatts.jzonbie.util.TestingClient;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.FromDataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.function.Consumer;
 
-import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
-import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.priming.AppRequest.get;
+import static com.jonnymatts.jzonbie.priming.AppResponse.ok;
+import static com.jonnymatts.jzonbie.priming.TemplatedAppResponse.templated;
+import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
-import static java.util.Collections.emptyList;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(Theories.class)
 public class ApacheJzonbieHttpClientTest {
 
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
-    @Rule public ExpectedException expectedException = ExpectedException.none();
+    private static final AppRequest REQUEST = get("/").build();
+    private static final AppResponse RESPONSE = ok().build();
+    private static final TemplatedAppResponse TEMPLATED_RESPONSE = templated(RESPONSE);
+    private static final StaticDefaultAppResponse DEFAULT_RESPONSE = staticDefault(RESPONSE);
+    private static final StaticDefaultAppResponse DEFAULT_TEMPLATED_RESPONSE = staticDefault(TEMPLATED_RESPONSE);
+    private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
 
-    @Mock private ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
-    @Mock private CloseableHttpClient httpClient;
-    @Mock private Deserializer deserializer;
-    @Mock private AppRequest appRequest;
-    @Mock private AppResponse appResponse;
-    @Mock private HttpUriRequest httpRequest;
-    @Mock private CloseableHttpResponse httpResponse;
-    @Mock private File file;
+    @ClassRule public static JzonbieRule jzonbie = JzonbieRule.jzonbie();
 
-    private RuntimeException runtimeException;
+    private ZombiePriming zombiePriming;
+    private PrimedMapping primedMapping;
 
-    private ApacheJzonbieHttpClient jzonbieHttpClient;
+    private TestingClient testingClient;
+
+    private ApacheJzonbieHttpClient underTest;
+    private ApacheJzonbieHttpClient brokenClient;
 
     @Before
-    public void setUp() throws Exception {
-        jzonbieHttpClient = new ApacheJzonbieHttpClient(httpClient, apacheJzonbieRequestFactory, deserializer);
-        runtimeException = new RuntimeException();
+    public void setUp() {
+        zombiePriming = new ZombiePriming(REQUEST, RESPONSE);
+        primedMapping = createPrimedMapping(RESPONSE);
+
+        final String zombieBaseUrl = "http://localhost:" + jzonbie.getPort();
+        underTest = new ApacheJzonbieHttpClient(zombieBaseUrl);
+        brokenClient = new ApacheJzonbieHttpClient("http://broken:8080");
+        testingClient = new TestingClient(zombieBaseUrl);
+    }
+
+    @After
+    public void tearDown() {
+        jzonbie.reset();
     }
 
     @Test
-    public void primeZombieReturnsPrimingRequest() throws Exception {
-        final ZombiePriming zombiePriming = new ZombiePriming();
-
-        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(appRequest, appResponse)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
-
-        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, appResponse);
+    public void primeZombieReturnsRequestedPriming() {
+        final ZombiePriming got = underTest.prime(REQUEST, RESPONSE);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
-    public void primeZombieForTemplateReturnsPrimingRequest() throws Exception {
-        final ZombiePriming zombiePriming = new ZombiePriming();
+    public void primeZombieAddsPriming() {
+        underTest.prime(REQUEST, RESPONSE);
 
-        when(apacheJzonbieRequestFactory.createPrimeZombieForTemplateRequest(appRequest, templated(appResponse))).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
+    }
 
-        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, templated(appResponse));
+    @Test
+    public void primeZombieWithTemplatedResponseReturnsRequestedPriming() {
+        final ZombiePriming got = underTest.prime(REQUEST, TEMPLATED_RESPONSE);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
-    public void primeZombieForDefaultReturnsPrimingRequest() throws Exception {
-        final ZombiePriming zombiePriming = new ZombiePriming();
+    public void primeZombieWithTemplatedResponseAddsPriming() {
+        underTest.prime(REQUEST, TEMPLATED_RESPONSE);
 
-        when(apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(appRequest, appResponse)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
+        createPrimedMapping(TEMPLATED_RESPONSE);
 
-        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, staticDefault(appResponse));
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(createPrimedMapping(TEMPLATED_RESPONSE));
+    }
+
+    @Test
+    public void primeZombieWithDefaultResponseReturnsRequestedPriming() {
+        final ZombiePriming got = underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
-    public void primeZombieForDefaultTemplateReturnsPrimingRequest() throws Exception {
-        final ZombiePriming zombiePriming = new ZombiePriming();
+    public void primeZombieWithDefaultResponseAddsPriming() {
+        underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
-        when(apacheJzonbieRequestFactory.createPrimeZombieForDefaultTemplateRequest(appRequest, templated(appResponse))).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, ZombiePriming.class)).thenReturn(zombiePriming);
+        final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_RESPONSE);
 
-        final ZombiePriming got = jzonbieHttpClient.prime(appRequest, staticDefault(templated(appResponse)));
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
+    }
+
+    @Test
+    public void primeZombieWithDefaultTemplateResponseReturnsRequestedPriming() {
+        final ZombiePriming got = underTest.prime(REQUEST, DEFAULT_TEMPLATED_RESPONSE);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
-    public void primeZombieWithFileReturnsPrimedMappings() throws Exception {
-        final List<PrimedMapping> primedMappings = emptyList();
+    public void primeZombieWithDefaultTemplateResponseAddsPriming() {
+        underTest.prime(REQUEST, DEFAULT_TEMPLATED_RESPONSE);
 
-        when(apacheJzonbieRequestFactory.createPrimeZombieWithFileRequest(file)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserializeCollection(httpResponse, PrimedMapping.class)).thenReturn(primedMappings);
+        final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_TEMPLATED_RESPONSE);
 
-        final List<PrimedMapping> got = jzonbieHttpClient.prime(file);
-
-        assertThat(got).isEqualTo(primedMappings);
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    public void primeZombieThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(apacheJzonbieRequestFactory.createPrimeZombieRequest(appRequest, appResponse)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
+    public void primeZombieWithFileReturnsPrimedMappings() {
+        final List<PrimedMapping> got = underTest.prime(FILE);
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(is(runtimeException));
-
-        jzonbieHttpClient.prime(appRequest, appResponse);
+        assertThat(got).containsExactly(primedMapping);
     }
 
     @Test
-    public void getCurrentPrimingReturnsPrimedMappings() throws Exception {
-        final List<PrimedMapping> primedMappings = emptyList();
+    public void primeZombieWithFileAddsPriming() {
+        underTest.prime(FILE);
 
-        when(apacheJzonbieRequestFactory.createGetCurrentPrimingRequest()).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserializeCollection(httpResponse, PrimedMapping.class)).thenReturn(primedMappings);
-
-        final List<PrimedMapping> got = jzonbieHttpClient.getCurrentPriming();
-
-        assertThat(got).isEqualTo(primedMappings);
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    public void getCurrentPrimingThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(apacheJzonbieRequestFactory.createGetCurrentPrimingRequest()).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
+    public void getCurrentPrimingReturnsPrimedMappings() {
+        underTest.prime(REQUEST, RESPONSE);
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(is(runtimeException));
+        final List<PrimedMapping> got = underTest.getCurrentPriming();
 
-        jzonbieHttpClient.getCurrentPriming();
+        assertThat(got).containsExactly(primedMapping);
     }
 
     @Test
-    public void getHistoryReturnsCallHistory() throws Exception {
-        final List<ZombiePriming> zombiePrimings = emptyList();
+    public void getHistoryReturnsCallHistory() {
+        underTest.prime(REQUEST, RESPONSE);
+        testingClient.execute(REQUEST);
 
-        when(apacheJzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserializeCollection(httpResponse, ZombiePriming.class)).thenReturn(zombiePrimings);
+        final List<ZombiePriming> got = underTest.getHistory();
 
-        final List<ZombiePriming> got = jzonbieHttpClient.getHistory();
+        assertThat(got).hasSize(1);
 
-        assertThat(got).isEqualTo(zombiePrimings);
+        got.get(0).getAppRequest().getHeaders().clear();
+
+        assertThat(got).containsExactly(this.zombiePriming);
     }
 
     @Test
-    public void getFailedRequestsReturnsFailedRequests() throws Exception {
-        final List<AppRequest> failedRequests = emptyList();
+    public void getFailedRequestsReturnsFailedRequests() {
+        testingClient.execute(REQUEST);
 
-        when(apacheJzonbieRequestFactory.createGetFailedRequestsRequest()).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserializeCollection(httpResponse, AppRequest.class)).thenReturn(failedRequests);
+        final List<AppRequest> got = underTest.getFailedRequests();
 
-        final List<AppRequest> got = jzonbieHttpClient.getFailedRequests();
+        got.get(0).getHeaders().clear();
 
-        assertThat(got).isEqualTo(failedRequests);
+        assertThat(got).containsExactly(REQUEST);
     }
 
     @Test
-    public void getHistoryThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(apacheJzonbieRequestFactory.createGetHistoryRequest()).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
+    public void resetExecutesResetRequest() {
+        testingClient.execute(REQUEST);
+        underTest.prime(REQUEST, RESPONSE);
+        testingClient.execute(REQUEST);
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(is(runtimeException));
+        assertThat(underTest.getFailedRequests()).hasSize(1);
+        assertThat(underTest.getHistory()).hasSize(1);
 
-        jzonbieHttpClient.getHistory();
+        underTest.reset();
+
+        assertThat(underTest.getFailedRequests()).isEmpty();
+        assertThat(underTest.getHistory()).isEmpty();
     }
 
     @Test
-    public void resetExecutesResetRequest() throws Exception {
-        when(apacheJzonbieRequestFactory.createResetRequest()).thenReturn(httpRequest);
+    public void verifyDoesNotThrowExceptionWhenVerificationIsTrue() {
+        underTest.prime(REQUEST, RESPONSE);
+        underTest.prime(REQUEST, RESPONSE);
+        testingClient.execute(REQUEST);
+        testingClient.execute(REQUEST);
 
-        jzonbieHttpClient.reset();
-
-        verify(httpClient).execute(httpRequest);
+        underTest.verify(REQUEST, equalTo(2));
     }
 
     @Test
-    public void resetThrowsRuntimeExceptionIfHttpClientThrowsException() throws Exception {
-        when(apacheJzonbieRequestFactory.createResetRequest()).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenThrow(runtimeException);
+    public void verifyDoesNotThrowExceptionWhenVerificationIsTrueAndNoCriteriaIsPassedIn() {
+        underTest.prime(REQUEST, RESPONSE);
+        testingClient.execute(REQUEST);
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectCause(is(runtimeException));
-
-        jzonbieHttpClient.reset();
+        underTest.verify(REQUEST);
     }
 
     @Test
-    public void verifyDoesNotThrowExceptionWhenVerificationIsTrue() throws Exception {
+    public void verifyThrowsVerificationExceptionWhenVerificationIsFalse() {
         final InvocationVerificationCriteria criteria = equalTo(2);
 
-        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(2));
+        underTest.prime(REQUEST, RESPONSE);
+        testingClient.execute(REQUEST);
 
-        jzonbieHttpClient.verify(appRequest, criteria);
+        assertThatThrownBy(() -> underTest.verify(REQUEST, criteria))
+                .isInstanceOf(VerificationException.class)
+                .hasMessageContaining("1")
+                .hasMessageContaining("equal to 2");
     }
 
     @Test
-    public void verifyDoesNotThrowExceptionWhenVerificationIsTrueAndNoCriteriaIsPassedIn() throws Exception {
-        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(1));
-
-        jzonbieHttpClient.verify(appRequest);
+    public void verifyThrowsVerificationExceptionWhenVerificationIsFalseAndNoCriteriaIsPassedIn() {
+        assertThatThrownBy(() -> underTest.verify(REQUEST))
+                .isInstanceOf(VerificationException.class)
+                .hasMessageContaining("0")
+                .hasMessageContaining("equal to 1");
     }
 
-    @Test
-    public void verifyThrowsVerificationExceptionWhenVerificationIsFalse() throws Exception {
-        final InvocationVerificationCriteria criteria = equalTo(2);
+    @DataPoints("exceptionTests")
+    public static ExceptionTestData[] exceptionTestDataPoints = new ExceptionTestData[]{
+            new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),
+            new ExceptionTestData("default priming", "prime", client -> client.prime(REQUEST, DEFAULT_RESPONSE)),
+            new ExceptionTestData("templated priming", "prime", client -> client.prime(REQUEST, TEMPLATED_RESPONSE)),
+            new ExceptionTestData("default templated priming", "prime", client -> client.prime(REQUEST, DEFAULT_TEMPLATED_RESPONSE)),
+            new ExceptionTestData("current priming", "current", JzonbieClient::getCurrentPriming),
+            new ExceptionTestData("history", "history", JzonbieClient::getHistory),
+            new ExceptionTestData("failed requests", "failed", JzonbieClient::getFailedRequests),
+            new ExceptionTestData("reset", "reset", JzonbieClient::reset),
+            new ExceptionTestData("verify", "count", client -> client.verify(REQUEST)),
+    };
 
-        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(1));
-
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("1");
-        expectedException.expectMessage("equal to 2");
-
-        jzonbieHttpClient.verify(appRequest, criteria);
+    @Theory
+    public void clientThrowsExceptionIfHttpClientThrowsException(@FromDataPoints("exceptionTests") ExceptionTestData exceptionTestData) {
+        System.out.println("Running client exception test: " + exceptionTestData.name);
+        assertThatThrownBy(() -> exceptionTestData.consumer.accept(brokenClient))
+                .isInstanceOf(JzonbieClientException.class)
+                .hasMessageContaining(exceptionTestData.messageSubstring)
+                .hasCauseInstanceOf(UnknownHostException.class);
     }
 
-    @Test
-    public void verifyThrowsVerificationExceptionWhenVerificationIsFalseAndNoCriteriaIsPassedIn() throws Exception {
-        when(apacheJzonbieRequestFactory.createVerifyRequest(appRequest)).thenReturn(httpRequest);
-        when(httpClient.execute(httpRequest)).thenReturn(httpResponse);
-        when(deserializer.deserialize(httpResponse, CountResult.class)).thenReturn(new CountResult(2));
+    private PrimedMapping createPrimedMapping(AppResponse... appResponses) {
+        return createPrimedMapping(null, appResponses);
+    }
 
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("2");
-        expectedException.expectMessage("equal to 1");
+    private PrimedMapping createPrimedMapping(DefaultAppResponse defaultAppResponse, AppResponse... appResponses) {
+        final DefaultingQueue defaultingQueue = new DefaultingQueue();
+        if(defaultAppResponse != null) {
+            defaultingQueue.setDefault(defaultAppResponse);
+        }
+        defaultingQueue.add(asList(appResponses));
+        return new PrimedMapping(REQUEST, defaultingQueue);
+    }
 
-        jzonbieHttpClient.verify(appRequest);
+    private static class ExceptionTestData {
+        private final String name;
+        private final String messageSubstring;
+        private final Consumer<JzonbieClient> consumer;
+
+        private ExceptionTestData(String name, String messageSubstring, Consumer<JzonbieClient> consumer) {
+            this.name = name;
+            this.messageSubstring = messageSubstring;
+            this.consumer = consumer;
+        }
     }
 }

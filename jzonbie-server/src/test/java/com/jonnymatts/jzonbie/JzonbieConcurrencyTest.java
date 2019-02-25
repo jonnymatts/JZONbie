@@ -2,8 +2,6 @@ package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
-import com.jonnymatts.jzonbie.model.AppRequest;
-import com.jonnymatts.jzonbie.model.AppResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -24,8 +22,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
-import static com.jonnymatts.jzonbie.model.AppRequest.get;
-import static com.jonnymatts.jzonbie.model.AppResponse.ok;
+import static com.jonnymatts.jzonbie.priming.AppRequest.get;
+import static com.jonnymatts.jzonbie.priming.AppResponse.ok;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;

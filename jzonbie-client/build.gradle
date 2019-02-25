@@ -3,7 +3,7 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
     compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.7'
     testCompile project(':jzonbie-test-util')
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.5'
+    testCompile project(':jzonbie-server')
 }
 
 jar {

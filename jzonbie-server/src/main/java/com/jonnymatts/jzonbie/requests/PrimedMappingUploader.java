@@ -1,8 +1,8 @@
 package com.jonnymatts.jzonbie.requests;
 
-import com.jonnymatts.jzonbie.model.PrimedMapping;
-import com.jonnymatts.jzonbie.model.PrimingContext;
-import com.jonnymatts.jzonbie.response.DefaultingQueue;
+import com.jonnymatts.jzonbie.priming.PrimedMapping;
+import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.responses.DefaultingQueue;
 
 import java.util.List;
 

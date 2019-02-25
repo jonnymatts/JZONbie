@@ -3,16 +3,15 @@ package com.jonnymatts.jzonbie;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
-import com.jonnymatts.jzonbie.client.JzonbieClient;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
-import com.jonnymatts.jzonbie.model.*;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
+import com.jonnymatts.jzonbie.priming.*;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
-import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory;
-import com.jonnymatts.jzonbie.response.DefaultAppResponse;
-import com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
+import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
@@ -28,8 +27,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
-import static com.jonnymatts.jzonbie.model.TemplatedAppResponse.templated;
-import static com.jonnymatts.jzonbie.response.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.priming.TemplatedAppResponse.templated;
+import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 
 public class Jzonbie implements JzonbieClient {
 
