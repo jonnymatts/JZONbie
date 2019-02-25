@@ -2,7 +2,6 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.google.common.collect.Sets;
 import com.jonnymatts.jzonbie.Body;
-import com.jonnymatts.jzonbie.Request;
 
 import java.util.*;
 
@@ -11,7 +10,7 @@ import static com.jonnymatts.jzonbie.util.Matching.mapValuesMatchWithRegex;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
-public class AppRequest implements Request {
+public class AppRequest {
 
     private String path;
     private Map<String, String> headers;

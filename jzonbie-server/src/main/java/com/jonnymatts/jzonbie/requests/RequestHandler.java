@@ -1,7 +1,8 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jonnymatts.jzonbie.responses.Response;
+import com.jonnymatts.jzonbie.Request;
+import com.jonnymatts.jzonbie.Response;
 
 public interface RequestHandler {
 

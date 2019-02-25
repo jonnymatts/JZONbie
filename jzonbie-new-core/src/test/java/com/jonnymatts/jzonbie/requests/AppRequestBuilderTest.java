@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.requests;
 
-import com.jonnymatts.jzonbie.StringBody;
+import com.jonnymatts.jzonbie.testing.StringBody;
 import org.junit.Test;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.builder;

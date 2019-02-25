@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
-import com.jonnymatts.jzonbie.StringBody;
+import com.jonnymatts.jzonbie.testing.StringBody;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.experimental.theories.DataPoints;

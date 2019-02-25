@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.jonnymatts.jzonbie.StringBody;
+import com.jonnymatts.jzonbie.testing.StringBody;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

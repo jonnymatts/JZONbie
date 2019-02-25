@@ -1,4 +1,6 @@
-package com.jonnymatts.jzonbie;
+package com.jonnymatts.jzonbie.testing;
+
+import com.jonnymatts.jzonbie.Body;
 
 public class StringBody implements Body<String> {
     private String content;

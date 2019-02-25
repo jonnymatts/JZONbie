@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie.util;
 
+import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
-import com.jonnymatts.jzonbie.requests.Request;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

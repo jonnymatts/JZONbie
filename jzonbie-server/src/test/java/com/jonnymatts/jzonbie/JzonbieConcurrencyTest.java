@@ -22,8 +22,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
-import static com.jonnymatts.jzonbie.priming.AppRequest.get;
-import static com.jonnymatts.jzonbie.priming.AppResponse.ok;
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;

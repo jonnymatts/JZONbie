@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.jonnymatts.jzonbie.priming.AppRequest;
+
+import com.jonnymatts.jzonbie.requests.AppRequest;
 
 public class PrimingNotFoundErrorResponse extends ErrorResponse {
     private final AppRequest request;

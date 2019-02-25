@@ -1,9 +1,9 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.Body;
+import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
-import com.jonnymatts.jzonbie.priming.content.BodyContent;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -19,10 +19,14 @@ public class CurrentPrimingFileResponseFactory {
         this.objectMapper = objectMapper;
     }
 
-    public FileResponse create(List<PrimedMapping> primedMappings) throws JsonProcessingException {
-        final String fileName = createFileName();
-        final String fileContents = objectMapper.writeValueAsString(primedMappings);
-        return new FileResponse(fileName, fileContents);
+    public FileResponse create(List<PrimedMapping> primedMappings) {
+        try {
+            final String fileName = createFileName();
+            final String fileContents = objectMapper.writeValueAsString(primedMappings);
+            return new FileResponse(fileName, fileContents);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize current priming", e);
+        }
     }
 
     private String createFileName() {
@@ -58,13 +62,14 @@ public class CurrentPrimingFileResponseFactory {
         }
 
         @Override
-        public BodyContent getBody() {
+        public Body<?> getBody() {
             return null;
         }
 
         @Override
-        public boolean isFileResponse() {
-            return true;
+        public boolean isTemplated() {
+            return false;
         }
+
     }
 }

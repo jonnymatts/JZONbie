@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.defaults;
 
-import com.jonnymatts.jzonbie.priming.AppRequest;
+import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
 
 public class DefaultResponseDefaultPriming extends DefaultPriming {

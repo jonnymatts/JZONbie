@@ -2,11 +2,13 @@ package com.jonnymatts.jzonbie.requests;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jonnymatts.jzonbie.Request;
+import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
 import com.jonnymatts.jzonbie.priming.CallHistory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
-import com.jonnymatts.jzonbie.responses.Response;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 
 import java.util.List;
 import java.util.Optional;

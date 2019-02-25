@@ -6,9 +6,11 @@ import com.github.jknack.handlebars.Handlebars;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.priming.*;
+import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse;
@@ -27,8 +29,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
-import static com.jonnymatts.jzonbie.priming.TemplatedAppResponse.templated;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 
 public class Jzonbie implements JzonbieClient {
 
@@ -56,7 +56,7 @@ public class Jzonbie implements JzonbieClient {
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
         primedMappingUploader = new PrimedMappingUploader(primingContext);
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options, primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options.getZombieHeaderName(), primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader);
 
         options.getRoutes().forEach(route -> {
             route.setJzonbieClient(this);
@@ -86,15 +86,6 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming prime(AppRequest request, TemplatedAppResponse response) {
-        final ZombiePriming zombiePriming = new ZombiePriming(request, response);
-        final ZombiePriming deserialized = normalizeForPriming(zombiePriming, ZombiePriming.class);
-        deserialized.setAppResponse(Cloner.createTemplatedResponse(deserialized.getAppResponse()));
-        primingContext.add(deserialized);
-        return deserialized;
-    }
-
-    @Override
     public List<PrimedMapping> prime(File file) {
         try {
             final String mappingsString = IoUtils.toString(new FileInputStream(file));
@@ -109,17 +100,18 @@ public class Jzonbie implements JzonbieClient {
     @Override
     public ZombiePriming prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
         final AppRequest appRequest = normalizeForPriming(request, AppRequest.class);
-        final DefaultAppResponse appResponse = defaultAppResponse.isDynamic() ? defaultAppResponse : normalizeStaticDefault(defaultAppResponse);
 
-        primingContext.addDefault(appRequest, appResponse);
+        if(defaultAppResponse instanceof StaticDefaultAppResponse) {
+            primingContext.addDefault(appRequest, normalizeStaticDefault(defaultAppResponse));
+            return new ZombiePriming(request, defaultAppResponse.getResponse());
+        }
 
-        final AppResponse returnResponse = defaultAppResponse.isDynamic() ? null : defaultAppResponse.getResponse();
-        return new ZombiePriming(request, returnResponse);
+        primingContext.addDefault(appRequest, defaultAppResponse);
+        return new ZombiePriming(request, null);
     }
 
     private DefaultAppResponse normalizeStaticDefault(DefaultAppResponse defaultAppResponse) {
-        final DefaultAppResponse normalizedResponse = normalizeForPriming(defaultAppResponse, StaticDefaultAppResponse.class);
-        return defaultAppResponse.isTemplated() ? staticDefault(templated(normalizedResponse.getResponse())) : normalizedResponse;
+        return normalizeForPriming(defaultAppResponse, StaticDefaultAppResponse.class);
     }
 
     private <T> T normalizeForPriming(T appRequest, Class<? extends T> clazz) {

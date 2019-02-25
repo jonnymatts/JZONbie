@@ -3,7 +3,8 @@ package com.jonnymatts.jzonbie.priming;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.flextrade.jfixture.annotations.Fixture;
 import com.flextrade.jfixture.rules.FixtureRule;
-import com.jonnymatts.jzonbie.requests.Request;
+import com.jonnymatts.jzonbie.Request;
+import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,13 +17,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.jonnymatts.jzonbie.priming.Cloner.cloneRequest;
-import static com.jonnymatts.jzonbie.priming.content.ArrayBodyContent.arrayBody;
-import static com.jonnymatts.jzonbie.priming.content.LiteralBodyContent.literalBody;
-import static com.jonnymatts.jzonbie.priming.content.ObjectBodyContent.objectBody;
-import static com.jonnymatts.jzonbie.priming.content.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.jackson.body.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.jackson.body.LiteralBodyContent.literalBody;
+import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.jackson.body.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
+import static com.jonnymatts.jzonbie.util.Cloner.cloneRequest;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -35,7 +38,6 @@ public class AppRequestFactoryTest {
     @Mock private Deserializer deserializer;
     @Mock private Request request;
 
-    @Fixture private AppRequest appRequest;
     @Fixture private String path;
     @Fixture private String requestMethod;
     @Fixture private String requestBody;
@@ -43,6 +45,7 @@ public class AppRequestFactoryTest {
     private final Map<String, Object> bodyMap = singletonMap("var", "val");
     private final Map<String, String> headers = singletonMap("hVar", "hVal");
     private final Map<String, List<String>> queryParams = singletonMap("qVar", asList("qVal1", "qVal2"));
+    private final AppRequest appRequest = get("/").build();
 
     private HashMap<String, Object> expectedMap;
 

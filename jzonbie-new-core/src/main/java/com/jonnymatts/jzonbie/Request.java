@@ -11,8 +11,10 @@ public interface Request {
 
     Map<String, String> getHeaders();
 
-    Body<?> getBody();
+    String getBody();
 
     Map<String, List<String>> getQueryParams();
+
+    String getPrimingFileContent();
 
 }

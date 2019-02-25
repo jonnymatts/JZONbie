@@ -1,9 +1,9 @@
 package com.jonnymatts.jzonbie.util;
 
 import com.flextrade.jfixture.rules.FixtureRule;
-import com.jonnymatts.jzonbie.StringBody;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
+import com.jonnymatts.jzonbie.testing.StringBody;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

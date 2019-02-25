@@ -1,9 +1,11 @@
 package com.jonnymatts.jzonbie.priming;
 
+import com.jonnymatts.jzonbie.Body;
 import com.jonnymatts.jzonbie.defaults.DefaultPriming;
 import com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming;
 import com.jonnymatts.jzonbie.defaults.StandardDefaultPriming;
-import com.jonnymatts.jzonbie.priming.content.BodyContent;
+import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultingQueue;
 
@@ -35,7 +37,7 @@ public class PrimingContext {
     }
 
     public PrimingContext add(ZombiePriming zombiePriming) {
-        return add(zombiePriming.getAppRequest(), zombiePriming.getAppResponse());
+        return add(zombiePriming.getRequest(), zombiePriming.getResponse());
     }
 
     synchronized public PrimingContext add(AppRequest appRequest, AppResponse appResponse) {
@@ -162,7 +164,7 @@ public class PrimingContext {
     private static class HeaderlessAppRequest {
         private final String path;
         private final String method;
-        private final BodyContent body;
+        private final Body<?> body;
         private final Map<String, List<String>> queryParams;
 
         private HeaderlessAppRequest(AppRequest appRequest) {
@@ -181,7 +183,7 @@ public class PrimingContext {
 
             if(path != null ? !path.equals(that.path) : that.path != null) return false;
             if(method != null ? !method.equals(that.method) : that.method != null) return false;
-            if(body != null ? !body.equals(that.body) : that.body != null) return false;
+            if(body != null ? !body.getContent().equals(that.body.getContent()) : that.body != null) return false;
             return queryParams != null ? queryParams.equals(that.queryParams) : that.queryParams == null;
 
         }
@@ -190,7 +192,7 @@ public class PrimingContext {
         public int hashCode() {
             int result = path != null ? path.hashCode() : 0;
             result = 31 * result + (method != null ? method.hashCode() : 0);
-            result = 31 * result + (body != null ? body.hashCode() : 0);
+            result = 31 * result + (body != null ? body.getContent().hashCode() : 0);
             result = 31 * result + (queryParams != null ? queryParams.hashCode() : 0);
             return result;
         }

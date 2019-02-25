@@ -1,11 +1,11 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
-import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
+import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.VerificationException;
@@ -27,13 +27,13 @@ import java.util.List;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming.defaultResponseDefaultPriming;
 import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
-import static com.jonnymatts.jzonbie.priming.AppRequest.get;
-import static com.jonnymatts.jzonbie.priming.AppRequest.post;
-import static com.jonnymatts.jzonbie.priming.AppResponse.internalServerError;
-import static com.jonnymatts.jzonbie.priming.AppResponse.ok;
-import static com.jonnymatts.jzonbie.priming.TemplatedAppResponse.templated;
-import static com.jonnymatts.jzonbie.priming.content.LiteralBodyContent.literalBody;
-import static com.jonnymatts.jzonbie.priming.content.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.jackson.body.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.jackson.body.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
+import static com.jonnymatts.jzonbie.requests.AppRequest.post;
+import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
@@ -48,13 +48,11 @@ public class JzonbieTest {
     @ClassRule public static JzonbieRule jzonbie = JzonbieRule.jzonbie();
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
-    private JzonbieClient jzonbieClient;
     private HttpUriRequest httpRequest;
     private HttpClient client;
 
     @Before
     public void setUp() throws Exception {
-        jzonbieClient = new ApacheJzonbieHttpClient("http://localhost:" + jzonbie.getPort());
         httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build();
 
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
@@ -72,69 +70,51 @@ public class JzonbieTest {
     public void jzonbieCanBePrimed() throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
                 get("/").build(),
-                ok().withBody(singletonMap("key", "val")).build()
+                ok().withBody(objectBody(singletonMap("key", "val"))).build()
         );
 
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
-    }
-
-    @Test
-    public void jzonbieCanBePrimedWithTemplatedResponse() throws Exception {
-        final AppResponse response = ok().withBody(singletonMap("key", " {{ request.path }}")).build();
-        final ZombiePriming zombiePriming = jzonbie.prime(
-                get("/").build(),
-                templated(response)
-        );
-
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
-
-        assertThat(got).hasSize(1);
-
-        final PrimedMapping primedMapping = got.get(0);
-
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(response);
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
     public void jzonbieCanBePrimedWithStringBodyContent() throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                post("/").withBody("<jzonbie>message</jzonbie>").build(),
-                ok().withBody("<response>message</response>").build()
+                post("/").withBody(stringBody("<jzonbie>message</jzonbie>")).build(),
+                ok().withBody(stringBody("<response>message</response>")).build()
         );
 
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
     public void jzonbieCanBePrimedWithListBodyContent() throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                post("/").withBody(singletonList("request")).build(),
-                ok().withBody(singletonList("response")).build()
+                post("/").withBody(arrayBody(singletonList("request"))).build(),
+                ok().withBody(arrayBody(singletonList("response"))).build()
         );
 
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
@@ -144,70 +124,35 @@ public class JzonbieTest {
                 ok().withBody(stringBody("response")).build()
         );
 
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
-    }
-
-
-    @Test
-    public void jzonbieCanBePrimedWithNumberBodyContent() throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.prime(
-                post("/").withBody(1).build(),
-                ok().withBody(2).build()
-        );
-
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
-
-        assertThat(got).hasSize(1);
-
-        final PrimedMapping primedMapping = got.get(0);
-
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
     public void jzonbieCanBePrimedForStaticDefault() throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
-                staticDefault(ok().withBody(singletonMap("key", "val")).build())
+                staticDefault(ok().build())
         );
 
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
+        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
 
         assertThat(got).hasSize(1);
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(zombiePriming.getAppResponse());
-    }
-
-    @Test
-    public void jzonbieCanBePrimedForStaticDefaultTemplatedResponse() throws Exception {
-        final AppResponse response = ok().withBody(singletonMap("key", "{{ request.path }}")).build();
-        final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
-                staticDefault(templated(response))
-        );
-
-        final List<PrimedMapping> got = jzonbieClient.getCurrentPriming();
-
-        assertThat(got).hasSize(1);
-
-        final PrimedMapping primedMapping = got.get(0);
-
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(response);
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+        assertThat(primedMapping.getResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(zombiePriming.getResponse());
     }
 
     @Test
     public void jzonbieCanBePrimedForDynamicDefault() throws Exception {
-        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().withBody(singletonMap("key", "val")).build());
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().withBody(objectBody(singletonMap("key", "val"))).build());
         final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
                 defaultResponse
         );
@@ -218,31 +163,9 @@ public class JzonbieTest {
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        assertThat(primedMapping.getAppResponses().getDefault()).contains(defaultResponse);
-    }
-
-
-
-    @Test
-    public void jzonbieCanBePrimedForDynamicDefaultTemplatedResponse() throws Exception {
-        final TemplatedAppResponse response = templated(ok().withBody(singletonMap("key", "{{ request.path }}")).build());
-        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> response);
-        final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
-                defaultResponse
-        );
-
-        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
-
-        assertThat(got).hasSize(1);
-
-        final PrimedMapping primedMapping = got.get(0);
-
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-
-        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse).get()).isInstanceOf(TemplatedAppResponse.class);
-        assertThat(primedMapping.getAppResponses().getDefault().map(DefaultAppResponse::getResponse)).contains(response);
+        assertThat(primedMapping.getResponses().getDefault()).contains(defaultResponse);
     }
 
     @Test
@@ -255,37 +178,38 @@ public class JzonbieTest {
 
         final PrimedMapping primedMapping = got.get(0);
 
-        assertThat(primedMapping.getAppRequest().getPath()).isEqualTo("/path");
-        assertThat(primedMapping.getAppResponses().getDefault()).isNotEmpty();
-        assertThat(primedMapping.getAppResponses().getEntries()).hasSize(1);
-        assertThat(primedMapping.getAppResponses().getEntries().get(0).getStatusCode()).isEqualTo(201);
+        assertThat(primedMapping.getRequest().getPath()).isEqualTo("/path");
+        assertThat(primedMapping.getResponses().getDefault()).isNotEmpty();
+        assertThat(primedMapping.getResponses().getEntries()).hasSize(1);
+        assertThat(primedMapping.getResponses().getEntries().get(0).getStatusCode()).isEqualTo(201);
     }
 
-    @Test
-    public void zombieHeaderNameCanBeSet() throws Exception {
-        final String zombieHeaderName = "jzonbie";
-        final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
-
-        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.prime( get("/").build(),
-                ok().withBody(singletonMap("key", "val")).build()
-        );
-
-        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
-                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
-                zombieHeaderName
-        );
-
-        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
-
-        assertThat(got).hasSize(1);
-
-        final PrimedMapping primedMapping = got.get(0);
-
-        assertThat(primedMapping.getAppRequest()).isEqualTo(zombiePriming.getAppRequest());
-        assertThat(primedMapping.getAppResponses().getEntries()).containsOnly(zombiePriming.getAppResponse());
-
-        jzonbieWithZombieHeaderNameSet.stop();
-    }
+    // TODO: do this
+//    @Test
+//    public void zombieHeaderNameCanBeSet() throws Exception {
+//        final String zombieHeaderName = "jzonbie";
+//        final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
+//
+//        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.prime( get("/").build(),
+//                ok().withBody(objectBody(singletonMap("key", "val"))).build()
+//        );
+//
+//        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
+//                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
+//                zombieHeaderName
+//        );
+//
+//        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+//
+//        assertThat(got).hasSize(1);
+//
+//        final PrimedMapping primedMapping = got.get(0);
+//
+//        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+//        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
+//
+//        jzonbieWithZombieHeaderNameSet.stop();
+//    }
 
     @Test
     public void verifyThrowsVerificationExceptionIfCallVerificationCriteriaIsFalse() throws Exception {
@@ -295,21 +219,21 @@ public class JzonbieTest {
         expectedException.expectMessage("3");
         expectedException.expectMessage("equal to 2");
 
-        jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+        jzonbie.verify(zombiePriming.getRequest(), equalTo(2));
     }
 
     @Test
     public void verifyDoesNotThrowExceptionIfCallVerificationCriteriaIsTrue() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(2);
 
-        jzonbie.verify(zombiePriming.getAppRequest(), equalTo(2));
+        jzonbie.verify(zombiePriming.getRequest(), equalTo(2));
     }
 
     @Test
     public void verifyDoesNotThrowExceptionIfNoVerificationIsPassedAndCallIsMadeOnce() throws Exception {
         final ZombiePriming zombiePriming = callJzonbieWithPrimedRequest(1);
 
-        jzonbie.verify(zombiePriming.getAppRequest());
+        jzonbie.verify(zombiePriming.getRequest());
     }
 
     @Test
@@ -392,7 +316,6 @@ public class JzonbieTest {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withDefaultPriming(
                         defaultPriming(get("/").build(), ok().build()),
-                        defaultPriming(get("/templated/.*").build(), templated(ok().withBody(literalBody("{{ request.path }}")).build())),
                         defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );
@@ -415,7 +338,6 @@ public class JzonbieTest {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withDefaultPriming(
                         defaultPriming(get("/").build(), ok().build()),
-                        defaultPriming(get("/templated/.*").build(), templated(ok().withBody(literalBody("{{ request.path }}")).build())),
                         defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );
@@ -438,7 +360,6 @@ public class JzonbieTest {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withDefaultPriming(
                         defaultPriming(get("/").build(), ok().build()),
-                        defaultPriming(get("/templated/path").build(), templated(ok().withBody(literalBody("{{ request.path }}")).build())),
                         defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );
@@ -461,7 +382,7 @@ public class JzonbieTest {
     private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
         final ZombiePriming zombiePriming = jzonbie.prime(
                 get("/").build(),
-                staticDefault(ok().withBody(singletonMap("key", "val")).build())
+                staticDefault(ok().withBody(objectBody(singletonMap("key", "val"))).build())
         );
 
         for(int i = 0; i < times; i++) {

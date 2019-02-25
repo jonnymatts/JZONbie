@@ -7,7 +7,6 @@ import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -18,13 +17,13 @@ import java.util.List;
 
 import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CurrentPrimingFileResponseFactoryTest {
 
     @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
-    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     @Fixture private String seriliazedBody;
 
@@ -52,9 +51,8 @@ public class CurrentPrimingFileResponseFactoryTest {
 
         when(objectMapper.writeValueAsString(primedMappings)).thenThrow(new RuntimeException("blah"));
 
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("blah");
-
-        factory.create(primedMappings);
+        assertThatThrownBy(() -> factory.create(primedMappings))
+                .hasMessageContaining("Failed")
+                .hasCauseInstanceOf(RuntimeException.class);
     }
 }

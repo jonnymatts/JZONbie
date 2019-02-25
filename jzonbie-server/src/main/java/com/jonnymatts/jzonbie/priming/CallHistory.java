@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.priming;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.jonnymatts.jzonbie.requests.AppRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,6 @@ public class CallHistory {
     }
 
     public int count(AppRequest appRequest) {
-        return (int)history.stream().filter(priming -> appRequest.matches(priming.getAppRequest())).count();
+        return (int)history.stream().filter(priming -> appRequest.matches(priming.getRequest())).count();
     }
 }

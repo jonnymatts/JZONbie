@@ -1,10 +1,10 @@
 package com.jonnymatts.jzonbie;
 
 import com.flextrade.jfixture.JFixture;
-import com.jonnymatts.jzonbie.priming.AppRequest;
-import com.jonnymatts.jzonbie.priming.AppResponse;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
+import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Before;
@@ -17,7 +17,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.jonnymatts.jzonbie.priming.AppRequest.get;
+import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 
 @Ignore("Run this only if you are changing the priming context")
 public class PrimingContextPerformanceTest {
@@ -35,7 +36,7 @@ public class PrimingContextPerformanceTest {
         primings = IntStream.range(0, 100_000).boxed().map(
                 i -> new ZombiePriming(
                         get("/path")
-                                .withBody(fixture.collections().createMap(String.class, String.class, 50))
+                                .withBody(objectBody(fixture.collections().createMap(String.class, String.class, 50)))
                                 .withHeader("key1", fixtureString())
                                 .withHeader("key2", fixtureString())
                                 .withHeader("key3", fixtureString())
@@ -75,7 +76,7 @@ public class PrimingContextPerformanceTest {
         stopWatch.reset();
         stopWatch.start();
         for (int i : indices) {
-            final AppRequest request = primings.get(i).getAppRequest();
+            final AppRequest request = primings.get(i).getRequest();
             primingContext.getResponse(request).get();
         }
         time = stopWatch.getTime();

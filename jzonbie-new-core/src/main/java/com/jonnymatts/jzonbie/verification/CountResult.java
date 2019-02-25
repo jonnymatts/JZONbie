@@ -32,4 +32,11 @@ public class CountResult {
     public int hashCode() {
         return count;
     }
+
+    @Override
+    public String toString() {
+        return "CountResult{" +
+                "count=" + count +
+                '}';
+    }
 }

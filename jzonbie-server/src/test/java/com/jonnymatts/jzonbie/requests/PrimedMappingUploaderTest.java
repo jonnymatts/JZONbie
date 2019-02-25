@@ -1,8 +1,8 @@
 package com.jonnymatts.jzonbie.requests;
 
-import com.jonnymatts.jzonbie.priming.AppResponse;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultingQueue;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +12,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
+import static com.jonnymatts.jzonbie.requests.AppRequest.post;
+import static com.jonnymatts.jzonbie.responses.AppResponse.notFound;
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
@@ -19,11 +23,11 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class PrimedMappingUploaderTest {
 
-    private static final AppRequest APP_REQUEST_1 = AppRequestBuilderUtil.getFixturedAppRequest();
-    private static final AppRequest APP_REQUEST_2 = AppRequestBuilderUtil.getFixturedAppRequest();
+    private static final AppRequest APP_REQUEST_1 = get("/").build();
+    private static final AppRequest APP_REQUEST_2 = post("/").build();
 
-    private static final AppResponse APP_RESPONSE_1 = AppResponseBuilderUtil.getFixturedAppResponse();
-    private static final AppResponse APP_RESPONSE_2 = AppResponseBuilderUtil.getFixturedAppResponse();
+    private static final AppResponse APP_RESPONSE_1 = ok().build();
+    private static final AppResponse APP_RESPONSE_2 = notFound().build();
 
     @Mock private PrimingContext primingContext;
 

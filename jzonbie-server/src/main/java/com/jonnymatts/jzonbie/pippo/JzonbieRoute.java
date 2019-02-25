@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.pippo;
 
-import com.jonnymatts.jzonbie.client.JzonbieClient;
+import com.jonnymatts.jzonbie.JzonbieClient;
 import com.jonnymatts.jzonbie.util.Deserializer;
 import ro.pippo.core.route.Route;
 import ro.pippo.core.route.RouteContext;
