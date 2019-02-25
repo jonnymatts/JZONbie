@@ -1,18 +1,15 @@
 package com.jonnymatts.jzonbie.verification;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static java.lang.String.format;
 
 public class InvocationVerificationCriteria {
 
-    @JsonProperty("atLeast") private final Integer expectedAtLeast;
-    @JsonProperty("atMost") private final Integer expectedAtMost;
+    private final Integer expectedAtLeast;
+    private final Integer expectedAtMost;
 
-    @JsonCreator
-    private InvocationVerificationCriteria(@JsonProperty("atLeast") Integer expectedAtLeast,
-                                           @JsonProperty("atMost") Integer expectedAtMost) {
+    private InvocationVerificationCriteria(Integer expectedAtLeast,
+                                           Integer expectedAtMost) {
         this.expectedAtLeast = expectedAtLeast;
         this.expectedAtMost = expectedAtMost;
     }

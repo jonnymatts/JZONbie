@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.util;
 
-import com.jonnymatts.jzonbie.model.content.BodyContent;
+import com.jonnymatts.jzonbie.Body;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,7 +49,7 @@ public class Matching {
         return Objects.equals(pattern, value);
     }
 
-    public static boolean bodyContentsMatch(BodyContent pattern, BodyContent value) {
+    public static boolean bodyContentsMatch(Body<?> pattern, Body<?> value) {
         return pattern == null || (pattern.matches(value) && value != null);
     }
 

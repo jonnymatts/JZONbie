@@ -5,18 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.google.common.base.Stopwatch;
+import com.jonnymatts.jzonbie.Body;
 import com.jonnymatts.jzonbie.JzonbieOptions;
-import com.jonnymatts.jzonbie.model.TemplatedAppResponse;
-import com.jonnymatts.jzonbie.model.content.BodyContent;
-import com.jonnymatts.jzonbie.model.content.LiteralBodyContent;
+import com.jonnymatts.jzonbie.Response;
+import com.jonnymatts.jzonbie.body.LiteralBodyContent;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
 import com.jonnymatts.jzonbie.requests.RequestHandler;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
-import com.jonnymatts.jzonbie.response.CurrentPrimingFileResponseFactory.FileResponse;
-import com.jonnymatts.jzonbie.response.ErrorResponse;
-import com.jonnymatts.jzonbie.response.PrimingNotFoundErrorResponse;
-import com.jonnymatts.jzonbie.response.Response;
+import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
+import com.jonnymatts.jzonbie.responses.ErrorResponse;
+import com.jonnymatts.jzonbie.responses.PrimingNotFoundErrorResponse;
 import com.jonnymatts.jzonbie.templating.TransformationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +82,7 @@ public class PippoApplication extends Application {
                 final FileResponse fileResponse = (FileResponse) response;
                 pippoResponse.contentType(APPLICATION_JSON);
                 pippoResponse.file(fileResponse.getFileName(), new ByteArrayInputStream(fileResponse.getContents().getBytes()));
-            } else if(response instanceof TemplatedAppResponse) {
+            } else if(response.isTemplated()) {
                 final TransformationContext transformationContext = new TransformationContext(pippoRequest);
                 final Map<String, String> transformedHeaders = transformHeaders(transformationContext, response.getHeaders());
                 primeResponse(pippoResponse, response.getStatusCode(), transformedHeaders);
@@ -117,14 +116,13 @@ public class PippoApplication extends Application {
         }
     }
 
-    private String getBodyString(Object body) throws JsonProcessingException {
+    private String getBodyString(Body<?> body) throws JsonProcessingException {
         if(body == null) return null;
         if(body instanceof LiteralBodyContent) return ((LiteralBodyContent) body).getContent();
-        final Object o = (body instanceof BodyContent) ? ((BodyContent) body).getContent() : body;
-        return objectMapper.writeValueAsString(o);
+        return objectMapper.writeValueAsString(body.getContent());
     }
 
-    private void sleepIfNecessary(Response response) {
+    private void sleepIfNecessary(Response<?> response) {
         response.getDelay().ifPresent(d -> {
             try {
                 Thread.sleep(d.toMillis());

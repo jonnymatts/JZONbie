@@ -1,11 +1,13 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.flextrade.jfixture.rules.FixtureRule;
-import com.jonnymatts.jzonbie.model.*;
-import com.jonnymatts.jzonbie.response.Response;
-import com.jonnymatts.jzonbie.util.AppRequestBuilderUtil;
-import com.jonnymatts.jzonbie.util.AppResponseBuilderUtil;
+import com.jonnymatts.jzonbie.Request;
+import com.jonnymatts.jzonbie.Response;
+import com.jonnymatts.jzonbie.priming.AppRequestFactory;
+import com.jonnymatts.jzonbie.priming.CallHistory;
+import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,6 +19,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,8 +30,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AppRequestHandlerTest {
-
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
@@ -53,8 +55,8 @@ public class AppRequestHandlerTest {
     public void setUp() throws Exception {
         appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
 
-        appRequest = AppRequestBuilderUtil.getFixturedAppRequest();
-        appResponse = AppResponseBuilderUtil.getFixturedAppResponse();
+        appRequest = get("/").build();
+        appResponse = ok().build();
 
         zombiePriming = new ZombiePriming(appRequest, appResponse);
 
@@ -67,20 +69,7 @@ public class AppRequestHandlerTest {
     public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
         final Response got = appRequestHandler.handle(request);
 
-        assertThat(got.getStatusCode()).isEqualTo(appResponse.getStatusCode());
-        assertThat(got.getHeaders()).containsAllEntriesOf(appResponse.getHeaders());
-        assertThat(got.getBody()).isEqualTo(appResponse.getBody());
-    }
-
-    @Test
-    public void handleReturnsPrimedResponseIfPrimingKeyExistsWithStringContentBody() throws JsonProcessingException {
-
-
-        final Response got = appRequestHandler.handle(request);
-
-        assertThat(got.getStatusCode()).isEqualTo(appResponse.getStatusCode());
-        assertThat(got.getHeaders()).containsAllEntriesOf(appResponse.getHeaders());
-        assertThat(got.getBody()).isEqualTo(appResponse.getBody());
+        assertThat(got).isEqualTo(appResponse);
     }
 
     @Test
@@ -91,7 +80,7 @@ public class AppRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsErrorResponseIfPrimingIsNotFound() throws Exception {
+    public void handleThrowsPrimingNotFoundExceptionIfPrimingIsNotFound() throws Exception {
         when(primingContext.getResponse(appRequest)).thenReturn(empty());
 
         expectedException.expect(PrimingNotFoundException.class);

@@ -35,8 +35,7 @@ public class PippoRequestTest {
     @Mock(answer = RETURNS_DEEP_STUBS) private ro.pippo.core.Request request;
     @Mock private FileItem fileItem;
 
-    @Fixture
-    private String path;
+    @Fixture private String path;
     @Fixture private String method;
     @Fixture private List<String> headerNames;
     @Fixture private String body;

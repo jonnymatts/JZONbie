@@ -1,8 +1,5 @@
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.8'
-    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.9.8'
     testCompile project(':jzonbie-test-util')
 }
 

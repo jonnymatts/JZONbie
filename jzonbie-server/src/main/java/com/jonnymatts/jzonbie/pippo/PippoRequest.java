@@ -1,6 +1,6 @@
 package com.jonnymatts.jzonbie.pippo;
 
-import com.jonnymatts.jzonbie.requests.Request;
+import com.jonnymatts.jzonbie.Request;
 import ro.pippo.core.util.IoUtils;
 
 import java.io.IOException;
