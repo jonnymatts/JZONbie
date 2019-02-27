@@ -13,6 +13,7 @@ public class JzonbieObjectMapper extends ObjectMapper {
         super();
         registerModule(new Jdk8Module());
         registerModule(new JavaTimeModule());
+        registerModule(new JzonbieModule());
         enable(INDENT_OUTPUT);
         setSerializationInclusion(NON_NULL);
     }

@@ -84,7 +84,7 @@ public class DefaultingQueueTest {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.add(asList(response1, response2, response3));
 
-        final List<AppResponse> got = queue.getEntries();
+        final List<AppResponse> got = queue.getPrimed();
 
         assertThat(got).containsExactly(response1, response2, response3);
     }

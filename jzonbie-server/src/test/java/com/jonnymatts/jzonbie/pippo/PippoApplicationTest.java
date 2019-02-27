@@ -140,7 +140,7 @@ public class PippoApplicationTest extends PippoTest {
                         .build()
         ));
 
-        assertThat(mapping.getResponses().getEntries()).contains(
+        assertThat(mapping.getResponses().getPrimed()).contains(
                 created()
                         .contentType("application/json")
                         .withBody(objectBody(singletonMap("key", "val")))
@@ -294,11 +294,11 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithStringBodyPriming() throws Exception {
+    public void testAppRequestWithLiteralBodyPriming() throws Exception {
         final String requestBody = "<jzonbie>message</jzonbie>";
         final String responseBody = "<error>Something bad happened!</error>";
-        final AppRequest request = AppRequest.get("/path").withBody(stringBody(requestBody)).build();
-        final AppResponse response = forbidden().contentType("application/xml").withBody(stringBody(responseBody)).build();
+        final AppRequest request = AppRequest.get("/path").withBody(literalBody(requestBody)).build();
+        final AppResponse response = forbidden().contentType("application/xml").withBody(literalBody(responseBody)).build();
 
         primingContext.add(request, response);
 
@@ -398,7 +398,7 @@ public class PippoApplicationTest extends PippoTest {
 //
 //        final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
 //        assertThat(currentPriming).hasSize(1);
-//        assertThat(currentPriming.get(0).getResponses().getEntries().get(0)).isInstanceOf(TemplatedAppResponse.class);
+//        assertThat(currentPriming.get(0).getResponses().getPrimed().get(0)).isInstanceOf(TemplatedAppResponse.class);
 //    }
 
 //    @Test

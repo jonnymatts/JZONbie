@@ -80,7 +80,7 @@ public class JzonbieTest {
         final PrimedMapping primedMapping = got.get(0);
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
-        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
+        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class JzonbieTest {
         final PrimedMapping primedMapping = got.get(0);
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
-        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
+        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class JzonbieTest {
         final PrimedMapping primedMapping = got.get(0);
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
-        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
+        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
@@ -131,7 +131,7 @@ public class JzonbieTest {
         final PrimedMapping primedMapping = got.get(0);
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
-        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
+        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
     }
 
     @Test
@@ -180,8 +180,8 @@ public class JzonbieTest {
 
         assertThat(primedMapping.getRequest().getPath()).isEqualTo("/path");
         assertThat(primedMapping.getResponses().getDefault()).isNotEmpty();
-        assertThat(primedMapping.getResponses().getEntries()).hasSize(1);
-        assertThat(primedMapping.getResponses().getEntries().get(0).getStatusCode()).isEqualTo(201);
+        assertThat(primedMapping.getResponses().getPrimed()).hasSize(1);
+        assertThat(primedMapping.getResponses().getPrimed().get(0).getStatusCode()).isEqualTo(201);
     }
 
     // TODO: do this
@@ -206,7 +206,7 @@ public class JzonbieTest {
 //        final PrimedMapping primedMapping = got.get(0);
 //
 //        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
-//        assertThat(primedMapping.getResponses().getEntries()).containsOnly(zombiePriming.getResponse());
+//        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
 //
 //        jzonbieWithZombieHeaderNameSet.stop();
 //    }

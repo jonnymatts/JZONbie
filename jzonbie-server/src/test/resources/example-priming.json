@@ -12,7 +12,9 @@
       },
       "body" : {
         "JZONBIE_CONTENT_TYPE": "J_OBJECT",
-        "key" : "val"
+        "content": {
+          "key" : "val"
+        }
       }
     },
     "primed" : [ {
@@ -22,7 +24,9 @@
       },
       "body" : {
         "JZONBIE_CONTENT_TYPE": "J_OBJECT",
-        "key" : "val"
+        "content": {
+          "key" : "val"
+        }
       }
     } ]
   }

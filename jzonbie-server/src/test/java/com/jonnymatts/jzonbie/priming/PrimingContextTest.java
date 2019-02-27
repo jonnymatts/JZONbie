@@ -53,7 +53,7 @@ public class PrimingContextTest {
 
         assertThat(got).hasSize(1);
         assertThat(got.get(0).getRequest()).isEqualTo(zombiePriming.getRequest());
-        assertThat(got.get(0).getResponses().getEntries()).containsExactly(zombiePriming.getResponse());
+        assertThat(got.get(0).getResponses().getPrimed()).containsExactly(zombiePriming.getResponse());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class PrimingContextTest {
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        final List<AppResponse> entries = primedMapping.getResponses().getEntries();
+        final List<AppResponse> entries = primedMapping.getResponses().getPrimed();
 
         assertThat(entries).hasSize(1);
         assertThat(entries).containsExactly(zombiePriming.getResponse());
@@ -90,7 +90,7 @@ public class PrimingContextTest {
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        final List<AppResponse> entries = primedMapping.getResponses().getEntries();
+        final List<AppResponse> entries = primedMapping.getResponses().getPrimed();
 
         assertThat(entries).hasSize(1);
         assertThat(entries).containsExactly(zombiePriming.getResponse());
@@ -110,7 +110,7 @@ public class PrimingContextTest {
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        final List<AppResponse> entries = primedMapping.getResponses().getEntries();
+        final List<AppResponse> entries = primedMapping.getResponses().getPrimed();
 
         assertThat(entries).hasSize(2);
         assertThat(entries).containsExactly(zombiePriming.getResponse(), zombiePriming.getResponse());
@@ -173,7 +173,7 @@ public class PrimingContextTest {
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        final List<AppResponse> entries = primedMapping.getResponses().getEntries();
+        final List<AppResponse> entries = primedMapping.getResponses().getPrimed();
 
         assertThat(entries).hasSize(1);
         assertThat(entries).containsExactly(zombiePriming.getResponse());
@@ -251,7 +251,7 @@ public class PrimingContextTest {
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        final List<AppResponse> entries = primedMapping.getResponses().getEntries();
+        final List<AppResponse> entries = primedMapping.getResponses().getPrimed();
 
         assertThat(entries).hasSize(1);
         assertThat(entries).containsExactly(zombiePriming.getResponse());
@@ -270,7 +270,7 @@ public class PrimingContextTest {
 
         assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
 
-        final List<AppResponse> entries = primedMapping.getResponses().getEntries();
+        final List<AppResponse> entries = primedMapping.getResponses().getPrimed();
 
         assertThat(entries).hasSize(1);
         assertThat(entries).containsExactly(zombiePriming.getResponse());

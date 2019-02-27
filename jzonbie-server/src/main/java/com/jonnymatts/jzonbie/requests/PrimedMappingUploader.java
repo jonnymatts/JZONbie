@@ -17,7 +17,7 @@ public class PrimedMappingUploader {
     public void upload(List<PrimedMapping> primedMappings) {
         primedMappings.forEach(primedMapping -> {
             final DefaultingQueue defaultingQueue = primedMapping.getResponses();
-            defaultingQueue.getEntries().forEach(appResponse -> primingContext.add(primedMapping.getRequest(), appResponse));
+            defaultingQueue.getPrimed().forEach(appResponse -> primingContext.add(primedMapping.getRequest(), appResponse));
             defaultingQueue.getDefault().map(defaultResponse -> primingContext.addDefault(primedMapping.getRequest(), defaultResponse));
         });
     }

@@ -36,7 +36,7 @@ public class DefaultingQueue {
         return deque.size();
     }
 
-    public List<AppResponse> getEntries() {
+    public List<AppResponse> getPrimed() {
         return Lists.newArrayList(deque.iterator());
     }
 

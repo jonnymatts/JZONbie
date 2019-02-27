@@ -5,6 +5,8 @@ import com.jonnymatts.jzonbie.responses.DefaultingQueue;
 
 public class PrimedMapping {
 
+    public PrimedMapping() {}
+
     public PrimedMapping(AppRequest request, DefaultingQueue responses) {
         this.request = request;
         this.responses = responses;
