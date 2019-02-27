@@ -1,36 +1,34 @@
 package com.jonnymatts.jzonbie.priming;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 
 public class ZombiePriming {
 
-    @JsonProperty("request")
-    private AppRequest appRequest;
-
-    @JsonProperty("response")
-    private AppResponse appResponse;
+    private AppRequest request;
+    private AppResponse response;
 
     public ZombiePriming() {}
 
-    public ZombiePriming(AppRequest appRequest, AppResponse appResponse) {
-        this.appRequest = appRequest;
-        this.appResponse = appResponse;
+    public ZombiePriming(AppRequest request, AppResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
-    public AppRequest getAppRequest() {
-        return appRequest;
+    public AppRequest getRequest() {
+        return request;
     }
 
-    public void setAppRequest(AppRequest appRequest) {
-        this.appRequest = appRequest;
+    public void setRequest(AppRequest request) {
+        this.request = request;
     }
 
-    public AppResponse getAppResponse() {
-        return appResponse;
+    public AppResponse getResponse() {
+        return response;
     }
 
-    public void setAppResponse(AppResponse appResponse) {
-        this.appResponse = appResponse;
+    public void setResponse(AppResponse response) {
+        this.response = response;
     }
 
     @Override
@@ -40,23 +38,23 @@ public class ZombiePriming {
 
         ZombiePriming that = (ZombiePriming) o;
 
-        if (appRequest != null ? !appRequest.equals(that.appRequest) : that.appRequest != null)
+        if (request != null ? !request.equals(that.request) : that.request != null)
             return false;
-        return appResponse != null ? appResponse.equals(that.appResponse) : that.appResponse == null;
+        return response != null ? response.equals(that.response) : that.response == null;
     }
 
     @Override
     public int hashCode() {
-        int result = appRequest != null ? appRequest.hashCode() : 0;
-        result = 31 * result + (appResponse != null ? appResponse.hashCode() : 0);
+        int result = request != null ? request.hashCode() : 0;
+        result = 31 * result + (response != null ? response.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "ZombiePriming{" +
-                "appRequest=" + appRequest +
-                ", appResponse=" + appResponse +
+                "request=" + request +
+                ", response=" + response +
                 '}';
     }
 }

@@ -25,11 +25,12 @@ import java.time.Duration;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
+import static com.jonnymatts.jzonbie.body.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.body.LiteralBodyContent.literalBody;
+import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming.defaultResponseDefaultPriming;
 import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
-import static com.jonnymatts.jzonbie.jackson.body.ArrayBodyContent.arrayBody;
-import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContent.objectBody;
-import static com.jonnymatts.jzonbie.jackson.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.requests.AppRequest.post;
 import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
@@ -359,7 +360,7 @@ public class JzonbieTest {
     public void jzonbieCanBePrimedWithTemplatedResponseDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withDefaultPriming(
-                        defaultPriming(get("/").build(), ok().build()),
+                        defaultPriming(get("/templated/path").build(), ok().templated().withBody(literalBody("{{ request.path }}")).build()),
                         defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );

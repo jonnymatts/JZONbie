@@ -1,9 +1,6 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
-import com.jonnymatts.jzonbie.priming.AppResponse;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -13,12 +10,10 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
-@JsonSerialize(using = DefaultingQueueSerializer.class)
-@JsonDeserialize(using = DefaultingQueueDeserializer.class)
 public class DefaultingQueue {
 
     private final ArrayDeque<AppResponse> deque;
-    private DefaultAppResponse defaultAppResponse;
+    private DefaultAppResponse defaultResponse;
 
     public DefaultingQueue() {
         deque = new ArrayDeque<>();
@@ -26,7 +21,7 @@ public class DefaultingQueue {
 
     public AppResponse poll() {
         final AppResponse dequeElement = deque.poll();
-        return (dequeElement == null && defaultAppResponse != null) ? defaultAppResponse.getResponse() : dequeElement;
+        return (dequeElement == null && defaultResponse != null) ? defaultResponse.getResponse() : dequeElement;
     }
 
     public void add(AppResponse element) {
@@ -34,28 +29,28 @@ public class DefaultingQueue {
     }
 
     public void add(Collection<AppResponse> elements) {
-        elements.forEach(deque::add);
+        deque.addAll(elements);
     }
 
     public int hasSize() {
         return deque.size();
     }
 
-    public List<AppResponse> getEntries() {
+    public List<AppResponse> getPrimed() {
         return Lists.newArrayList(deque.iterator());
     }
 
     public void setDefault(DefaultAppResponse defaultAppResponse) {
-        this.defaultAppResponse = defaultAppResponse;
+        this.defaultResponse = defaultAppResponse;
     }
 
     public Optional<DefaultAppResponse> getDefault() {
-        return ofNullable(defaultAppResponse);
+        return ofNullable(defaultResponse);
     }
 
     public void reset() {
         deque.clear();
-        defaultAppResponse = null;
+        defaultResponse = null;
     }
 
     @Override
@@ -66,7 +61,7 @@ public class DefaultingQueue {
         DefaultingQueue that = (DefaultingQueue) o;
 
         if (deque != null ? !dequesAreEqual(that) : that.deque != null) return false;
-        return defaultAppResponse != null ? defaultAppResponse.equals(that.defaultAppResponse) : that.defaultAppResponse == null;
+        return defaultResponse != null ? defaultResponse.equals(that.defaultResponse) : that.defaultResponse == null;
     }
 
     private boolean dequesAreEqual(DefaultingQueue that) {
@@ -76,7 +71,7 @@ public class DefaultingQueue {
     @Override
     public int hashCode() {
         int result = deque != null ? deque.hashCode() : 0;
-        result = 31 * result + (defaultAppResponse != null ? defaultAppResponse.hashCode() : 0);
+        result = 31 * result + (defaultResponse != null ? defaultResponse.hashCode() : 0);
         return result;
     }
 
@@ -84,7 +79,7 @@ public class DefaultingQueue {
     public String toString() {
         return "DefaultingQueue{" +
                 "deque=" + deque +
-                ", defaultAppResponse=" + defaultAppResponse +
+                ", defaultResponse=" + defaultResponse +
                 '}';
     }
 }

@@ -8,7 +8,7 @@ import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.Body;
 import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.Response;
-import com.jonnymatts.jzonbie.jackson.body.LiteralBodyContent;
+import com.jonnymatts.jzonbie.body.LiteralBodyContent;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimingNotFoundException;
 import com.jonnymatts.jzonbie.requests.RequestHandler;

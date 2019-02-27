@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
-import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContentMixIn.objectBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;

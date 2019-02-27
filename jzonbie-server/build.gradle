@@ -4,7 +4,8 @@ plugins {
 }
 
 dependencies {
-    compile project(':jzonbie-new-core')
+    compile project(':jzonbie-core')
+    compile project(':jzonbie-jackson')
     compile group: 'ro.pippo', name: 'pippo-core', version: '1.12.0'
     compile group: 'ro.pippo', name: 'pippo-jetty', version: '1.12.0'
     compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.12.0'

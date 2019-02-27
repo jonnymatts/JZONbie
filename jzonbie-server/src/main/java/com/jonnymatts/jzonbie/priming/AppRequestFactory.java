@@ -2,19 +2,19 @@ package com.jonnymatts.jzonbie.priming;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.jonnymatts.jzonbie.Request;
-import com.jonnymatts.jzonbie.jackson.body.BodyContent;
+import com.jonnymatts.jzonbie.body.BodyContent;
+import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.requests.AppRequest;
-import com.jonnymatts.jzonbie.util.Deserializer;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.jonnymatts.jzonbie.jackson.body.ArrayBodyContent.arrayBody;
-import static com.jonnymatts.jzonbie.jackson.body.LiteralBodyContent.literalBody;
-import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContent.objectBody;
-import static com.jonnymatts.jzonbie.jackson.body.StringBodyContent.stringBody;
+import static com.jonnymatts.jzonbie.body.ArrayBodyContent.arrayBody;
+import static com.jonnymatts.jzonbie.body.LiteralBodyContent.literalBody;
+import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
+import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 
 public class AppRequestFactory {
 

@@ -1,0 +1,97 @@
+dependencies {
+    compile project(':jzonbie-core')
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.9.6'
+}
+
+jar {
+    baseName 'jzonbie-jackson'
+    manifest {
+        attributes "application-version": version
+    }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    baseName 'jzonbie-jackson'
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName 'jzonbie-jackson'
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives jar, javadocJar, sourcesJar
+}
+
+// maven-publish plugin configuration
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+// signing and maven plugin configuration. Run gradle with project property -Prelease to use these tasks
+// Ensure gradle.properties are set for signing key and sonatype credentials
+if (project.hasProperty("release")) {
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'JZONbie'
+                    packaging 'jar'
+                    // optionally artifactId can be defined here
+                    artifactId 'jzonbie-jackson'
+                    description 'HTTP client for JZONbie'
+                    url 'jonnymatts.com'
+
+                    scm {
+                        connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
+                        developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
+                        url 'http://github.com/jonnymatts/jzonbie/tree/master'
+                    }
+
+                    licenses {
+                        license {
+                            name 'MIT License'
+                            url 'http://www.opensource.org/licenses/mit-license.php'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name 'Jonathan Matts'
+                            email 'jonoamatts@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

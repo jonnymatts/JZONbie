@@ -1,21 +1,20 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.jonnymatts.jzonbie.priming.AppResponse;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.jonnymatts.jzonbie.responses.AppResponse.*;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
-import static com.jonnymatts.jzonbie.util.AppResponseBuilderUtil.getFixturedAppResponse;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DefaultingQueueTest {
 
-    private final AppResponse response1 = getFixturedAppResponse();
-    private final AppResponse response2 = getFixturedAppResponse();
-    private final AppResponse response3 = getFixturedAppResponse();
+    private final AppResponse response1 = ok().build();
+    private final AppResponse response2 = notFound().build();
+    private final AppResponse response3 = internalServerError().build();
 
     @Test
     public void pollReturnsNullIfThereIsNoDefaultElementSetAndQueueIsEmpty() throws Exception {

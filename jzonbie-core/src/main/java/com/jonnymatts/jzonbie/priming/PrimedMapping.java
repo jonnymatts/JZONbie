@@ -1,37 +1,34 @@
 package com.jonnymatts.jzonbie.priming;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.DefaultingQueue;
 
 public class PrimedMapping {
 
     public PrimedMapping() {}
 
-    public PrimedMapping(AppRequest appRequest, DefaultingQueue appResponses) {
-        this.appRequest = appRequest;
-        this.appResponses = appResponses;
+    public PrimedMapping(AppRequest request, DefaultingQueue responses) {
+        this.request = request;
+        this.responses = responses;
     }
 
-    @JsonProperty("request")
-    private AppRequest appRequest;
+    private AppRequest request;
+    private DefaultingQueue responses;
 
-    @JsonProperty("responses")
-    private DefaultingQueue appResponses;
-
-    public AppRequest getAppRequest() {
-        return appRequest;
+    public AppRequest getRequest() {
+        return request;
     }
 
-    public void setAppRequest(AppRequest appRequest) {
-        this.appRequest = appRequest;
+    public void setRequest(AppRequest request) {
+        this.request = request;
     }
 
-    public DefaultingQueue getAppResponses() {
-        return appResponses;
+    public DefaultingQueue getResponses() {
+        return responses;
     }
 
-    public void setAppResponses(DefaultingQueue appResponses) {
-        this.appResponses = appResponses;
+    public void setResponses(DefaultingQueue responses) {
+        this.responses = responses;
     }
 
     @Override
@@ -41,23 +38,23 @@ public class PrimedMapping {
 
         PrimedMapping that = (PrimedMapping) o;
 
-        if(appRequest != null ? !appRequest.equals(that.appRequest) : that.appRequest != null) return false;
-        return appResponses != null ? appResponses.equals(that.appResponses) : that.appResponses == null;
+        if(request != null ? !request.equals(that.request) : that.request != null) return false;
+        return responses != null ? responses.equals(that.responses) : that.responses == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = appRequest != null ? appRequest.hashCode() : 0;
-        result = 31 * result + (appResponses != null ? appResponses.hashCode() : 0);
+        int result = request != null ? request.hashCode() : 0;
+        result = 31 * result + (responses != null ? responses.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "PrimedMapping{" +
-                "appRequest=" + appRequest +
-                ", appResponses=" + appResponses +
+                "request=" + request +
+                ", responses=" + responses +
                 '}';
     }
 }

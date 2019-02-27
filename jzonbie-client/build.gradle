@@ -1,5 +1,6 @@
 dependencies {
     compile project(':jzonbie-core')
+    compile project(':jzonbie-jackson')
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
     compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.7'
     testCompile project(':jzonbie-test-util')

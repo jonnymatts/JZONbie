@@ -1,15 +1,13 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.jonnymatts.jzonbie.priming.AppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse;
 import org.junit.Test;
 
 import java.util.Iterator;
 
-import static com.jonnymatts.jzonbie.priming.AppResponse.notFound;
-import static com.jonnymatts.jzonbie.priming.AppResponse.ok;
-import static com.jonnymatts.jzonbie.priming.TemplatedAppResponse.templated;
+import static com.jonnymatts.jzonbie.responses.AppResponse.notFound;
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
@@ -28,14 +26,6 @@ public class DefaultAppResponseTest {
 
         assertThat(got).isEqualTo(response1);
     }
-    @Test
-    public void isDynamicFromStaticDefaultResponseReturnsFalse() throws Exception {
-        final StaticDefaultAppResponse defaultResponse = staticDefault(response1);
-
-        final boolean got = defaultResponse.isDynamic();
-
-        assertThat(got).isFalse();
-    }
 
     @Test
     public void getResponseFromDynamicDefaultResponseReturnsResponseFromSupplier() throws Exception {
@@ -50,27 +40,5 @@ public class DefaultAppResponseTest {
         final AppResponse got2 = defaultResponse.getResponse();
 
         assertThat(got2).isEqualTo(response2);
-    }
-    @Test
-    public void isDynamicFromDynamicDefaultResponseReturnsTrue() throws Exception {
-        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> response1);
-
-        final boolean got = defaultResponse.isDynamic();
-
-        assertThat(got).isTrue();
-    }
-
-    @Test
-    public void isTemplatedReturnsFalseIfResponseIsNotTemplated() {
-        final StaticDefaultAppResponse defaultResponse = staticDefault(response1);
-
-        assertThat(defaultResponse.isTemplated()).isFalse();
-    }
-
-    @Test
-    public void isTemplatedReturnsTrueIfResponseIsTemplated() {
-        final StaticDefaultAppResponse defaultResponse = staticDefault(templated(response1));
-
-        assertThat(defaultResponse.isTemplated()).isTrue();
     }
 }

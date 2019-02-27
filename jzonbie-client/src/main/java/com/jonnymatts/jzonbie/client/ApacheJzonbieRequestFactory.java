@@ -1,10 +1,9 @@
 package com.jonnymatts.jzonbie.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jonnymatts.jzonbie.priming.AppRequest;
-import com.jonnymatts.jzonbie.priming.AppResponse;
-import com.jonnymatts.jzonbie.priming.TemplatedAppResponse;
+import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
+import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -14,15 +13,13 @@ import org.apache.http.entity.mime.content.FileBody;
 
 import java.io.File;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-
 public class ApacheJzonbieRequestFactory {
 
     private static final String DEFAULT_ZOMBIE_HEADER_NAME = "zombie";
 
     private final String zombieBaseUrl;
     private final String zombieHeaderName;
-    private final ObjectMapper objectMapper;
+    private final JzonbieObjectMapper objectMapper;
 
     public ApacheJzonbieRequestFactory(String zombieBaseUrl) {
         this(zombieBaseUrl, DEFAULT_ZOMBIE_HEADER_NAME);
@@ -32,17 +29,17 @@ public class ApacheJzonbieRequestFactory {
                                        String zombieHeaderName) {
         this.zombieBaseUrl = zombieBaseUrl;
         this.zombieHeaderName = zombieHeaderName;
-        this.objectMapper = new ObjectMapper().setSerializationInclusion(NON_NULL);
+        this.objectMapper = new JzonbieObjectMapper();
     }
 
     public ApacheJzonbieRequestFactory(String zombieBaseUrl,
-                                       ObjectMapper objectMapper) {
+                                       JzonbieObjectMapper objectMapper) {
         this(zombieBaseUrl, DEFAULT_ZOMBIE_HEADER_NAME, objectMapper);
     }
 
     public ApacheJzonbieRequestFactory(String zombieBaseUrl,
                                        String zombieHeaderName,
-                                       ObjectMapper objectMapper) {
+                                       JzonbieObjectMapper objectMapper) {
         this.zombieBaseUrl = zombieBaseUrl;
         this.zombieHeaderName = zombieHeaderName;
         this.objectMapper = objectMapper;
@@ -52,16 +49,8 @@ public class ApacheJzonbieRequestFactory {
         return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming");
     }
 
-    public HttpUriRequest createPrimeZombieForTemplateRequest(AppRequest appRequest, TemplatedAppResponse appResponse) {
-        return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-template");
-    }
-
     public HttpUriRequest createPrimeZombieForDefaultRequest(AppRequest appRequest, AppResponse appResponse) {
         return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-default");
-    }
-
-    public HttpUriRequest createPrimeZombieForDefaultTemplateRequest(AppRequest appRequest, TemplatedAppResponse appResponse) {
-        return createPostRequest(new ZombiePriming(appRequest, appResponse), "priming-default-template");
     }
 
     public HttpUriRequest createPrimeZombieWithFileRequest(File file) {

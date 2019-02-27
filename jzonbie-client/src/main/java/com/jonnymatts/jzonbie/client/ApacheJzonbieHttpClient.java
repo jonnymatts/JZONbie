@@ -1,10 +1,14 @@
 package com.jonnymatts.jzonbie.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jonnymatts.jzonbie.JzonbieClient;
+import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
-import com.jonnymatts.jzonbie.priming.*;
+import com.jonnymatts.jzonbie.priming.PrimedMapping;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
+import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
-import com.jonnymatts.jzonbie.util.Deserializer;
+import com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.CountResult;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
@@ -30,7 +34,7 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     private final Deserializer deserializer;
 
     public ApacheJzonbieHttpClient(String zombieBaseUrl) {
-        final ObjectMapper objectMapper = new JzonbieObjectMapper();
+        final JzonbieObjectMapper objectMapper = new JzonbieObjectMapper();
 
         this.apacheJzonbieRequestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, objectMapper);
         this.httpClient = HttpClientBuilder.create().build();
@@ -39,7 +43,7 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
 
     public ApacheJzonbieHttpClient(String zombieBaseUrl,
                                    String zombieHeaderName) {
-        final ObjectMapper objectMapper = new JzonbieObjectMapper();
+        final JzonbieObjectMapper objectMapper = new JzonbieObjectMapper();
 
         this.apacheJzonbieRequestFactory = new ApacheJzonbieRequestFactory(zombieBaseUrl, zombieHeaderName, objectMapper);
         this.httpClient = HttpClientBuilder.create().build();
@@ -65,15 +69,6 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming prime(AppRequest request, TemplatedAppResponse response) {
-        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForTemplateRequest(request, response);
-        return execute(primeZombieRequest,
-                httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), ZombiePriming.class),
-                format("Failed to prime. %s, %s", request, response)
-        );
-    }
-
-    @Override
     public List<PrimedMapping> prime(File file) {
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieWithFileRequest(file);
         return execute(
@@ -84,9 +79,8 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
 
     @Override
     public ZombiePriming prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
-        if(defaultAppResponse.isDynamic()) throw new UnsupportedOperationException("Priming dynamic default for zombie over HTTP not supported");
-        final HttpUriRequest primeZombieRequest = defaultAppResponse.isTemplated() ? apacheJzonbieRequestFactory.createPrimeZombieForDefaultTemplateRequest(request, (TemplatedAppResponse)defaultAppResponse.getResponse())
-                : apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, defaultAppResponse.getResponse());
+        if(defaultAppResponse instanceof DynamicDefaultAppResponse) throw new UnsupportedOperationException("Priming dynamic default for zombie over HTTP not supported");
+        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, defaultAppResponse.getResponse());
         return execute(
                 primeZombieRequest,
                 httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), ZombiePriming.class),

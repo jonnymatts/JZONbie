@@ -1,7 +1,11 @@
 package com.jonnymatts.jzonbie.client;
 
+import com.jonnymatts.jzonbie.JzonbieClient;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
-import com.jonnymatts.jzonbie.priming.*;
+import com.jonnymatts.jzonbie.priming.PrimedMapping;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
+import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.DefaultingQueue;
@@ -23,9 +27,8 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.jonnymatts.jzonbie.priming.AppRequest.get;
-import static com.jonnymatts.jzonbie.priming.AppResponse.ok;
-import static com.jonnymatts.jzonbie.priming.TemplatedAppResponse.templated;
+import static com.jonnymatts.jzonbie.requests.AppRequest.get;
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Arrays.asList;
@@ -37,9 +40,7 @@ public class ApacheJzonbieHttpClientTest {
 
     private static final AppRequest REQUEST = get("/").build();
     private static final AppResponse RESPONSE = ok().build();
-    private static final TemplatedAppResponse TEMPLATED_RESPONSE = templated(RESPONSE);
     private static final StaticDefaultAppResponse DEFAULT_RESPONSE = staticDefault(RESPONSE);
-    private static final StaticDefaultAppResponse DEFAULT_TEMPLATED_RESPONSE = staticDefault(TEMPLATED_RESPONSE);
     private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
 
     @ClassRule public static JzonbieRule jzonbie = JzonbieRule.jzonbie();
@@ -83,22 +84,6 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void primeZombieWithTemplatedResponseReturnsRequestedPriming() {
-        final ZombiePriming got = underTest.prime(REQUEST, TEMPLATED_RESPONSE);
-
-        assertThat(got).isEqualTo(zombiePriming);
-    }
-
-    @Test
-    public void primeZombieWithTemplatedResponseAddsPriming() {
-        underTest.prime(REQUEST, TEMPLATED_RESPONSE);
-
-        createPrimedMapping(TEMPLATED_RESPONSE);
-
-        assertThat(jzonbie.getCurrentPriming()).containsExactly(createPrimedMapping(TEMPLATED_RESPONSE));
-    }
-
-    @Test
     public void primeZombieWithDefaultResponseReturnsRequestedPriming() {
         final ZombiePriming got = underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
@@ -110,22 +95,6 @@ public class ApacheJzonbieHttpClientTest {
         underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
         final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_RESPONSE);
-
-        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
-    }
-
-    @Test
-    public void primeZombieWithDefaultTemplateResponseReturnsRequestedPriming() {
-        final ZombiePriming got = underTest.prime(REQUEST, DEFAULT_TEMPLATED_RESPONSE);
-
-        assertThat(got).isEqualTo(zombiePriming);
-    }
-
-    @Test
-    public void primeZombieWithDefaultTemplateResponseAddsPriming() {
-        underTest.prime(REQUEST, DEFAULT_TEMPLATED_RESPONSE);
-
-        final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_TEMPLATED_RESPONSE);
 
         assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
     }
@@ -162,7 +131,7 @@ public class ApacheJzonbieHttpClientTest {
 
         assertThat(got).hasSize(1);
 
-        got.get(0).getAppRequest().getHeaders().clear();
+        got.get(0).getRequest().getHeaders().clear();
 
         assertThat(got).containsExactly(this.zombiePriming);
     }
@@ -236,8 +205,6 @@ public class ApacheJzonbieHttpClientTest {
     public static ExceptionTestData[] exceptionTestDataPoints = new ExceptionTestData[]{
             new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),
             new ExceptionTestData("default priming", "prime", client -> client.prime(REQUEST, DEFAULT_RESPONSE)),
-            new ExceptionTestData("templated priming", "prime", client -> client.prime(REQUEST, TEMPLATED_RESPONSE)),
-            new ExceptionTestData("default templated priming", "prime", client -> client.prime(REQUEST, DEFAULT_TEMPLATED_RESPONSE)),
             new ExceptionTestData("current priming", "current", JzonbieClient::getCurrentPriming),
             new ExceptionTestData("history", "history", JzonbieClient::getHistory),
             new ExceptionTestData("failed requests", "failed", JzonbieClient::getFailedRequests),

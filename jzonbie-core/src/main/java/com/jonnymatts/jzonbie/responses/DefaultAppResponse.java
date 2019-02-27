@@ -1,10 +1,5 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.jonnymatts.jzonbie.priming.AppResponse;
-import com.jonnymatts.jzonbie.priming.TemplatedAppResponse;
-
 import java.util.function.Supplier;
 
 public abstract class DefaultAppResponse {
@@ -13,33 +8,24 @@ public abstract class DefaultAppResponse {
 
     public abstract AppResponse getResponse();
 
-    @JsonIgnore
-    public abstract boolean isDynamic();
+    public static StaticDefaultAppResponse staticDefault(AppResponse response) {
+        return new StaticDefaultAppResponse(response);
+    }
 
-    @JsonIgnore
-    public boolean isTemplated() {
-        return getResponse() instanceof TemplatedAppResponse;
+    public static DynamicDefaultAppResponse dynamicDefault(Supplier<AppResponse> supplier) {
+        return new DynamicDefaultAppResponse(supplier);
     }
 
     public static class StaticDefaultAppResponse extends DefaultAppResponse {
         private AppResponse response;
 
-        public StaticDefaultAppResponse(@JsonProperty("response") AppResponse response) {
+        public StaticDefaultAppResponse(AppResponse response) {
             this.response = response;
-        }
-        
-        public static StaticDefaultAppResponse staticDefault(AppResponse response) {
-            return new StaticDefaultAppResponse(response);
         }
 
         @Override
         public AppResponse getResponse() {
             return response;
-        }
-
-        @Override
-        public boolean isDynamic() {
-            return false;
         }
 
         @Override
@@ -65,18 +51,9 @@ public abstract class DefaultAppResponse {
             this.supplier = supplier;
         }
 
-        public static DynamicDefaultAppResponse dynamicDefault(Supplier<AppResponse> supplier) {
-            return new DynamicDefaultAppResponse(supplier);
-        }
-
         @Override
         public AppResponse getResponse() {
             return supplier.get();
-        }
-
-        @Override
-        public boolean isDynamic() {
-            return true;
         }
 
         @Override
