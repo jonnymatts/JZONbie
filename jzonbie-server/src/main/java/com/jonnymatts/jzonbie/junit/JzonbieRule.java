@@ -85,7 +85,9 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
 
     @Override
     protected void before() throws Throwable {
-        jzonbie = jzonbieCreator.get();
+        if(jzonbie == null) {
+            jzonbie = jzonbieCreator.get();
+        }
     }
 
     @Override
