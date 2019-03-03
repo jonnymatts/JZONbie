@@ -30,8 +30,8 @@ import static com.jonnymatts.jzonbie.body.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.body.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
-import static com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming.defaultResponseDefaultPriming;
-import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
+import static com.jonnymatts.jzonbie.defaults.DefaultResponsePriming.defaultPriming;
+import static com.jonnymatts.jzonbie.defaults.StandardPriming.priming;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.requests.AppRequest.post;
 import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
@@ -315,9 +315,9 @@ public class JzonbieTest {
     @Test
     public void jzonbieCanBePrimedWithDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
-                options().withDefaultPriming(
-                        defaultPriming(get("/").build(), ok().build()),
-                        defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
+                options().withPriming(
+                        priming(get("/").build(), ok().build()),
+                        defaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );
 
@@ -337,9 +337,9 @@ public class JzonbieTest {
     @Test
     public void jzonbieCanBePrimedWithDefaultResponseDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
-                options().withDefaultPriming(
-                        defaultPriming(get("/").build(), ok().build()),
-                        defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
+                options().withPriming(
+                        priming(get("/").build(), ok().build()),
+                        defaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );
 
@@ -359,9 +359,9 @@ public class JzonbieTest {
     @Test
     public void jzonbieCanBePrimedWithTemplatedResponseDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
-                options().withDefaultPriming(
-                        defaultPriming(get("/templated/path").build(), ok().templated().withBody(literalBody("{{ request.path }}")).build()),
-                        defaultResponseDefaultPriming(get("/default").build(), staticDefault(ok().build()))
+                options().withPriming(
+                        priming(get("/templated/path").build(), ok().templated().withBody(literalBody("{{ request.path }}")).build()),
+                        defaultPriming(get("/default").build(), staticDefault(ok().build()))
                 )
         );
 

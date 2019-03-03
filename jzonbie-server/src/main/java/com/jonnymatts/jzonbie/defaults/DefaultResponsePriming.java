@@ -3,18 +3,18 @@ package com.jonnymatts.jzonbie.defaults;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 
-public class DefaultResponseDefaultPriming extends DefaultPriming {
+public class DefaultResponsePriming extends Priming {
 
     private final AppRequest request;
     private final DefaultAppResponse response;
 
-    public DefaultResponseDefaultPriming(AppRequest request, DefaultAppResponse response) {
+    public DefaultResponsePriming(AppRequest request, DefaultAppResponse response) {
         this.request = request;
         this.response = response;
     }
 
-    public static DefaultResponseDefaultPriming defaultResponseDefaultPriming(AppRequest request, DefaultAppResponse response) {
-        return new DefaultResponseDefaultPriming(request, response);
+    public static DefaultResponsePriming defaultPriming(AppRequest request, DefaultAppResponse response) {
+        return new DefaultResponsePriming(request, response);
     }
 
     public AppRequest getRequest() {
