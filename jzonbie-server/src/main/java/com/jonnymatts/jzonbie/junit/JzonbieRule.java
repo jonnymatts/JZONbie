@@ -14,24 +14,29 @@ import org.junit.rules.ExternalResource;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
-public class JzonbieRule extends ExternalResource implements JzonbieClient {
+public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements JzonbieClient {
 
-    private final JzonbieOptions options;
-    private Jzonbie jzonbie;
+    private Supplier<T> jzonbieCreator;
+    private T jzonbie;
 
-    private JzonbieRule(JzonbieOptions options) {
-        this.options = options;
+    JzonbieRule(Supplier<T> jzonbie) {
+        this.jzonbieCreator = jzonbie;
     }
 
-    public static JzonbieRule jzonbie() {
-        return new JzonbieRule(options());
+    public static JzonbieRule<Jzonbie> jzonbie() {
+        return jzonbie(options());
     }
 
-    public static JzonbieRule jzonbie(JzonbieOptions options) {
-        return new JzonbieRule(options);
+    public static JzonbieRule<Jzonbie> jzonbie(JzonbieOptions options) {
+        return new JzonbieRule<>(() -> new Jzonbie(options));
+    }
+
+    public static <T extends Jzonbie> JzonbieRule<T> jzonbie(Supplier<T> jzonbie) {
+        return new JzonbieRule<>(jzonbie);
     }
 
     public int getPort() {
@@ -74,9 +79,13 @@ public class JzonbieRule extends ExternalResource implements JzonbieClient {
         jzonbie.reset();
     }
 
+    public T getJzonbie() {
+        return jzonbie;
+    }
+
     @Override
     protected void before() throws Throwable {
-        jzonbie = new Jzonbie(options);
+        jzonbie = jzonbieCreator.get();
     }
 
     @Override
