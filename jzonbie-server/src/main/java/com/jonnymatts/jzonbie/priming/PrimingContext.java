@@ -1,9 +1,9 @@
 package com.jonnymatts.jzonbie.priming;
 
 import com.jonnymatts.jzonbie.Body;
-import com.jonnymatts.jzonbie.defaults.DefaultPriming;
-import com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming;
-import com.jonnymatts.jzonbie.defaults.StandardDefaultPriming;
+import com.jonnymatts.jzonbie.defaults.DefaultResponsePriming;
+import com.jonnymatts.jzonbie.defaults.Priming;
+import com.jonnymatts.jzonbie.defaults.StandardPriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
@@ -17,11 +17,11 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 public class PrimingContext {
-    private final List<DefaultPriming> defaultPriming;
+    private final List<Priming> priming;
     private Map<HeaderlessAppRequest, Map<AppRequest, DefaultingQueue>> primedMappings;
 
-    public PrimingContext(List<DefaultPriming> defaultPriming) {
-        this.defaultPriming = defaultPriming;
+    public PrimingContext(List<Priming> priming) {
+        this.priming = priming;
         this.primedMappings = new HashMap<>();
         addDefaultPriming();
     }
@@ -115,12 +115,12 @@ public class PrimingContext {
     }
 
     private void addDefaultPriming() {
-        for (DefaultPriming priming : defaultPriming) {
-            if(priming instanceof StandardDefaultPriming) {
-                final StandardDefaultPriming defaultPriming = (StandardDefaultPriming) priming;
+        for (Priming priming : priming) {
+            if(priming instanceof StandardPriming) {
+                final StandardPriming defaultPriming = (StandardPriming) priming;
                 add(defaultPriming.getRequest(), defaultPriming.getResponse());
             } else {
-                final DefaultResponseDefaultPriming defaultPriming = (DefaultResponseDefaultPriming) priming;
+                final DefaultResponsePriming defaultPriming = (DefaultResponsePriming) priming;
                 addDefault(defaultPriming.getRequest(), defaultPriming.getResponse());
             }
         }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
-import static com.jonnymatts.jzonbie.defaults.StandardDefaultPriming.defaultPriming;
+import static com.jonnymatts.jzonbie.defaults.StandardPriming.priming;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
@@ -241,7 +241,7 @@ public class PrimingContextTest {
 
     @Test
     public void defaultPrimingIsAdded() {
-        primingContext = new PrimingContext(singletonList(defaultPriming(zombiePriming.getRequest(), zombiePriming.getResponse())));
+        primingContext = new PrimingContext(singletonList(priming(zombiePriming.getRequest(), zombiePriming.getResponse())));
 
         final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
 
@@ -259,7 +259,7 @@ public class PrimingContextTest {
 
     @Test
     public void defaultPrimingIsAddedAfterReset() {
-        primingContext = new PrimingContext(singletonList(defaultPriming(zombiePriming.getRequest(), zombiePriming.getResponse())));
+        primingContext = new PrimingContext(singletonList(priming(zombiePriming.getRequest(), zombiePriming.getResponse())));
         primingContext.reset();
 
         final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();

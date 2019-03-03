@@ -48,7 +48,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public Jzonbie(JzonbieOptions options) {
-        primingContext = new PrimingContext(options.getDefaultPriming());
+        primingContext = new PrimingContext(options.getPriming());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
         deserializer = new Deserializer(objectMapper);
