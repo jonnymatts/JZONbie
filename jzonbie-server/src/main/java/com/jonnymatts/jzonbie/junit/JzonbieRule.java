@@ -23,8 +23,8 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
     private Supplier<T> jzonbieCreator;
     private T jzonbie;
 
-    JzonbieRule(Supplier<T> jzonbie) {
-        this.jzonbieCreator = jzonbie;
+    private JzonbieRule(Supplier<T> jzonbieCreator) {
+        this.jzonbieCreator = jzonbieCreator;
     }
 
     public static JzonbieRule<Jzonbie> jzonbie() {
