@@ -13,7 +13,7 @@ import com.jonnymatts.jzonbie.verification.CountResult;
 
 import java.util.List;
 
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;

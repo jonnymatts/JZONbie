@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie.priming;
 
 import com.jonnymatts.jzonbie.requests.AppRequest;
-import com.jonnymatts.jzonbie.responses.DefaultingQueue;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 
 public class PrimedMapping {
 

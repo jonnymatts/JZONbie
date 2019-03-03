@@ -7,7 +7,7 @@ import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
-import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
 import org.junit.rules.ExternalResource;

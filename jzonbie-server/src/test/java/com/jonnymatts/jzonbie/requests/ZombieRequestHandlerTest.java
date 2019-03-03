@@ -13,7 +13,7 @@ import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
-import com.jonnymatts.jzonbie.responses.DefaultingQueue;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import com.jonnymatts.jzonbie.verification.CountResult;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +28,7 @@ import java.util.List;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;

@@ -33,7 +33,7 @@ public class ObjectBodyContent extends BodyContent<Map<String, Object>> {
 
     @Override
     public BodyContentType getType() {
-        return BodyContentType.J_OBJECT;
+        return BodyContentType.OBJECT;
     }
 
     public static ObjectBodyContent objectBody(Map<String, ?> content) {

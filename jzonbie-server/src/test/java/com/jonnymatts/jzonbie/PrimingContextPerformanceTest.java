@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.jonnymatts.jzonbie.jackson.body.ObjectBodyContentMixIn.objectBody;
+import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 
 @Ignore("Run this only if you are changing the priming context")

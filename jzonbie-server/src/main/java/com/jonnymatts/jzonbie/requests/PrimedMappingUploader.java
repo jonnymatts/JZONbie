@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
-import com.jonnymatts.jzonbie.responses.DefaultingQueue;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 
 import java.util.List;
 

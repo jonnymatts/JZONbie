@@ -10,17 +10,17 @@ import static com.jonnymatts.jzonbie.jackson.body.BodyContentMixIn.TYPE_IDENTIFI
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
+        include = JsonTypeInfo.As.WRAPPER_OBJECT,
         property = TYPE_IDENTIFIER)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = LiteralBodyContent.class, name = "J_LITERAL"),
-        @JsonSubTypes.Type(value = ObjectBodyContent.class, name = "J_OBJECT"),
-        @JsonSubTypes.Type(value = StringBodyContent.class, name = "J_STRING"),
-        @JsonSubTypes.Type(value = ArrayBodyContent.class, name = "J_ARRAY")
+        @JsonSubTypes.Type(value = LiteralBodyContent.class, name = "literal"),
+        @JsonSubTypes.Type(value = ObjectBodyContent.class, name = "object"),
+        @JsonSubTypes.Type(value = StringBodyContent.class, name = "string"),
+        @JsonSubTypes.Type(value = ArrayBodyContent.class, name = "array")
 })
 public abstract class BodyContentMixIn<T> {
 
-    public static final String TYPE_IDENTIFIER = "JZONBIE_CONTENT_TYPE";
+    static final String TYPE_IDENTIFIER = "JZONBIE_CONTENT_TYPE";
 
     @JsonValue public abstract T getContent();
     @JsonProperty(TYPE_IDENTIFIER) public BodyContentType getType() {return null;}

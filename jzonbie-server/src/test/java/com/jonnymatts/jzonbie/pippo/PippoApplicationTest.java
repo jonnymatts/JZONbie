@@ -35,7 +35,7 @@ import static com.jonnymatts.jzonbie.body.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.responses.AppResponse.*;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -124,10 +124,10 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().statusCode(201);
         pippoResponse.then().contentType(ContentType.JSON);
         pippoResponse.then().body("[0].request.path", equalTo("/path"));
-        pippoResponse.then().body("[0].responses.default.statusCode", CoreMatchers.equalTo(200));
-        pippoResponse.then().body("[0].responses.default.body.key", equalTo("val"));
+        pippoResponse.then().body("[0].responses.default.static.statusCode", CoreMatchers.equalTo(200));
+        pippoResponse.then().body("[0].responses.default.static.body.object.key", equalTo("val"));
         pippoResponse.then().body("[0].responses.primed[0].statusCode", CoreMatchers.equalTo(201));
-        pippoResponse.then().body("[0].responses.primed[0].body.key", equalTo("val"));
+        pippoResponse.then().body("[0].responses.primed[0].body.object.key", equalTo("val"));
 
         assertThat(primingContext.getCurrentPriming()).hasSize(1);
 
@@ -380,46 +380,6 @@ public class PippoApplicationTest extends PippoTest {
         pippoResponse.then().assertThat()
                 .statusCode(200);
     }
-
-//    @Test
-//    public void testTemplatedPriming() throws Exception {
-//        final AppResponse appResponse = ok().withBody(literalBody("{{ request.path }}")).build();
-//        zombiePriming.setResponse(appResponse);
-//
-//        final Response pippoResponse = given()
-//                .header("zombie", "priming-template")
-//                .contentType(ContentType.JSON)
-//                .body(objectMapper.writeValueAsString(zombiePriming))
-//                .post("/");
-//        pippoResponse.then().statusCode(201);
-//        pippoResponse.then().contentType(ContentType.JSON);
-//        pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
-//        pippoResponse.then().body("response.statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
-//
-//        final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
-//        assertThat(currentPriming).hasSize(1);
-//        assertThat(currentPriming.get(0).getResponses().getPrimed().get(0)).isInstanceOf(TemplatedAppResponse.class);
-//    }
-
-//    @Test
-//    public void testTemplatedDefaultPriming() throws Exception {
-//        final AppResponse appResponse = ok().withBody(literalBody("{{ request.path }}")).build();
-//        zombiePriming.setAppResponse(appResponse);
-//
-//        final Response pippoResponse = given()
-//                .header("zombie", "priming-default-template")
-//                .contentType(ContentType.JSON)
-//                .body(objectMapper.writeValueAsString(zombiePriming))
-//                .post("/");
-//        pippoResponse.then().statusCode(201);
-//        pippoResponse.then().contentType(ContentType.JSON);
-//        pippoResponse.then().body("request.path", equalTo(appRequest.getPath()));
-//        pippoResponse.then().body("response.statusCode", CoreMatchers.equalTo(appResponse.getStatusCode()));
-//
-//        final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
-//        assertThat(currentPriming).hasSize(1);
-//        assertThat(currentPriming.get(0).getAppResponses().getDefault().get().getResponse()).isInstanceOf(TemplatedAppResponse.class);
-//    }
 
     @Test
     public void testAppRequestWithTemplatedPriming() throws Exception {

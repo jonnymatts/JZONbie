@@ -1,6 +1,7 @@
-package com.jonnymatts.jzonbie.responses;
+package com.jonnymatts.jzonbie.responses.defaults;
 
 import com.google.common.collect.Lists;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 
 import java.util.ArrayDeque;
 import java.util.Collection;

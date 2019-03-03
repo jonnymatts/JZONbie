@@ -8,5 +8,5 @@ import java.util.Map;
 public abstract class ObjectBodyContentMixIn {
 
     @JsonCreator
-    public static ObjectBodyContent objectBody(Map<String, ?> content) {return null;}
+    private static ObjectBodyContent objectBody(Map<String, ?> content) {return null;}
 }
