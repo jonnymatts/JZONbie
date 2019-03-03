@@ -33,7 +33,7 @@ public class ArrayBodyContent extends BodyContent<List<Object>> {
 
     @Override
     public BodyContentType getType() {
-        return BodyContentType.J_ARRAY;
+        return BodyContentType.ARRAY;
     }
 
     public static ArrayBodyContent arrayBody(List<?> content) {

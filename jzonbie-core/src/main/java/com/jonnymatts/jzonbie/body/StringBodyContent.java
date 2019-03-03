@@ -27,7 +27,7 @@ public class StringBodyContent extends BodyContent<String> {
 
     @Override
     public BodyContentType getType() {
-        return BodyContentType.J_STRING;
+        return BodyContentType.STRING;
     }
 
     public static StringBodyContent stringBody(String content) {

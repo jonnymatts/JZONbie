@@ -3,7 +3,7 @@ package com.jonnymatts.jzonbie.requests;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.responses.AppResponse;
-import com.jonnymatts.jzonbie.responses.DefaultingQueue;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +16,7 @@ import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.requests.AppRequest.post;
 import static com.jonnymatts.jzonbie.responses.AppResponse.notFound;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
 

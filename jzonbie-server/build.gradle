@@ -17,6 +17,7 @@ dependencies {
     compile group: 'com.github.jknack', name: 'handlebars', version: '4.1.2'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
     testCompile project(':jzonbie-test-util')
+    testCompile project(':jzonbie-client')
     testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.12.0'
 }
 

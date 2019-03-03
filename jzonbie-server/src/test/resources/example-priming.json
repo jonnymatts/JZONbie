@@ -6,13 +6,16 @@
   },
   "responses" : {
     "default" : {
-      "statusCode" : 200,
-      "headers" : {
-        "Content-Type" : "application/json"
-      },
-      "body" : {
-        "JZONBIE_CONTENT_TYPE": "J_OBJECT",
-        "key" : "val"
+      "static": {
+        "statusCode" : 200,
+        "headers" : {
+          "Content-Type" : "application/json"
+        },
+        "body" : {
+          "object": {
+            "key": "val"
+          }
+        }
       }
     },
     "primed" : [ {
@@ -21,8 +24,9 @@
         "Content-Type" : "application/json"
       },
       "body" : {
-        "JZONBIE_CONTENT_TYPE": "J_OBJECT",
-        "key" : "val"
+        "object": {
+          "key": "val"
+        }
       }
     } ]
   }

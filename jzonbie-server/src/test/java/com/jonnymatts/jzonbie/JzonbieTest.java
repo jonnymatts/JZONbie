@@ -1,13 +1,14 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
+import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
-import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
-import com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.VerificationException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -35,8 +36,8 @@ import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.requests.AppRequest.post;
 import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.DynamicDefaultAppResponse.dynamicDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -185,32 +186,31 @@ public class JzonbieTest {
         assertThat(primedMapping.getResponses().getPrimed().get(0).getStatusCode()).isEqualTo(201);
     }
 
-    // TODO: do this
-//    @Test
-//    public void zombieHeaderNameCanBeSet() throws Exception {
-//        final String zombieHeaderName = "jzonbie";
-//        final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
-//
-//        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.prime( get("/").build(),
-//                ok().withBody(objectBody(singletonMap("key", "val"))).build()
-//        );
-//
-//        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
-//                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
-//                zombieHeaderName
-//        );
-//
-//        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
-//
-//        assertThat(got).hasSize(1);
-//
-//        final PrimedMapping primedMapping = got.get(0);
-//
-//        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
-//        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
-//
-//        jzonbieWithZombieHeaderNameSet.stop();
-//    }
+    @Test
+    public void zombieHeaderNameCanBeSet() throws Exception {
+        final String zombieHeaderName = "jzonbie";
+        final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
+
+        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.prime( get("/").build(),
+                ok().withBody(objectBody(singletonMap("key", "val"))).build()
+        );
+
+        final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
+                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
+                zombieHeaderName
+        );
+
+        final List<PrimedMapping> got = apacheJzonbieHttpClient.getCurrentPriming();
+
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getRequest()).isEqualTo(zombiePriming.getRequest());
+        assertThat(primedMapping.getResponses().getPrimed()).containsOnly(zombiePriming.getResponse());
+
+        jzonbieWithZombieHeaderNameSet.stop();
+    }
 
     @Test
     public void verifyThrowsVerificationExceptionIfCallVerificationCriteriaIsFalse() throws Exception {

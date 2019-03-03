@@ -6,5 +6,5 @@ import com.jonnymatts.jzonbie.body.LiteralBodyContent;
 public abstract class LiteralBodyContentMixIn {
 
     @JsonCreator
-    public static LiteralBodyContent literalBody(Object content) {return null;}
+    private static LiteralBodyContent literalBody(Object content) {return null;}
 }

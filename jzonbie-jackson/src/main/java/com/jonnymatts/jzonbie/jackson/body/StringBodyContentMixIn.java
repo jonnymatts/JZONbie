@@ -6,5 +6,5 @@ import com.jonnymatts.jzonbie.body.StringBodyContent;
 public abstract class StringBodyContentMixIn {
 
     @JsonCreator
-    public static StringBodyContent stringBody(String content) {return null;}
+    private static StringBodyContent stringBody(String content) {return null;}
 }

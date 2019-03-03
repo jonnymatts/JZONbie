@@ -1,12 +1,14 @@
 package com.jonnymatts.jzonbie.responses;
 
+import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.responses.AppResponse.*;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 

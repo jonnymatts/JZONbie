@@ -8,5 +8,5 @@ import java.util.List;
 public abstract class ArrayBodyContentMixIn {
 
     @JsonCreator
-    public static ArrayBodyContent arrayBody(List<?> content) {return null;}
+    private static ArrayBodyContent arrayBody(List<?> content) {return null;}
 }

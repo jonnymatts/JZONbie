@@ -1,15 +1,15 @@
 package com.jonnymatts.jzonbie.responses;
 
-import com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse;
-import com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.DynamicDefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
 import org.junit.Test;
 
 import java.util.Iterator;
 
 import static com.jonnymatts.jzonbie.responses.AppResponse.notFound;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.DynamicDefaultAppResponse.dynamicDefault;
-import static com.jonnymatts.jzonbie.responses.DefaultAppResponse.StaticDefaultAppResponse.staticDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.DynamicDefaultAppResponse.dynamicDefault;
+import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 

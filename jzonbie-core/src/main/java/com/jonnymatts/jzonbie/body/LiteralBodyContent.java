@@ -27,7 +27,7 @@ public class LiteralBodyContent extends BodyContent<String> {
 
     @Override
     public BodyContentType getType() {
-        return BodyContentType.J_LITERAL;
+        return BodyContentType.LITERAL;
     }
 
     public static LiteralBodyContent literalBody(Object content) {

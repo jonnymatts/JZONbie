@@ -6,8 +6,8 @@ import com.jonnymatts.jzonbie.defaults.DefaultResponseDefaultPriming;
 import com.jonnymatts.jzonbie.defaults.StandardDefaultPriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
-import com.jonnymatts.jzonbie.responses.DefaultAppResponse;
-import com.jonnymatts.jzonbie.responses.DefaultingQueue;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
+import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 
 import java.util.*;
 import java.util.stream.Collectors;
