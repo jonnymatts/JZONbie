@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieTest {
 
-    @ClassRule public static JzonbieRule jzonbie = JzonbieRule.jzonbie();
+    @ClassRule public static JzonbieRule<?> jzonbie = JzonbieRule.jzonbie();
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
     private HttpUriRequest httpRequest;

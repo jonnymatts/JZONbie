@@ -6,6 +6,7 @@ import com.github.jknack.handlebars.Handlebars;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
+import com.jonnymatts.jzonbie.pippo.PippoResponder;
 import com.jonnymatts.jzonbie.priming.*;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
@@ -15,6 +16,8 @@ import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
+import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
+import com.jonnymatts.jzonbie.templating.ResponseTransformer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
 import ro.pippo.core.Pippo;
@@ -63,8 +66,11 @@ public class Jzonbie implements JzonbieClient {
             route.setDeserializer(deserializer);
         });
 
-        final Handlebars handlebars = new Handlebars();
-        pippo = new Pippo(new PippoApplication(options, appRequestHandler, zombieRequestHandler, options.getObjectMapper(), options.getRoutes(), handlebars));
+        final Handlebars handlebars = new JzonbieHandlebars();
+        final ResponseTransformer responseTransformer = new ResponseTransformer(handlebars);
+        final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
+
+        pippo = new Pippo(new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder));
 
         pippo.setServer(new JzonbieJettyServer());
         pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");
@@ -157,9 +163,5 @@ public class Jzonbie implements JzonbieClient {
                 Thread.sleep(wait.toMillis());
             } catch (InterruptedException ignored) {}
         });
-    }
-
-    public static void main(String[] args) {
-        final Jzonbie jzonbie = new Jzonbie(options().withPort(30000));
     }
 }

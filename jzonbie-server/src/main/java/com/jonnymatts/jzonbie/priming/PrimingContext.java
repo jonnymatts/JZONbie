@@ -58,12 +58,8 @@ public class PrimingContext {
 
     private DefaultingQueue getAppResponseQueueForAdd(AppRequest appRequest) {
         final HeaderlessAppRequest headerlessAppRequest = new HeaderlessAppRequest(appRequest);
-        Map<AppRequest, DefaultingQueue> mappingsForHeaderlessRequest = primedMappings.get(headerlessAppRequest);
-
-        if(mappingsForHeaderlessRequest == null) {
-            mappingsForHeaderlessRequest = new HashMap<>();
-            primedMappings.put(headerlessAppRequest, mappingsForHeaderlessRequest);
-        }
+        Map<AppRequest, DefaultingQueue> mappingsForHeaderlessRequest = primedMappings
+                .computeIfAbsent(headerlessAppRequest, k -> new HashMap<>());
 
         DefaultingQueue responseQueue = mappingsForHeaderlessRequest.get(appRequest);
 

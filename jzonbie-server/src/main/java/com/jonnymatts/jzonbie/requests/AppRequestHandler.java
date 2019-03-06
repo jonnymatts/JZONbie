@@ -1,7 +1,6 @@
 package com.jonnymatts.jzonbie.requests;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
@@ -31,7 +30,7 @@ public class AppRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Response handle(Request request) throws JsonProcessingException {
+    public Response handle(Request request) {
         final AppRequest appRequest = appRequestFactory.create(request);
 
         final Optional<AppResponse> primedResponseOpt = primingContext.getResponse(appRequest);

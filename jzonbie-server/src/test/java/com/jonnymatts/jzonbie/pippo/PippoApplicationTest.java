@@ -1,11 +1,9 @@
 package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.jknack.handlebars.Handlebars;
 import com.google.common.base.Stopwatch;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
-import com.jonnymatts.jzonbie.JzonbieOptions;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.priming.*;
@@ -15,6 +13,8 @@ import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
+import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
+import com.jonnymatts.jzonbie.templating.ResponseTransformer;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -57,14 +57,15 @@ public class PippoApplicationTest extends PippoTest {
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, new AppRequestFactory(deserializer));
     private static final PrimedMappingUploader primedMappingUploader = new PrimedMappingUploader(primingContext);
     private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader);
-    private static final Handlebars handlebars = new Handlebars();
+    private static final ResponseTransformer responseTransformer = new ResponseTransformer(new JzonbieHandlebars());
+    private static final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
 
     private AppRequest appRequest;
     private AppResponse appResponse;
     private ZombiePriming zombiePriming;
 
     @ClassRule
-    public static PippoRule pippoRule = new PippoRule(new PippoApplication(JzonbieOptions.options(), appRequestHandler, zombieRequestHandler, objectMapper, singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok())), handlebars));
+    public static PippoRule pippoRule = new PippoRule(new PippoApplication("zombie", singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok())), appRequestHandler, zombieRequestHandler, pippoResponder));
 
 
     @Before
