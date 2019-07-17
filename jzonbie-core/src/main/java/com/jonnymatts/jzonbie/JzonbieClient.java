@@ -9,6 +9,7 @@ import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
 
 import java.io.File;
+import java.security.KeyStore;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.equalTo;
@@ -34,4 +35,6 @@ public interface JzonbieClient {
     }
 
     void reset();
+
+    KeyStore getTruststore();
 }

@@ -55,7 +55,7 @@ public class JzonbieTest {
 
     @Before
     public void setUp() throws Exception {
-        httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build();
+        httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/").build();
 
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(10);
@@ -196,7 +196,7 @@ public class JzonbieTest {
         );
 
         final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
-                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getPort(),
+                "http://localhost:" + jzonbieWithZombieHeaderNameSet.getHttpPort(),
                 zombieHeaderName
         );
 
@@ -285,7 +285,7 @@ public class JzonbieTest {
         final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
 
         try {
-            final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
+            final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/ready").build());
 
             assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         } catch(Exception e) {
@@ -302,7 +302,7 @@ public class JzonbieTest {
         try {
             jzonbie.prime(get("/ready").build(), internalServerError().build());
 
-            final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/ready").build());
+            final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/ready").build());
 
             assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         } catch(Exception e) {
@@ -322,11 +322,11 @@ public class JzonbieTest {
         );
 
         try {
-            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build());
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/").build());
 
             assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
 
-            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/").build());
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/").build());
 
             assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_NOT_FOUND);
         } finally {
@@ -344,11 +344,11 @@ public class JzonbieTest {
         );
 
         try {
-            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/default").build());
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/default").build());
 
             assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
 
-            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/default").build());
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/default").build());
 
             assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         } finally {
@@ -367,12 +367,12 @@ public class JzonbieTest {
 
         try {
             final String path = "/templated/path";
-            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + path).build());
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
 
             assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
             assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo(path);
 
-            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getPort() + path).build());
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
 
             assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_NOT_FOUND);
         } finally {
@@ -380,7 +380,15 @@ public class JzonbieTest {
         }
     }
 
-    private ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
+    @Test
+    public void getHttpsPortThrowsExceptionIfHttpsIsNotConfigured() {
+        expectedException.expect(IllegalStateException.class);
+        expectedException.expectMessage("https");
+
+        jzonbie.getHttpsPort();
+    }
+
+    ZombiePriming callJzonbieWithPrimedRequest(int times) throws IOException {
         final ZombiePriming zombiePriming = jzonbie.prime(
                 get("/").build(),
                 staticDefault(ok().withBody(objectBody(singletonMap("key", "val"))).build())

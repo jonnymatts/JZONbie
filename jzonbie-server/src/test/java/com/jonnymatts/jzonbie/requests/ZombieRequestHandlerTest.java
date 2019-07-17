@@ -14,6 +14,7 @@ import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
+import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.verification.CountResult;
 import org.junit.Before;
 import org.junit.Rule;
@@ -108,7 +109,7 @@ public class ZombieRequestHandlerTest {
             add(appRequests.get(0));
         }};
 
-        zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
+        zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader, new HttpsSupport());
         defaultingQueue = new DefaultingQueue() {{
             add(appResponses);
         }};
@@ -254,7 +255,7 @@ public class ZombieRequestHandlerTest {
 
     @Test
     public void zombieHeaderNameCanBeSet() throws JsonProcessingException {
-        zombieRequestHandler = new ZombieRequestHandler("name", primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader);
+        zombieRequestHandler = new ZombieRequestHandler("name", primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader, new HttpsSupport());
 
         when(request.getHeaders()).thenReturn(singletonMap("name", "history"));
 

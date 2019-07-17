@@ -91,6 +91,12 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
+    public HttpUriRequest createTruststoreRequest() {
+        return RequestBuilder.get(zombieBaseUrl)
+                .addHeader(zombieHeaderName, "truststore")
+                .build();
+    }
+
     private HttpUriRequest createPostRequest(Object requestBody, String zombieHeader) {
         try {
             return RequestBuilder.post(zombieBaseUrl)

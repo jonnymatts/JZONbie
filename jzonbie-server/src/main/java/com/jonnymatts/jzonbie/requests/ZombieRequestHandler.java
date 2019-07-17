@@ -9,6 +9,7 @@ import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
+import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.verification.CountResult;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private final String zombieHeaderName;
     private final CurrentPrimingFileResponseFactory fileResponseFactory;
     private final PrimedMappingUploader primedMappingUploader;
+    private final HttpsSupport httpsSupport;
 
     public ZombieRequestHandler(String zombieHeaderName,
                                 PrimingContext primingContext,
@@ -35,7 +37,8 @@ public class ZombieRequestHandler implements RequestHandler {
                                 List<AppRequest> failedRequests,
                                 Deserializer deserializer,
                                 CurrentPrimingFileResponseFactory fileResponseFactory,
-                                PrimedMappingUploader primedMappingUploader) {
+                                PrimedMappingUploader primedMappingUploader,
+                                HttpsSupport httpsSupport) {
         this.zombieHeaderName = zombieHeaderName;
         this.primingContext = primingContext;
         this.callHistory = callHistory;
@@ -43,6 +46,7 @@ public class ZombieRequestHandler implements RequestHandler {
         this.deserializer = deserializer;
         this.fileResponseFactory = fileResponseFactory;
         this.primedMappingUploader = primedMappingUploader;
+        this.httpsSupport = httpsSupport;
     }
 
     @Override
@@ -68,6 +72,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleFailedRequest();
             case "reset":
                 return handleResetRequest();
+            case "truststore":
+                return handleTruststoreRequest();
             default:
                 throw new RuntimeException(format("Unknown zombie method: %s", zombieHeaderValue));
         }
@@ -124,6 +130,10 @@ public class ZombieRequestHandler implements RequestHandler {
         callHistory.clear();
         failedRequests.clear();
         return new ZombieResponse(OK_200, singletonMap("message", "Zombie Reset"));
+    }
+
+    private ZombieResponse handleTruststoreRequest() {
+        return new ZombieResponse(OK_200, httpsSupport.getTrustStoreAsByteArray());
     }
 
     private ZombiePriming getZombiePriming(Request request) {

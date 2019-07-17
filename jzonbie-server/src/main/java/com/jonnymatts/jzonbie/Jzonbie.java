@@ -16,16 +16,19 @@ import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
+import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
 import com.jonnymatts.jzonbie.templating.ResponseTransformer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
 import ro.pippo.core.Pippo;
+import ro.pippo.core.WebServerSettings;
 import ro.pippo.core.util.IoUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +41,11 @@ public class Jzonbie implements JzonbieClient {
     private final PrimingContext primingContext;
     private final CallHistory callHistory = new CallHistory();
     private final List<AppRequest> failedRequests = new ArrayList<>();
-    private final int port;
-    private final Pippo pippo;
+    private final int httpPort;
+    private final Integer httpsPort;
+    private final Pippo httpPippo;
+    private final Pippo httpsPippo;
+    private final HttpsSupport httpsSupport;
     private Deserializer deserializer;
     private ObjectMapper objectMapper;
     private PrimedMappingUploader primedMappingUploader;
@@ -51,6 +57,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public Jzonbie(JzonbieOptions options) {
+        this.httpsSupport = new HttpsSupport();
         primingContext = new PrimingContext(options.getPriming());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
@@ -59,7 +66,7 @@ public class Jzonbie implements JzonbieClient {
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
         primedMappingUploader = new PrimedMappingUploader(primingContext);
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options.getZombieHeaderName(), primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options.getZombieHeaderName(), primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader, httpsSupport);
 
         options.getRoutes().forEach(route -> {
             route.setJzonbieClient(this);
@@ -70,17 +77,38 @@ public class Jzonbie implements JzonbieClient {
         final ResponseTransformer responseTransformer = new ResponseTransformer(handlebars);
         final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
 
-        pippo = new Pippo(new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder));
+        final PippoApplication application = new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder);
 
-        pippo.setServer(new JzonbieJettyServer());
-        pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");
-        pippo.start();
+        httpPippo = createPippo(application, options.getHttpPort());
+        httpPippo.start();
+        httpPort = httpPippo.getServer().getPort();
 
-        port = pippo.getServer().getPort();
+        if(options.getHttpsOptions().isPresent()) {
+            final HttpsOptions httpsOptions = options.getHttpsOptions().get();
+            httpsPippo = createPippo(application, httpsOptions.getPort());
+            configureHttps(httpsPippo, httpsOptions);
+            httpsPippo.start();
+            httpsPort = httpsPippo.getServer().getPort();
+        } else {
+            httpsPippo = null;
+            httpsPort = null;
+        }
     }
 
-    public int getPort() {
-        return port;
+    public int getHttpPort() {
+        return httpPort;
+    }
+
+    public int getHttpsPort() {
+        if(httpsPort == null) {
+            throw new IllegalStateException("No https server configured");
+        }
+        return httpsPort;
+    }
+
+    @Override
+    public KeyStore getTruststore() {
+        return httpsSupport.getTrustStore();
     }
 
     @Override
@@ -157,11 +185,37 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public void stop() {
-        pippo.stop();
+        httpPippo.stop();
         waitAfterStop.ifPresent(wait -> {
             try {
                 Thread.sleep(wait.toMillis());
             } catch (InterruptedException ignored) {}
         });
+    }
+
+    private Pippo createPippo(PippoApplication application, int port) {
+        final Pippo pippo = new Pippo(application);
+        final JzonbieJettyServer server = new JzonbieJettyServer();
+        pippo.setServer(server);
+        server.setPort(port);
+        final WebServerSettings settings = server.getSettings();
+        settings.host("0.0.0.0");
+        return pippo;
+    }
+
+    private void configureHttps(Pippo pippo, HttpsOptions httpsOptions) {
+        final WebServerSettings settings = pippo.getServer().getSettings();
+
+        final Optional<String> keystoreLocation = httpsOptions.getKeystoreLocation();
+        final Optional<String> keystorePassword = httpsOptions.getKeystorePassword();
+
+        if(!keystoreLocation.isPresent()) {
+            httpsSupport.createKeystoreAndTruststore("/tmp/jzonbie.jks", httpsOptions.getCommonName());
+            settings.keystoreFile("/tmp/jzonbie.jks");
+            settings.keystorePassword("jzonbie");
+        } else {
+            settings.keystoreFile(keystoreLocation.get());
+            keystorePassword.ifPresent(settings::keystorePassword);
+        }
     }
 }
