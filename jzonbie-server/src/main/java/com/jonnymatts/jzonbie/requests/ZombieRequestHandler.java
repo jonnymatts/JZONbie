@@ -9,6 +9,7 @@ import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
+import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.verification.CountResult;
 
 import java.util.List;
@@ -68,6 +69,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleFailedRequest();
             case "reset":
                 return handleResetRequest();
+            case "truststore":
+                return handleTruststoreRequest();
             default:
                 throw new RuntimeException(format("Unknown zombie method: %s", zombieHeaderValue));
         }
@@ -124,6 +127,10 @@ public class ZombieRequestHandler implements RequestHandler {
         callHistory.clear();
         failedRequests.clear();
         return new ZombieResponse(OK_200, singletonMap("message", "Zombie Reset"));
+    }
+
+    private ZombieResponse handleTruststoreRequest() {
+        return new ZombieResponse(OK_200, HttpsSupport.getTrustStoreAsByteArray());
     }
 
     private ZombiePriming getZombiePriming(Request request) {

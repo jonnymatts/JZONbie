@@ -16,11 +16,13 @@ import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
+import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
 import com.jonnymatts.jzonbie.templating.ResponseTransformer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
 import ro.pippo.core.Pippo;
+import ro.pippo.core.WebServerSettings;
 import ro.pippo.core.util.IoUtils;
 
 import java.io.File;
@@ -73,7 +75,13 @@ public class Jzonbie implements JzonbieClient {
         pippo = new Pippo(new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder));
 
         pippo.setServer(new JzonbieJettyServer());
-        pippo.getServer().setPort(options.getPort()).getSettings().host("0.0.0.0");
+        final WebServerSettings settings = pippo.getServer().setPort(options.getPort()).getSettings();
+        settings.host("0.0.0.0");
+
+        HttpsSupport.createKeystoreAndTruststore("/tmp/jzonbie.jks", "localhost");
+        settings.keystoreFile("/tmp/jzonbie.jks");
+        settings.keystorePassword("jzonbie");
+
         pippo.start();
 
         port = pippo.getServer().getPort();
