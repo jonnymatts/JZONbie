@@ -29,6 +29,7 @@ public class ZombieRequestHandler implements RequestHandler {
     private final String zombieHeaderName;
     private final CurrentPrimingFileResponseFactory fileResponseFactory;
     private final PrimedMappingUploader primedMappingUploader;
+    private final HttpsSupport httpsSupport;
 
     public ZombieRequestHandler(String zombieHeaderName,
                                 PrimingContext primingContext,
@@ -36,7 +37,8 @@ public class ZombieRequestHandler implements RequestHandler {
                                 List<AppRequest> failedRequests,
                                 Deserializer deserializer,
                                 CurrentPrimingFileResponseFactory fileResponseFactory,
-                                PrimedMappingUploader primedMappingUploader) {
+                                PrimedMappingUploader primedMappingUploader,
+                                HttpsSupport httpsSupport) {
         this.zombieHeaderName = zombieHeaderName;
         this.primingContext = primingContext;
         this.callHistory = callHistory;
@@ -44,6 +46,7 @@ public class ZombieRequestHandler implements RequestHandler {
         this.deserializer = deserializer;
         this.fileResponseFactory = fileResponseFactory;
         this.primedMappingUploader = primedMappingUploader;
+        this.httpsSupport = httpsSupport;
     }
 
     @Override
@@ -130,7 +133,7 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     private ZombieResponse handleTruststoreRequest() {
-        return new ZombieResponse(OK_200, HttpsSupport.getTrustStoreAsByteArray());
+        return new ZombieResponse(OK_200, httpsSupport.getTrustStoreAsByteArray());
     }
 
     private ZombiePriming getZombiePriming(Request request) {

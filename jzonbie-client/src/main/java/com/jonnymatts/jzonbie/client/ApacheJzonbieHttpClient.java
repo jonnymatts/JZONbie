@@ -29,6 +29,7 @@ import java.util.function.Function;
 import static java.lang.String.format;
 import static java.util.Base64.getDecoder;
 import static java.util.function.Function.identity;
+import static org.apache.http.HttpStatus.SC_OK;
 
 public class ApacheJzonbieHttpClient implements JzonbieClient {
 
@@ -170,6 +171,9 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     private KeyStore convertBytesToKeystore(HttpResponse response) {
+        if(response.getStatusLine().getStatusCode() != SC_OK) {
+            throw new IllegalStateException("Failed to obtain truststore from server");
+        }
         try {
             final KeyStore keyStore = KeyStore.getInstance("jks");
             final String content = EntityUtils.toString(response.getEntity());

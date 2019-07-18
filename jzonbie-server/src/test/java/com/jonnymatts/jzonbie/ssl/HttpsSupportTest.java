@@ -21,14 +21,18 @@ public class HttpsSupportTest {
 
     private String keystorePath;
 
+    private HttpsSupport underTest;
+
     @Before
     public void setUp() throws Exception {
+        underTest = new HttpsSupport();
+
         keystorePath = temporaryFolder.getRoot().getAbsolutePath() + "/keystore.jks";
     }
 
     @Test
     public void generateKeystoreGeneratesKeystoreWithCorrectCertificate() throws Exception {
-        HttpsSupport.createKeystoreAndTruststore(keystorePath, "localhost");
+        underTest.createKeystoreAndTruststore(keystorePath, "localhost");
 
         final KeyStore generatedKeystore = KeyStore.getInstance("jks");
         generatedKeystore.load(new FileInputStream(keystorePath), "jzonbie".toCharArray());
@@ -42,22 +46,22 @@ public class HttpsSupportTest {
     public void generateKeystoreAndTruststoreThrowsExceptionIfKeystoreDestinationDirectoryDoesNotExist() {
         final String nonExistingPath = "/hbewfhjbfewhj/keystore.jks";
 
-        assertThatThrownBy(() -> HttpsSupport.createKeystoreAndTruststore(nonExistingPath, "localhost"))
+        assertThatThrownBy(() -> underTest.createKeystoreAndTruststore(nonExistingPath, "localhost"))
                 .hasMessageContaining(nonExistingPath);
     }
 
     @Test
     public void getTruststoreThrowsExceptionIfTruststoreHasNotBeenCreatedYet() {
-        assertThatThrownBy(HttpsSupport::getTrustStore)
+        assertThatThrownBy(underTest::getTrustStore)
                 .hasMessageContaining("Truststore not created");
 
     }
 
     @Test
     public void getTruststoreOnceCreated() throws Exception {
-        HttpsSupport.createKeystoreAndTruststore(keystorePath, "localhost");
+        underTest.createKeystoreAndTruststore(keystorePath, "localhost");
 
-        final KeyStore trustStore = HttpsSupport.getTrustStore();
+        final KeyStore trustStore = underTest.getTrustStore();
 
         final Certificate certificate = trustStore.getCertificate("jzonbie");
 
@@ -66,10 +70,10 @@ public class HttpsSupportTest {
 
     @Test
     public void getTruststoreAsByteArray() throws Exception {
-        HttpsSupport.createKeystoreAndTruststore(keystorePath, "localhost");
+        underTest.createKeystoreAndTruststore(keystorePath, "localhost");
 
         final KeyStore keystore = KeyStore.getInstance("jks");
-        final byte[] bytes = HttpsSupport.getTrustStoreAsByteArray();
+        final byte[] bytes = underTest.getTrustStoreAsByteArray();
 
         keystore.load(new ByteArrayInputStream(bytes), new char[0]);
 

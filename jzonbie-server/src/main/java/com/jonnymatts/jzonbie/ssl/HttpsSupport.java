@@ -18,9 +18,9 @@ import static java.lang.String.format;
 
 public class HttpsSupport {
 
-    private static KeyStore trustStore;
+    private KeyStore trustStore;
 
-    public static void createKeystoreAndTruststore(String keystorePath, String subject) {
+    public void createKeystoreAndTruststore(String keystorePath, String subject) {
         try {
             final CertAndPrivateKey certAndPrivateKey = generateCertificateAndPrivateKey(subject);
             KeyStore ks = KeyStore.getInstance("JKS");
@@ -30,20 +30,20 @@ public class HttpsSupport {
             final FileOutputStream fileOutputStream = new FileOutputStream(keystorePath);
             ks.store(fileOutputStream, "jzonbie".toCharArray());
 
-            HttpsSupport.trustStore = createTruststore(certAndPrivateKey.certificate);
+            this.trustStore = createTruststore(certAndPrivateKey.certificate);
         } catch(Exception e) {
             throw new RuntimeException(format("Failed to generate jzonbie keystore: %s", keystorePath), e);
         }
     }
 
-    public static KeyStore getTrustStore() {
+    public KeyStore getTrustStore() {
         if(trustStore == null) {
             throw new RuntimeException("Truststore not created");
         }
         return trustStore;
     }
 
-    public static byte[] getTrustStoreAsByteArray() {
+    public byte[] getTrustStoreAsByteArray() {
         final KeyStore trustStore = getTrustStore();
 
         try(final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -54,14 +54,14 @@ public class HttpsSupport {
         }
     }
 
-    private static CertAndPrivateKey generateCertificateAndPrivateKey(String subject) throws Exception {
+    private CertAndPrivateKey generateCertificateAndPrivateKey(String subject) throws Exception {
         CertAndKeyGen gen = new CertAndKeyGen("RSA", "MD5WithRSA");
         gen.generate(2048);
         final X509Certificate certificate = gen.getSelfCertificate(new X500Name("CN = " + subject), 3_155_760_000L); // 100 years
         return new CertAndPrivateKey(certificate, gen.getPrivateKey());
     }
 
-    private static KeyStore createTruststore(X509Certificate certificate) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+    private KeyStore createTruststore(X509Certificate certificate) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(null);
         ks.setCertificateEntry("jzonbie", certificate);

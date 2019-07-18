@@ -13,6 +13,7 @@ import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
 import com.jonnymatts.jzonbie.requests.ZombieRequestHandler;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
+import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
 import com.jonnymatts.jzonbie.templating.ResponseTransformer;
 import org.hamcrest.CoreMatchers;
@@ -56,7 +57,7 @@ public class PippoApplicationTest extends PippoTest {
     private static final Deserializer deserializer = new Deserializer(objectMapper);
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, new AppRequestFactory(deserializer));
     private static final PrimedMappingUploader primedMappingUploader = new PrimedMappingUploader(primingContext);
-    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader);
+    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader, new HttpsSupport());
     private static final ResponseTransformer responseTransformer = new ResponseTransformer(new JzonbieHandlebars());
     private static final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
 

@@ -13,9 +13,8 @@ import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.util.TestingClient;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.FromDataPoints;
@@ -49,7 +48,7 @@ public class ApacheJzonbieHttpClientTest {
     private static final StaticDefaultAppResponse DEFAULT_RESPONSE = staticDefault(RESPONSE);
     private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
 
-    @ClassRule public static JzonbieRule jzonbie = JzonbieRule.jzonbie();
+    @Rule public JzonbieRule jzonbie = JzonbieRule.jzonbie();
 
     private ZombiePriming zombiePriming;
     private PrimedMapping primedMapping;
@@ -68,11 +67,6 @@ public class ApacheJzonbieHttpClientTest {
         underTest = new ApacheJzonbieHttpClient(zombieBaseUrl);
         brokenClient = new ApacheJzonbieHttpClient("http://broken:8080");
         testingClient = new TestingClient(zombieBaseUrl);
-    }
-
-    @After
-    public void tearDown() {
-        jzonbie.reset();
     }
 
     @Test
@@ -225,9 +219,9 @@ public class ApacheJzonbieHttpClientTest {
 
     @Test
     public void getTruststoreReturnsKeystoreIfDefaultHttpsConfigurationIsEnabled() throws Exception {
-        new Jzonbie(options().withHttps(httpsOptions()));
+        final Jzonbie httpsJzonbie = new Jzonbie(options().withHttps(httpsOptions()));
 
-        final KeyStore truststore = underTest.getTruststore();
+        final KeyStore truststore = httpsJzonbie.getTruststore();
 
         assertThat(new X509CertImpl(truststore.getCertificate("jzonbie").getEncoded()).getSubjectDN().getName()).isEqualTo("CN=localhost");
     }

@@ -45,6 +45,7 @@ public class Jzonbie implements JzonbieClient {
     private final Integer httpsPort;
     private final Pippo httpPippo;
     private final Pippo httpsPippo;
+    private final HttpsSupport httpsSupport;
     private Deserializer deserializer;
     private ObjectMapper objectMapper;
     private PrimedMappingUploader primedMappingUploader;
@@ -56,6 +57,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     public Jzonbie(JzonbieOptions options) {
+        this.httpsSupport = new HttpsSupport();
         primingContext = new PrimingContext(options.getPriming());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
@@ -64,7 +66,7 @@ public class Jzonbie implements JzonbieClient {
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
         primedMappingUploader = new PrimedMappingUploader(primingContext);
         final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
-        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options.getZombieHeaderName(), primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader);
+        final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler(options.getZombieHeaderName(), primingContext, callHistory, failedRequests, deserializer, fileResponseFactory, primedMappingUploader, httpsSupport);
 
         options.getRoutes().forEach(route -> {
             route.setJzonbieClient(this);
@@ -106,7 +108,7 @@ public class Jzonbie implements JzonbieClient {
 
     @Override
     public KeyStore getTruststore() {
-        return HttpsSupport.getTrustStore();
+        return httpsSupport.getTrustStore();
     }
 
     @Override
@@ -208,7 +210,7 @@ public class Jzonbie implements JzonbieClient {
         final Optional<String> keystorePassword = httpsOptions.getKeystorePassword();
 
         if(!keystoreLocation.isPresent()) {
-            HttpsSupport.createKeystoreAndTruststore("/tmp/jzonbie.jks", httpsOptions.getCommonName());
+            httpsSupport.createKeystoreAndTruststore("/tmp/jzonbie.jks", httpsOptions.getCommonName());
             settings.keystoreFile("/tmp/jzonbie.jks");
             settings.keystorePassword("jzonbie");
         } else {
