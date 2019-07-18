@@ -6,7 +6,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import sun.security.x509.X509CertImpl;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 
@@ -48,7 +49,7 @@ public class HttpsSupportTest {
     @Test
     public void getTruststoreThrowsExceptionIfTruststoreHasNotBeenCreatedYet() {
         assertThatThrownBy(HttpsSupport::getTrustStore)
-                .hasMessageContaining("Truststore not created yet");
+                .hasMessageContaining("Truststore not created");
 
     }
 

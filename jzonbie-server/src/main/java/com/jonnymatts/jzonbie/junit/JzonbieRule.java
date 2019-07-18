@@ -13,6 +13,7 @@ import com.jonnymatts.jzonbie.verification.VerificationException;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
+import java.security.KeyStore;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -39,8 +40,12 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
         return new JzonbieRule<>(jzonbie);
     }
 
-    public int getPort() {
-        return jzonbie.getPort();
+    public int getHttpPort() {
+        return jzonbie.getHttpPort();
+    }
+
+    public int getHttpsPort() {
+        return jzonbie.getHttpsPort();
     }
 
     public ZombiePriming prime(AppRequest appRequest, AppResponse appResponse) {
@@ -77,6 +82,11 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
 
     public void reset() {
         jzonbie.reset();
+    }
+
+    @Override
+    public KeyStore getTruststore() {
+        return jzonbie.getTruststore();
     }
 
     public T getJzonbie() {

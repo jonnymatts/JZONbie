@@ -15,11 +15,11 @@ public class App {
                 .map(options::withZombieHeaderName);
 
         final Integer port = getEnvironmentVariable("JZONBIE_PORT", Integer::parseInt).orElse(8080);
-        options.withPort(port);
+        options.withHttpPort(port);
 
         final Jzonbie jzonbie = new Jzonbie(options);
 
-        System.out.println(format("Started server on port: %s", jzonbie.getPort()));
+        System.out.println(format("Started server on port: %s", jzonbie.getHttpPort()));
     }
 
     private static <T> Optional<T> getEnvironmentVariable(String variableName, Function<String, T> mapper) {

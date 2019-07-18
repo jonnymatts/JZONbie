@@ -1,5 +1,6 @@
 package com.jonnymatts.jzonbie.client;
 
+import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieClient;
 import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
@@ -21,12 +22,17 @@ import org.junit.experimental.theories.FromDataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import sun.security.x509.X509CertImpl;
 
 import java.io.File;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.google.common.io.Resources.getResource;
+import static com.jonnymatts.jzonbie.HttpsOptions.httpsOptions;
+import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
@@ -58,7 +64,7 @@ public class ApacheJzonbieHttpClientTest {
         zombiePriming = new ZombiePriming(REQUEST, RESPONSE);
         primedMapping = createPrimedMapping(RESPONSE);
 
-        final String zombieBaseUrl = "http://localhost:" + jzonbie.getPort();
+        final String zombieBaseUrl = "http://localhost:" + jzonbie.getHttpPort();
         underTest = new ApacheJzonbieHttpClient(zombieBaseUrl);
         brokenClient = new ApacheJzonbieHttpClient("http://broken:8080");
         testingClient = new TestingClient(zombieBaseUrl);
@@ -201,6 +207,31 @@ public class ApacheJzonbieHttpClientTest {
                 .hasMessageContaining("equal to 1");
     }
 
+    @Test
+    public void getTruststoreThrowsExceptionIfServerIsNotServingHttps() {
+        assertThatThrownBy(() -> underTest.getTruststore())
+                .isInstanceOf(JzonbieClientException.class)
+                .hasMessageContaining("Failed to obtain truststore");
+    }
+
+    @Test
+    public void getTruststoreThrowsExceptionIfKeystoreIsPassedIn() {
+        new Jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
+
+        assertThatThrownBy(() -> underTest.getTruststore())
+                .isInstanceOf(JzonbieClientException.class)
+                .hasMessageContaining("Failed to obtain truststore");
+    }
+
+    @Test
+    public void getTruststoreReturnsKeystoreIfDefaultHttpsConfigurationIsEnabled() throws Exception {
+        new Jzonbie(options().withHttps(httpsOptions()));
+
+        final KeyStore truststore = underTest.getTruststore();
+
+        assertThat(new X509CertImpl(truststore.getCertificate("jzonbie").getEncoded()).getSubjectDN().getName()).isEqualTo("CN=localhost");
+    }
+
     @DataPoints("exceptionTests")
     public static ExceptionTestData[] exceptionTestDataPoints = new ExceptionTestData[]{
             new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),
@@ -210,6 +241,7 @@ public class ApacheJzonbieHttpClientTest {
             new ExceptionTestData("failed requests", "failed", JzonbieClient::getFailedRequests),
             new ExceptionTestData("reset", "reset", JzonbieClient::reset),
             new ExceptionTestData("verify", "count", client -> client.verify(REQUEST)),
+            new ExceptionTestData("truststore", "truststore", JzonbieClient::getTruststore),
     };
 
     @Theory

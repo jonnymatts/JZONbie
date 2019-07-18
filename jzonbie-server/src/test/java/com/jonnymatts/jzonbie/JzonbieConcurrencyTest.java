@@ -92,7 +92,7 @@ public class JzonbieConcurrencyTest {
     }
 
     private HttpUriRequest createRequest(int i) {
-        return RequestBuilder.get("http://localhost:" + jzonbie.getPort() + "/" + i).build();
+        return RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/" + i).build();
     }
 
     private void primeZombieWithDelay(int i) {

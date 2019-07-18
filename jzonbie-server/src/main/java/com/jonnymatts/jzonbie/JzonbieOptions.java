@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+import static com.jonnymatts.jzonbie.HttpsOptions.httpsOptions;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -19,15 +20,16 @@ public class JzonbieOptions {
     public static final List<JzonbieRoute> DEFAULT_ROUTES = emptyList();
     public static final List<Priming> DEFAULT_PRIMING = emptyList();
 
-    private int port;
+    private int httpPort;
     private String zombieHeaderName;
     private ObjectMapper objectMapper;
     private Duration waitAfterStopping;
     private List<JzonbieRoute> routes;
     private List<Priming> priming;
+    private HttpsOptions httpsOptions;
 
     private JzonbieOptions() {
-        this.port = DEFAULT_PORT;
+        this.httpPort = DEFAULT_PORT;
         this.zombieHeaderName = DEFAULT_ZOMBIE_HEADER_NAME;
         this.objectMapper = DEFAULT_JSON_OBJECT_MAPPER;
         this.routes = DEFAULT_ROUTES;
@@ -38,8 +40,18 @@ public class JzonbieOptions {
         return new JzonbieOptions();
     }
 
-    public JzonbieOptions withPort(int port) {
-        this.port = port;
+    public JzonbieOptions withHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+        return this;
+    }
+
+    public JzonbieOptions withHttps(HttpsOptions httpsOptions) {
+        this.httpsOptions = httpsOptions;
+        return this;
+    }
+
+    public JzonbieOptions withHttps() {
+        this.httpsOptions = httpsOptions();
         return this;
     }
 
@@ -73,13 +85,15 @@ public class JzonbieOptions {
         return this;
     }
 
-    public int getPort() {
-        return port;
+    public int getHttpPort() {
+        return httpPort;
     }
 
     public String getZombieHeaderName() {
         return zombieHeaderName;
     }
+
+    public Optional<HttpsOptions> getHttpsOptions() { return Optional.ofNullable(httpsOptions); }
 
     public ObjectMapper getObjectMapper() {
         return objectMapper;

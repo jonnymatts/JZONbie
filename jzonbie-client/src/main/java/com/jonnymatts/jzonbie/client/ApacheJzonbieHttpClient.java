@@ -19,12 +19,15 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyStore;
 import java.util.List;
 import java.util.function.Function;
 
 import static java.lang.String.format;
+import static java.util.Base64.getDecoder;
 import static java.util.function.Function.identity;
 
 public class ApacheJzonbieHttpClient implements JzonbieClient {
@@ -139,6 +142,17 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         );
     }
 
+    @Override
+    public KeyStore getTruststore() {
+        final HttpUriRequest truststoreRequest = apacheJzonbieRequestFactory.createTruststoreRequest();
+
+        return execute(
+                truststoreRequest,
+                this::convertBytesToKeystore,
+                "Failed to obtain truststore."
+        );
+    }
+
     private <T> T execute(HttpUriRequest request, Function<HttpResponse, T> mapper, String messageIfFailureOccurs) {
         try(CloseableHttpResponse response = httpClient.execute(request)) {
             return mapper.apply(response);
@@ -152,6 +166,19 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
             return EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
             throw new JzonbieClientException("Could not get body from HTTP response.");
+        }
+    }
+
+    private KeyStore convertBytesToKeystore(HttpResponse response) {
+        try {
+            final KeyStore keyStore = KeyStore.getInstance("jks");
+            final String content = EntityUtils.toString(response.getEntity());
+            final String deserializedContent = deserializer.deserialize(content, String.class);
+            final byte[] bytes = getDecoder().decode(deserializedContent);
+            keyStore.load(new ByteArrayInputStream(bytes), new char[0]);
+            return keyStore;
+        } catch(Exception e) {
+            throw new RuntimeException("Failed to convert response to keystore", e);
         }
     }
 }

@@ -38,7 +38,7 @@ public class HttpsSupport {
 
     public static KeyStore getTrustStore() {
         if(trustStore == null) {
-            throw new RuntimeException("Truststore not created yet");
+            throw new RuntimeException("Truststore not created");
         }
         return trustStore;
     }
