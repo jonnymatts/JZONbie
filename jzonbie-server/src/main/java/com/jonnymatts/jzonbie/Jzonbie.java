@@ -186,6 +186,9 @@ public class Jzonbie implements JzonbieClient {
 
     public void stop() {
         httpPippo.stop();
+        if(httpsPippo != null) {
+            httpsPippo.stop();
+        }
         waitAfterStop.ifPresent(wait -> {
             try {
                 Thread.sleep(wait.toMillis());
