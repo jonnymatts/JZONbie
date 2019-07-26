@@ -4,18 +4,18 @@ import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.jonnymatts.jzonbie.responses.AppResponse.*;
 import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DefaultingQueueObjectMapperTest {
+class DefaultingQueueObjectMapperTest {
 
     private final static JzonbieObjectMapper JZONBIE_OBJECT_MAPPER = new JzonbieObjectMapper();
 
     @Test
-    public void defaultingQueueCanBeSerializedAndDeserialized() throws Exception {
+    void defaultingQueueCanBeSerializedAndDeserialized() throws Exception {
         final AppResponse response1 = ok().build();
         final AppResponse response2 = created().build();
         final AppResponse response3 = accepted().build();

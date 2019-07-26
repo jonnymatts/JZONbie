@@ -1,0 +1,132 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.3'
+    id "com.palantir.docker" version "0.19.2"
+}
+
+dependencies {
+    compile project(':jzonbie-core')
+    compile project(':jzonbie-jackson')
+    compile group: 'ro.pippo', name: 'pippo-core', version: '1.12.0'
+    compile group: 'ro.pippo', name: 'pippo-jetty', version: '1.12.0'
+    compile group: 'ro.pippo', name: 'pippo-jackson', version: '1.12.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.6'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.9.6'
+    compile group: 'ch.qos.logback', name:'logback-classic', version : '1.2.3'
+    compile group: 'com.github.jknack', name: 'handlebars', version: '4.1.2'
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.1'
+    testCompile project(':jzonbie-test-util')
+    testCompile project(':jzonbie-client')
+    testCompile group: 'io.rest-assured', name: 'rest-assured', version: '4.0.0'
+
+}
+
+compileJava {
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+    options.compilerArgs << "-XDignore.symbol.file"
+}
+
+jar {
+    baseName 'jzonbie'
+    manifest {
+        attributes "application-version": version,
+                "Main-Class": "com.jonnymatts.jzonbie.App"
+    }
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    baseName 'jzonbie'
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    baseName 'jzonbie'
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives jar, javadocJar, sourcesJar
+}
+
+// maven-publish plugin configuration
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+// signing and maven plugin configuration. Run gradle with project property -Prelease to use these tasks
+// Ensure gradle.properties are set for signing key and sonatype credentials
+if (project.hasProperty("release")) {
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'JZONbie'
+                    packaging 'jar'
+                    artifactId 'jzonbie'
+                    description 'Mock HTTP server serving JSON for integration testing'
+                    url 'jonnymatts.com'
+
+                    scm {
+                        connection 'scm:git:git://github.com/jonnymatts/jzonbie.git'
+                        developerConnection 'scm:git:ssh://github.com:jonnymatts/jzonbie.git'
+                        url 'http://github.com/jonnymatts/jzonbie/tree/master'
+                    }
+
+                    licenses {
+                        license {
+                            name 'MIT License'
+                            url 'http://www.opensource.org/licenses/mit-license.php'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name 'Jonathan Matts'
+                            email 'jonoamatts@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+shadowJar {
+    baseName "jzonbie"
+    dependsOn build
+}
+
+docker {
+    dependsOn shadowJar
+    dockerfile file("Dockerfile")
+    name "jonnymatts/jzonbie:${version}"
+    files tasks.shadowJar.outputs
+}

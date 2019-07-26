@@ -1,138 +1,128 @@
 package com.jonnymatts.jzonbie.verification;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class InvocationVerificationCriteriaTest {
-
-    @Rule public ExpectedException expectedException = ExpectedException.none();
-    
+class InvocationVerificationCriteriaTest {
     private final InvocationVerificationCriteria atLeast = atLeast(1);
     private final InvocationVerificationCriteria atMost = atMost(1);
     private final InvocationVerificationCriteria equalTo = equalTo(1);
     private final InvocationVerificationCriteria between = between(2, 4);
 
     @Test
-    public void atLeastDoesNotThrowExceptionIfTimesIsGreaterThanExpectedTimes() throws Exception {
+    void atLeastDoesNotThrowExceptionIfTimesIsGreaterThanExpectedTimes() throws Exception {
         atLeast.verify(2);
     }
 
     @Test
-    public void atLeastDoesNotThrowExceptionIfTimesIsEqualToExpectedTimes() throws Exception {
+    void atLeastDoesNotThrowExceptionIfTimesIsEqualToExpectedTimes() throws Exception {
         atLeast.verify(1);
     }
 
     @Test
-    public void atLeastThrowsVerificationExceptionIfTimesIsLessThanExpectedTimes() throws Exception {
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("0");
-        expectedException.expectMessage(atLeast.getDescription());
-
-        atLeast.verify(0);
+    void atLeastThrowsVerificationExceptionIfTimesIsLessThanExpectedTimes() throws Exception {
+        assertThatThrownBy(() -> atLeast.verify(0))
+                .isExactlyInstanceOf(VerificationException.class)
+                .hasMessageContaining("0")
+                .hasMessageContaining(atLeast.getDescription());
     }
 
     @Test
-    public void atMostThrowsVerificationExceptionIfTimesIsGreaterThanExpectedTimes() throws Exception {
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("2");
-        expectedException.expectMessage(atMost.getDescription());
-
-        atMost.verify(2);
+    void atMostThrowsVerificationExceptionIfTimesIsGreaterThanExpectedTimes() throws Exception {
+        assertThatThrownBy(() -> atMost.verify(2))
+                .isExactlyInstanceOf(VerificationException.class)
+                .hasMessageContaining("2")
+                .hasMessageContaining(atMost.getDescription());
     }
 
     @Test
-    public void atMostDoesNotThrowExceptionIfTimesIsEqualToExpectedTimes() throws Exception {
+    void atMostDoesNotThrowExceptionIfTimesIsEqualToExpectedTimes() throws Exception {
         atMost.verify(1);
     }
 
     @Test
-    public void atMostDoesNotThrowExceptionIfTimesIsLessThanExpectedTimes() throws Exception {
+    void atMostDoesNotThrowExceptionIfTimesIsLessThanExpectedTimes() throws Exception {
         atMost.verify(0);
     }
 
     @Test
-    public void equalToThrowsVerificationExceptionIfTimesIsGreaterThanExpectedTimes() throws Exception {
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("2");
-        expectedException.expectMessage(equalTo.getDescription());
-
-        equalTo.verify(2);
+    void equalToThrowsVerificationExceptionIfTimesIsGreaterThanExpectedTimes() throws Exception {
+        assertThatThrownBy(() -> equalTo.verify(2))
+                .isExactlyInstanceOf(VerificationException.class)
+                .hasMessageContaining("2")
+                .hasMessageContaining(equalTo.getDescription());
     }
 
     @Test
-    public void equalToDoesNotThrowExceptionIfTimesIsEqualToExpectedTimes() throws Exception {
+    void equalToDoesNotThrowExceptionIfTimesIsEqualToExpectedTimes() throws Exception {
         equalTo.verify(1);
     }
 
     @Test
-    public void equalToThrowsVerificationExceptionIfTimesIsLessThanExpectedTimes() throws Exception {
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("0");
-        expectedException.expectMessage(equalTo.getDescription());
-
-        equalTo.verify(0);
+    void equalToThrowsVerificationExceptionIfTimesIsLessThanExpectedTimes() throws Exception {
+        assertThatThrownBy(() -> equalTo.verify(0))
+                .isExactlyInstanceOf(VerificationException.class)
+                .hasMessageContaining("0")
+                .hasMessageContaining(equalTo.getDescription());
     }
 
     @Test
-    public void betweenDoesNotThrowExceptionIfTimesIsBetweenAtLeastAndAtMostExpectedTimes() throws Exception {
+    void betweenDoesNotThrowExceptionIfTimesIsBetweenAtLeastAndAtMostExpectedTimes() throws Exception {
         between.verify(3);
     }
 
     @Test
-    public void betweenDoesNotThrowExceptionIfTimesIsEqualToAtLeastExpectedTime() throws Exception {
+    void betweenDoesNotThrowExceptionIfTimesIsEqualToAtLeastExpectedTime() throws Exception {
         between.verify(2);
     }
 
     @Test
-    public void betweenDoesNotThrowExceptionIfTimesIsEqualToAtMostExpectedTime() throws Exception {
+    void betweenDoesNotThrowExceptionIfTimesIsEqualToAtMostExpectedTime() throws Exception {
         between.verify(4);
     }
 
     @Test
-    public void betweenThrowsVerificationExceptionIfTimesIsLessThanAtLeastExpectedTime() throws Exception {
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("1");
-        expectedException.expectMessage(between.getDescription());
-
-        between.verify(1);
+    void betweenThrowsVerificationExceptionIfTimesIsLessThanAtLeastExpectedTime() throws Exception {
+        assertThatThrownBy(() -> between.verify(1))
+                .isExactlyInstanceOf(VerificationException.class)
+                .hasMessageContaining("1")
+                .hasMessageContaining(between.getDescription());
     }
 
     @Test
-    public void betweenThrowsVerificationExceptionIfTimesIsGreaterThanAtMostExpectedTime() throws Exception {
-        expectedException.expect(VerificationException.class);
-        expectedException.expectMessage("5");
-        expectedException.expectMessage(between.getDescription());
-
-        between.verify(5);
+    void betweenThrowsVerificationExceptionIfTimesIsGreaterThanAtMostExpectedTime() throws Exception {
+        assertThatThrownBy(() -> between.verify(5))
+                .isExactlyInstanceOf(VerificationException.class)
+                .hasMessageContaining("5")
+                .hasMessageContaining(between.getDescription());
     }
 
     @Test
-    public void getDescriptionForEqualTo() throws Exception {
+    void getDescriptionForEqualTo() throws Exception {
         final String got = equalTo.getDescription();
 
         assertThat(got).isEqualTo("equal to 1");
     }
 
     @Test
-    public void getDescriptionForAtLeast() throws Exception {
+    void getDescriptionForAtLeast() throws Exception {
         final String got = atLeast.getDescription();
 
         assertThat(got).isEqualTo("at least 1");
     }
 
     @Test
-    public void getDescriptionForAtMost() throws Exception {
+    void getDescriptionForAtMost() throws Exception {
         final String got = atMost.getDescription();
 
         assertThat(got).isEqualTo("at most 1");
     }
 
     @Test
-    public void getDescriptionForBetween() throws Exception {
+    void getDescriptionForBetween() throws Exception {
         final String got = between.getDescription();
 
         assertThat(got).isEqualTo("between 2 and 4");

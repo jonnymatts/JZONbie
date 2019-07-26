@@ -1,11 +1,9 @@
 package com.jonnymatts.jzonbie.util;
 
-import com.flextrade.jfixture.rules.FixtureRule;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
@@ -16,15 +14,13 @@ import static com.jonnymatts.jzonbie.util.Cloner.cloneRequest;
 import static com.jonnymatts.jzonbie.util.Cloner.cloneResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ClonerTest {
-
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
+class ClonerTest {
 
     private AppRequest request;
     private AppResponse response;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         response = ok().withHeader("header", "value")
                 .withDelay(Duration.ofSeconds(1))
                 .withBody(stringBody("body"))
@@ -38,21 +34,21 @@ public class ClonerTest {
     }
 
     @Test
-    public void cloneResponseClonesEveryFieldSuccessfully() {
+    void cloneResponseClonesEveryFieldSuccessfully() {
         final AppResponse got = cloneResponse(response);
 
         assertThat(got).isEqualTo(response);
     }
 
     @Test
-    public void cloneRequestClonesEveryFieldSuccessfully() {
+    void cloneRequestClonesEveryFieldSuccessfully() {
         final AppRequest got = cloneRequest(request);
 
         assertThat(got).isEqualTo(request);
     }
 
     @Test
-    public void cloneResponseClonesTemplatedField() {
+    void cloneResponseClonesTemplatedField() {
         final AppResponse templatedResponse = ok().templated().build();
 
         final AppResponse got = cloneResponse(templatedResponse);

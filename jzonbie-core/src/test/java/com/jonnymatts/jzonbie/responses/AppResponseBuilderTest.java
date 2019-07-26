@@ -3,7 +3,7 @@ package com.jonnymatts.jzonbie.responses;
 import com.jonnymatts.jzonbie.body.ArrayBodyContent;
 import com.jonnymatts.jzonbie.body.LiteralBodyContent;
 import com.jonnymatts.jzonbie.body.ObjectBodyContent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.responses.AppResponse.builder;
@@ -13,10 +13,10 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-public class AppResponseBuilderTest {
+class AppResponseBuilderTest {
 
     @Test
-    public void builderCanConstructInstances() {
+    void builderCanConstructInstances() {
         final AppResponse response = builder(200)
                 .withBody(stringBody("test"))
                 .withHeader("header-name", "header-value")
@@ -29,7 +29,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void builderCanConstructTemplatedInstances() {
+    void builderCanConstructTemplatedInstances() {
         final AppResponse response = builder(200)
                 .templated()
                 .build();
@@ -39,7 +39,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void contentTypeAddsContentTypeHeader() throws Exception {
+    void contentTypeAddsContentTypeHeader() throws Exception {
         final AppResponse response = builder(200)
                 .contentType("header-value")
                 .build();
@@ -48,7 +48,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void builderCanBeReused() throws Exception {
+    void builderCanBeReused() throws Exception {
         final AppResponseBuilder builder = builder(201);
 
         final AppResponse response1 = builder.withBody(stringBody("test1")).build();
@@ -59,7 +59,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void builderWithMapBodyReturnsResponseWithObjectBody() {
+    void builderWithMapBodyReturnsResponseWithObjectBody() {
         final AppResponse request = ok()
                 .withBody(singletonMap("key", "val"))
                 .build();
@@ -69,7 +69,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void builderWithStringBodyReturnsResponseWithLiteralBody() {
+    void builderWithStringBodyReturnsResponseWithLiteralBody() {
         final AppResponse request = ok()
                 .withBody("literal")
                 .build();
@@ -79,7 +79,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void builderWithListBodyReturnsResponseWithArrayBody() {
+    void builderWithListBodyReturnsResponseWithArrayBody() {
         final AppResponse request = ok()
                 .withBody(singletonList("val"))
                 .build();
@@ -89,7 +89,7 @@ public class AppResponseBuilderTest {
     }
 
     @Test
-    public void builderWithNumberBodyReturnsResponseWithLiteralBody() {
+    void builderWithNumberBodyReturnsResponseWithLiteralBody() {
         final AppResponse request = ok()
                 .withBody(1)
                 .build();

@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie.body;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -13,32 +13,32 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ArrayBodyContentTest {
+class ArrayBodyContentTest {
 
     private ArrayBodyContent underTest;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         underTest = arrayBody(asList(1, 2, 3));
     }
 
     @Test
-    public void getContentReturnsContent() {
+    void getContentReturnsContent() {
         assertThat(underTest.getContent()).isEqualTo(asList(1, 2, 3));
     }
 
     @Test
-    public void matchesReturnsTrueIfContentsMatch() {
+    void matchesReturnsTrueIfContentsMatch() {
         assertThat(underTest.matches(arrayBody(asList(1, 2, 3)))).isTrue();
     }
 
     @Test
-    public void matchesReturnsFalseIfContentsDoNotMatch() {
+    void matchesReturnsFalseIfContentsDoNotMatch() {
         assertThat(underTest.matches(arrayBody(asList(1, 2)))).isFalse();
     }
 
     @Test
-    public void matchesReturnsFalseIfContentIsNotTheSameType() {
+    void matchesReturnsFalseIfContentIsNotTheSameType() {
         final List<BodyContent<?>> bodyContents = asList(
                 literalBody(""),
                 stringBody(""),
@@ -49,7 +49,7 @@ public class ArrayBodyContentTest {
     }
 
     @Test
-    public void copyReturnsNewInstanceWithSameContent() {
+    void copyReturnsNewInstanceWithSameContent() {
         final ArrayBodyContent copy = underTest.copy();
 
         assertThat(copy).isNotSameAs(underTest);

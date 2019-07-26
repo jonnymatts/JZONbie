@@ -4,7 +4,7 @@ import com.jonnymatts.jzonbie.body.ArrayBodyContent;
 import com.jonnymatts.jzonbie.body.BodyContent;
 import com.jonnymatts.jzonbie.body.LiteralBodyContent;
 import com.jonnymatts.jzonbie.body.ObjectBodyContent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.builder;
@@ -13,10 +13,10 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-public class AppRequestBuilderTest {
+class AppRequestBuilderTest {
 
     @Test
-    public void builderCanConstructInstances() {
+    void builderCanConstructInstances() {
         final BodyContent body = stringBody("test");
         final AppRequest request = builder("GET", "/.*")
                 .withBody(body)
@@ -34,7 +34,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void acceptAddsAcceptHeader() {
+    void acceptAddsAcceptHeader() {
         final AppRequest response = builder("GET", "/.*")
                 .accept("header-value")
                 .build();
@@ -43,7 +43,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void contentTypeAddsContentTypeHeader() {
+    void contentTypeAddsContentTypeHeader() {
         final AppRequest response = builder("GET", "/.*")
                 .contentType("header-value")
                 .build();
@@ -52,7 +52,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void builderCanBeReused() {
+    void builderCanBeReused() {
         final AppRequestBuilder builder = builder("GET", "/");
 
         final AppRequest request1 = builder.withBody(stringBody("test1")).build();
@@ -63,7 +63,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void builderWithMapBodyReturnsRequestWithObjectBody() {
+    void builderWithMapBodyReturnsRequestWithObjectBody() {
         final AppRequest request = builder("GET", "/")
                 .withBody(singletonMap("key", "val"))
                 .build();
@@ -73,7 +73,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void builderWithStringBodyReturnsRequestWithLiteralBody() {
+    void builderWithStringBodyReturnsRequestWithLiteralBody() {
         final AppRequest request = builder("GET", "/")
                 .withBody("literal")
                 .build();
@@ -83,7 +83,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void builderWithListBodyReturnsRequestWithArrayBody() {
+    void builderWithListBodyReturnsRequestWithArrayBody() {
         final AppRequest request = builder("GET", "/")
                 .withBody(singletonList("val"))
                 .build();
@@ -93,7 +93,7 @@ public class AppRequestBuilderTest {
     }
 
     @Test
-    public void builderWithNumberBodyReturnsRequestWithLiteralBody() {
+    void builderWithNumberBodyReturnsRequestWithLiteralBody() {
         final AppRequest request = builder("GET", "/")
                 .withBody(1)
                 .build();

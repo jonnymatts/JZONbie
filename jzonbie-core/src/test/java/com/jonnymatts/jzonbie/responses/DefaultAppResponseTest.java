@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.responses;
 
 import com.jonnymatts.jzonbie.responses.defaults.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 
@@ -13,13 +13,13 @@ import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DefaultAppResponseTest {
+class DefaultAppResponseTest {
 
     private final AppResponse response1 = ok().build();
     private final AppResponse response2 = notFound().build();
 
     @Test
-    public void getResponseFromStaticDefaultResponseReturnsResponse() throws Exception {
+    void getResponseFromStaticDefaultResponseReturnsResponse() throws Exception {
         final StaticDefaultAppResponse defaultResponse = staticDefault(response1);
 
         final AppResponse got = defaultResponse.getResponse();
@@ -28,7 +28,7 @@ public class DefaultAppResponseTest {
     }
 
     @Test
-    public void getResponseFromDynamicDefaultResponseReturnsResponseFromSupplier() throws Exception {
+    void getResponseFromDynamicDefaultResponseReturnsResponseFromSupplier() throws Exception {
         final Iterator<AppResponse> appResponses = asList(response1, response2).iterator();
 
         final DynamicDefaultAppResponse defaultResponse = dynamicDefault(appResponses::next);

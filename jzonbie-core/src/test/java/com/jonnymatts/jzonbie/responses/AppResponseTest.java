@@ -1,20 +1,17 @@
 package com.jonnymatts.jzonbie.responses;
 
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Theories.class)
-public class AppResponseTest {
+class AppResponseTest {
 
-    @DataPoints("staticBuilders")
-    public static StaticBuilderData[] staticBuilders = new StaticBuilderData[]{
+    static Stream<StaticBuilderData> staticBuilders() {
+        return Stream.of(
             new StaticBuilderData("OK", 200, AppResponse::ok),
             new StaticBuilderData("CREATED", 201, AppResponse::created),
             new StaticBuilderData("ACCEPTED", 202, AppResponse::accepted),
@@ -27,11 +24,13 @@ public class AppResponseTest {
             new StaticBuilderData("CONFLICT", 409, AppResponse::conflict),
             new StaticBuilderData("INTERNAL_ERROR", 500, AppResponse::internalServerError),
             new StaticBuilderData("SERVICE_UNAVAILABLE", 503, AppResponse::serviceUnavailable),
-            new StaticBuilderData("GATEWAY_TIMEOUT", 504, AppResponse::gatewayTimeout),
-    };
+            new StaticBuilderData("GATEWAY_TIMEOUT", 504, AppResponse::gatewayTimeout)
+        );
+    }
 
-    @Theory
-    public void staticBuildersCreatesResponse(@FromDataPoints("staticBuilders") StaticBuilderData data) {
+    @ParameterizedTest
+    @MethodSource("staticBuilders")
+    void staticBuildersCreatesResponse(StaticBuilderData data) {
         System.out.println("Testing static builder: " + data.status);
 
         final AppResponse request = data.builder.get().build();

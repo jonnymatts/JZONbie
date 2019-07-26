@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.responses;
 
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,14 +12,14 @@ import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DefaultingQueueTest {
+class DefaultingQueueTest {
 
     private final AppResponse response1 = ok().build();
     private final AppResponse response2 = notFound().build();
     private final AppResponse response3 = internalServerError().build();
 
     @Test
-    public void pollReturnsNullIfThereIsNoDefaultElementSetAndQueueIsEmpty() throws Exception {
+    void pollReturnsNullIfThereIsNoDefaultElementSetAndQueueIsEmpty() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
 
         final AppResponse got = queue.poll();
@@ -28,7 +28,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void pollReturnsDefaultValueIfThereIsADefaultElementSetAndQueueIsEmpty() throws Exception {
+    void pollReturnsDefaultValueIfThereIsADefaultElementSetAndQueueIsEmpty() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.setDefault(staticDefault(response1));
 
@@ -38,7 +38,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void pollReturnsQueueElementIfThereIsADefaultElementSetAndQueueContainsAnElement() throws Exception {
+    void pollReturnsQueueElementIfThereIsADefaultElementSetAndQueueContainsAnElement() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.setDefault(staticDefault(response1));
         queue.add(response2);
@@ -49,7 +49,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void pollReturnsQueueElementIfThereIsNoDefaultElementSetAndQueueContainsAnElement() throws Exception {
+    void pollReturnsQueueElementIfThereIsNoDefaultElementSetAndQueueContainsAnElement() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.add(response2);
 
@@ -59,7 +59,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void resetClearsQueueAndRemovesDefaultElement() throws Exception {
+    void resetClearsQueueAndRemovesDefaultElement() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.setDefault(staticDefault(response1));
         queue.add(response2);
@@ -71,7 +71,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void hasSizeReturnsSizeOfQueue() throws Exception {
+    void hasSizeReturnsSizeOfQueue() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.add(asList(response1, response2, response3));
 
@@ -81,7 +81,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void getEntriesReturnsQueueElementsInOrder() throws Exception {
+    void getEntriesReturnsQueueElementsInOrder() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.add(asList(response1, response2, response3));
 
@@ -91,7 +91,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void getDefaultReturnsEmptyOptionalIfDefaultIsNotSet() throws Exception {
+    void getDefaultReturnsEmptyOptionalIfDefaultIsNotSet() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
 
         final Optional<DefaultAppResponse> got = queue.getDefault();
@@ -100,7 +100,7 @@ public class DefaultingQueueTest {
     }
 
     @Test
-    public void getDefaultReturnsOptionalIfDefaultIsSet() throws Exception {
+    void getDefaultReturnsOptionalIfDefaultIsSet() throws Exception {
         final DefaultingQueue queue = new DefaultingQueue();
         queue.setDefault(staticDefault(response1));
 

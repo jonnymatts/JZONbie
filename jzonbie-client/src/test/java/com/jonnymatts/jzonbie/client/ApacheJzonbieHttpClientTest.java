@@ -2,7 +2,7 @@ package com.jonnymatts.jzonbie.client;
 
 import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieClient;
-import com.jonnymatts.jzonbie.junit.JzonbieRule;
+import com.jonnymatts.jzonbie.junit.JzonbieExtension;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
@@ -13,14 +13,11 @@ import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
 import com.jonnymatts.jzonbie.util.TestingClient;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import sun.security.x509.X509CertImpl;
 
 import java.io.File;
@@ -28,6 +25,7 @@ import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
 import static com.jonnymatts.jzonbie.HttpsOptions.httpsOptions;
@@ -40,15 +38,13 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@RunWith(Theories.class)
-public class ApacheJzonbieHttpClientTest {
+@ExtendWith(JzonbieExtension.class)
+class ApacheJzonbieHttpClientTest {
 
     private static final AppRequest REQUEST = get("/").build();
     private static final AppResponse RESPONSE = ok().build();
     private static final StaticDefaultAppResponse DEFAULT_RESPONSE = staticDefault(RESPONSE);
     private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
-
-    @Rule public JzonbieRule jzonbie = JzonbieRule.jzonbie();
 
     private ZombiePriming zombiePriming;
     private PrimedMapping primedMapping;
@@ -58,63 +54,63 @@ public class ApacheJzonbieHttpClientTest {
     private ApacheJzonbieHttpClient underTest;
     private ApacheJzonbieHttpClient brokenClient;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         zombiePriming = new ZombiePriming(REQUEST, RESPONSE);
         primedMapping = createPrimedMapping(RESPONSE);
 
-        final String zombieBaseUrl = "http://localhost:" + jzonbie.getHttpPort();
+        final String zombieBaseUrl = "http://localhost:" + JzonbieExtension.getJzonbie().getHttpPort();
         underTest = new ApacheJzonbieHttpClient(zombieBaseUrl);
         brokenClient = new ApacheJzonbieHttpClient("http://broken:8080");
         testingClient = new TestingClient(zombieBaseUrl);
     }
 
     @Test
-    public void primeZombieReturnsRequestedPriming() {
+    void primeZombieReturnsRequestedPriming() {
         final ZombiePriming got = underTest.prime(REQUEST, RESPONSE);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
-    public void primeZombieAddsPriming() {
+    void primeZombieAddsPriming() {
         underTest.prime(REQUEST, RESPONSE);
 
-        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
+        assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    public void primeZombieWithDefaultResponseReturnsRequestedPriming() {
+    void primeZombieWithDefaultResponseReturnsRequestedPriming() {
         final ZombiePriming got = underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
         assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
-    public void primeZombieWithDefaultResponseAddsPriming() {
+    void primeZombieWithDefaultResponseAddsPriming() {
         underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
         final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_RESPONSE);
 
-        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
+        assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    public void primeZombieWithFileReturnsPrimedMappings() {
+    void primeZombieWithFileReturnsPrimedMappings() {
         final List<PrimedMapping> got = underTest.prime(FILE);
 
         assertThat(got).containsExactly(primedMapping);
     }
 
     @Test
-    public void primeZombieWithFileAddsPriming() {
+    void primeZombieWithFileAddsPriming() {
         underTest.prime(FILE);
 
-        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
+        assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    public void getCurrentPrimingReturnsPrimedMappings() {
+    void getCurrentPrimingReturnsPrimedMappings() {
         underTest.prime(REQUEST, RESPONSE);
 
         final List<PrimedMapping> got = underTest.getCurrentPriming();
@@ -123,7 +119,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void getHistoryReturnsCallHistory() {
+    void getHistoryReturnsCallHistory() {
         underTest.prime(REQUEST, RESPONSE);
         testingClient.execute(REQUEST);
 
@@ -137,7 +133,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void getFailedRequestsReturnsFailedRequests() {
+    void getFailedRequestsReturnsFailedRequests() {
         testingClient.execute(REQUEST);
 
         final List<AppRequest> got = underTest.getFailedRequests();
@@ -148,7 +144,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void resetExecutesResetRequest() {
+    void resetExecutesResetRequest() {
         testingClient.execute(REQUEST);
         underTest.prime(REQUEST, RESPONSE);
         testingClient.execute(REQUEST);
@@ -163,7 +159,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void verifyDoesNotThrowExceptionWhenVerificationIsTrue() {
+    void verifyDoesNotThrowExceptionWhenVerificationIsTrue() {
         underTest.prime(REQUEST, RESPONSE);
         underTest.prime(REQUEST, RESPONSE);
         testingClient.execute(REQUEST);
@@ -173,7 +169,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void verifyDoesNotThrowExceptionWhenVerificationIsTrueAndNoCriteriaIsPassedIn() {
+    void verifyDoesNotThrowExceptionWhenVerificationIsTrueAndNoCriteriaIsPassedIn() {
         underTest.prime(REQUEST, RESPONSE);
         testingClient.execute(REQUEST);
 
@@ -181,7 +177,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void verifyThrowsVerificationExceptionWhenVerificationIsFalse() {
+    void verifyThrowsVerificationExceptionWhenVerificationIsFalse() {
         final InvocationVerificationCriteria criteria = equalTo(2);
 
         underTest.prime(REQUEST, RESPONSE);
@@ -194,7 +190,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void verifyThrowsVerificationExceptionWhenVerificationIsFalseAndNoCriteriaIsPassedIn() {
+    void verifyThrowsVerificationExceptionWhenVerificationIsFalseAndNoCriteriaIsPassedIn() {
         assertThatThrownBy(() -> underTest.verify(REQUEST))
                 .isInstanceOf(VerificationException.class)
                 .hasMessageContaining("0")
@@ -202,14 +198,14 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void getTruststoreThrowsExceptionIfServerIsNotServingHttps() {
+    void getTruststoreThrowsExceptionIfServerIsNotServingHttps() {
         assertThatThrownBy(() -> underTest.getTruststore())
                 .isInstanceOf(JzonbieClientException.class)
                 .hasMessageContaining("Failed to obtain truststore");
     }
 
     @Test
-    public void getTruststoreThrowsExceptionIfKeystoreIsPassedIn() {
+    void getTruststoreThrowsExceptionIfKeystoreIsPassedIn() {
         new Jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
 
         assertThatThrownBy(() -> underTest.getTruststore())
@@ -218,7 +214,7 @@ public class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    public void getTruststoreReturnsKeystoreIfDefaultHttpsConfigurationIsEnabled() throws Exception {
+    void getTruststoreReturnsKeystoreIfDefaultHttpsConfigurationIsEnabled() throws Exception {
         final Jzonbie httpsJzonbie = new Jzonbie(options().withHttps(httpsOptions()));
 
         final KeyStore truststore = httpsJzonbie.getTruststore();
@@ -226,8 +222,8 @@ public class ApacheJzonbieHttpClientTest {
         assertThat(new X509CertImpl(truststore.getCertificate("jzonbie").getEncoded()).getSubjectDN().getName()).isEqualTo("CN=localhost");
     }
 
-    @DataPoints("exceptionTests")
-    public static ExceptionTestData[] exceptionTestDataPoints = new ExceptionTestData[]{
+    static Stream<ExceptionTestData> exceptionTestDataPoints() {
+        return Stream.of(
             new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),
             new ExceptionTestData("default priming", "prime", client -> client.prime(REQUEST, DEFAULT_RESPONSE)),
             new ExceptionTestData("current priming", "current", JzonbieClient::getCurrentPriming),
@@ -235,11 +231,13 @@ public class ApacheJzonbieHttpClientTest {
             new ExceptionTestData("failed requests", "failed", JzonbieClient::getFailedRequests),
             new ExceptionTestData("reset", "reset", JzonbieClient::reset),
             new ExceptionTestData("verify", "count", client -> client.verify(REQUEST)),
-            new ExceptionTestData("truststore", "truststore", JzonbieClient::getTruststore),
-    };
+            new ExceptionTestData("truststore", "truststore", JzonbieClient::getTruststore)
+        );
+    }
 
-    @Theory
-    public void clientThrowsExceptionIfHttpClientThrowsException(@FromDataPoints("exceptionTests") ExceptionTestData exceptionTestData) {
+    @ParameterizedTest
+    @MethodSource("exceptionTestDataPoints")
+    void clientThrowsExceptionIfHttpClientThrowsException(ExceptionTestData exceptionTestData) {
         System.out.println("Running client exception test: " + exceptionTestData.name);
         assertThatThrownBy(() -> exceptionTestData.consumer.accept(brokenClient))
                 .isInstanceOf(JzonbieClientException.class)
