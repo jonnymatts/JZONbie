@@ -6,13 +6,11 @@ import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.requests.AppRequestBuilder;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.AppResponseBuilder;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import static com.jonnymatts.jzonbie.body.ArrayBodyContent.arrayBody;
 import static com.jonnymatts.jzonbie.body.LiteralBodyContent.literalBody;
@@ -24,24 +22,26 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(Theories.class)
-public class BodyContentObjectMapperTest {
+class BodyContentObjectMapperTest {
 
     private final static JzonbieObjectMapper JZONBIE_OBJECT_MAPPER = new JzonbieObjectMapper();
 
     private static final AppRequestBuilder APP_REQUEST_BUILDER = get("/");
     private static final AppResponseBuilder APP_RESPONSE_BUILDER = ok();
 
-    @DataPoints("bodies") public static BodyContent<?>[] bodies = new BodyContent[]{
-            objectBody(singletonMap("key", "val")),
-            arrayBody(singletonList("val")),
-            stringBody("string"),
-            literalBody("literal"),
-            null
-    };
+    static Stream<BodyContent<?>> bodies() {
+        return Stream.of(
+                objectBody(singletonMap("key", "val")),
+                arrayBody(singletonList("val")),
+                stringBody("string"),
+                literalBody("literal"),
+                null
+        );
+    }
 
-    @Theory
-    public void appRequestsCanBeSerializedAndDeserialized(@FromDataPoints("bodies") BodyContent<?> bodyContent) throws IOException {
+    @ParameterizedTest
+    @MethodSource("bodies")
+    void appRequestsCanBeSerializedAndDeserialized(BodyContent<?> bodyContent) throws IOException {
         System.out.println("Running test: AppResponse - " + (bodyContent == null ? "null" : bodyContent.getType()));
         final AppRequest request = APP_REQUEST_BUILDER
                 .withBody(bodyContent)
@@ -53,8 +53,9 @@ public class BodyContentObjectMapperTest {
         assertThat(got).isEqualTo(request);
     }
 
-    @Theory
-    public void appResponsesCanBeSerializedAndDeserialized(@FromDataPoints("bodies") BodyContent<?> bodyContent) throws IOException {
+    @ParameterizedTest
+    @MethodSource("bodies")
+    void appResponsesCanBeSerializedAndDeserialized(BodyContent<?> bodyContent) throws IOException {
         System.out.println("Running test: AppRequest - " + (bodyContent == null ? "null" : bodyContent.getType()));
         final AppResponse response = APP_RESPONSE_BUILDER
                 .withBody(bodyContent)

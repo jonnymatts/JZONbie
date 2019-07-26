@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie.body;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -14,31 +14,31 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class StringBodyContentTest {
+class StringBodyContentTest {
     private StringBodyContent underTest;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         underTest = stringBody("string");
     }
 
     @Test
-    public void getContentReturnsContent() {
+    void getContentReturnsContent() {
         assertThat(underTest.getContent()).isEqualTo("string");
     }
 
     @Test
-    public void matchesReturnsTrueIfContentsMatch() {
+    void matchesReturnsTrueIfContentsMatch() {
         assertThat(underTest.matches(stringBody("string"))).isTrue();
     }
 
     @Test
-    public void matchesReturnsFalseIfContentsDoNotMatch() {
+    void matchesReturnsFalseIfContentsDoNotMatch() {
         assertThat(underTest.matches(stringBody("different"))).isFalse();
     }
 
     @Test
-    public void matchesReturnsFalseIfContentIsNotTheSameType() {
+    void matchesReturnsFalseIfContentIsNotTheSameType() {
         final List<BodyContent<?>> bodyContents = asList(
                 arrayBody(emptyList()),
                 literalBody(""),
@@ -49,7 +49,7 @@ public class StringBodyContentTest {
     }
 
     @Test
-    public void copyReturnsNewInstanceWithSameContent() {
+    void copyReturnsNewInstanceWithSameContent() {
         final StringBodyContent copy = underTest.copy();
 
         assertThat(copy).isNotSameAs(underTest);

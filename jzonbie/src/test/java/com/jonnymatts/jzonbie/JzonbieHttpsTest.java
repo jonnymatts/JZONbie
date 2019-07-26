@@ -1,7 +1,6 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.io.Resources;
-import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -12,7 +11,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import sun.security.x509.X509CertImpl;
 
@@ -31,8 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieHttpsTest {
 
-    @ClassRule public static JzonbieRule<?> defaultHttpsJzonbie = JzonbieRule.jzonbie(options().withHttps());
-    @ClassRule public static JzonbieRule<?> configuredHttpsJzonbie = JzonbieRule.jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(Resources.getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
+    // TODO: Use Jzonbie Extension with junit5
+    private static final Jzonbie defaultHttpsJzonbie = new Jzonbie(options().withHttps());
+    private static final Jzonbie configuredHttpsJzonbie = new Jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(Resources.getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
 
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
@@ -53,7 +56,7 @@ public class JzonbieHttpsTest {
         connectionManager.setDefaultMaxPerRoute(10);
         httpClient = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
 
-        final SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(defaultHttpsJzonbie.getJzonbie().getTruststore(), TrustSelfSignedStrategy.INSTANCE).build();
+        final SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(defaultHttpsJzonbie.getTruststore(), TrustSelfSignedStrategy.INSTANCE).build();
         final SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
         httpsClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
     }

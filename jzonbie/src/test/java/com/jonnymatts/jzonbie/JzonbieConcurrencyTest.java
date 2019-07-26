@@ -1,7 +1,6 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
-import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -9,8 +8,8 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieConcurrencyTest {
 
-    @Rule public JzonbieRule jzonbie = JzonbieRule.jzonbie();
+    // TODO: Use Jzonbie Extension with junit5
+    private static final Jzonbie jzonbie = new Jzonbie();
 
     private HttpClient httpClient;
 
@@ -43,6 +43,11 @@ public class JzonbieConcurrencyTest {
         httpClient = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
 
         IntStream.range(0, 10).boxed().forEach(this::primeZombieWithDelay);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        jzonbie.reset();
     }
 
     @Test

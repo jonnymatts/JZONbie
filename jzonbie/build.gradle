@@ -13,9 +13,9 @@ dependencies {
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.6'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.9.6'
     compile group: 'ch.qos.logback', name:'logback-classic', version : '1.2.3'
-    compile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'com.github.jknack', name: 'handlebars', version: '4.1.2'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.1'
     testCompile project(':jzonbie-test-util')
     testCompile project(':jzonbie-client')
     testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.12.0'

@@ -2,7 +2,6 @@ package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
-import com.jonnymatts.jzonbie.junit.JzonbieRule;
 import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -17,7 +16,10 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.File;
@@ -47,7 +49,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JzonbieTest {
 
-    @ClassRule public static JzonbieRule<?> jzonbie = JzonbieRule.jzonbie();
+    // TODO: Use Jzonbie Extension with junit5
+    private static final Jzonbie jzonbie = new Jzonbie();
+
     @Rule public ExpectedException expectedException = ExpectedException.none();
 
     private HttpUriRequest httpRequest;

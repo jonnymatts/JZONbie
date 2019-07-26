@@ -1,15 +1,14 @@
 dependencies {
-    compile project(':jzonbie-core')
-    compile project(':jzonbie-jackson')
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
-    compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.7'
-    testCompile project(':jzonbie-test-util')
-    testCompile project(':jzonbie')
-    testCompile project(':jzonbie-junit4') // TODO: remove when JzonbieExtension is done
+    compile project(':jzonbie')
+    compile group: 'junit', name: 'junit', version: '4.12'
+}
+
+ext {
+    jarName = 'jzonbie-junit4'
 }
 
 jar {
-    baseName 'jzonbie-client'
+    baseName jarName
     manifest {
         attributes "application-version": version
     }
@@ -20,13 +19,13 @@ javadoc {
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    baseName 'jzonbie-client'
+    baseName jarName
     classifier 'sources'
     from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    baseName 'jzonbie-client'
+    baseName jarName
     classifier 'javadoc'
     from javadoc.destinationDir
 }
@@ -70,7 +69,7 @@ if (project.hasProperty("release")) {
                     name 'JZONbie'
                     packaging 'jar'
                     // optionally artifactId can be defined here
-                    artifactId 'jzonbie-client'
+                    artifactId jarName
                     description 'HTTP client for JZONbie'
                     url 'jonnymatts.com'
 
