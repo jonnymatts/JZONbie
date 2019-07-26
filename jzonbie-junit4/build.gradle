@@ -1,5 +1,8 @@
 dependencies {
-    compile project(':jzonbie')
+    compile(project(':jzonbie')) {
+        exclude group: "org.junit.jupiter"
+        exclude group: "org.mockito"
+    }
     compile group: 'junit', name: 'junit', version: '4.12'
 }
 

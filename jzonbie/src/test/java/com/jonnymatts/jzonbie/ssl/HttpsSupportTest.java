@@ -1,13 +1,13 @@
 package com.jonnymatts.jzonbie.ssl;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import sun.security.x509.X509CertImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 
@@ -15,23 +15,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
-public class HttpsSupportTest {
+class HttpsSupportTest {
 
-    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir static Path temporaryFolder;
 
     private String keystorePath;
 
     private HttpsSupport underTest;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         underTest = new HttpsSupport();
 
-        keystorePath = temporaryFolder.getRoot().getAbsolutePath() + "/keystore.jks";
+        keystorePath = temporaryFolder.toAbsolutePath().toString() + "/keystore.jks";
     }
 
     @Test
-    public void generateKeystoreGeneratesKeystoreWithCorrectCertificate() throws Exception {
+    void generateKeystoreGeneratesKeystoreWithCorrectCertificate() throws Exception {
         underTest.createKeystoreAndTruststore(keystorePath, "localhost");
 
         final KeyStore generatedKeystore = KeyStore.getInstance("jks");
@@ -43,7 +43,7 @@ public class HttpsSupportTest {
     }
 
     @Test
-    public void generateKeystoreAndTruststoreThrowsExceptionIfKeystoreDestinationDirectoryDoesNotExist() {
+    void generateKeystoreAndTruststoreThrowsExceptionIfKeystoreDestinationDirectoryDoesNotExist() {
         final String nonExistingPath = "/hbewfhjbfewhj/keystore.jks";
 
         assertThatThrownBy(() -> underTest.createKeystoreAndTruststore(nonExistingPath, "localhost"))
@@ -51,14 +51,14 @@ public class HttpsSupportTest {
     }
 
     @Test
-    public void getTruststoreThrowsExceptionIfTruststoreHasNotBeenCreatedYet() {
+    void getTruststoreThrowsExceptionIfTruststoreHasNotBeenCreatedYet() {
         assertThatThrownBy(underTest::getTrustStore)
                 .hasMessageContaining("Truststore not created");
 
     }
 
     @Test
-    public void getTruststoreOnceCreated() throws Exception {
+    void getTruststoreOnceCreated() throws Exception {
         underTest.createKeystoreAndTruststore(keystorePath, "localhost");
 
         final KeyStore trustStore = underTest.getTrustStore();
@@ -69,7 +69,7 @@ public class HttpsSupportTest {
     }
 
     @Test
-    public void getTruststoreAsByteArray() throws Exception {
+    void getTruststoreAsByteArray() throws Exception {
         underTest.createKeystoreAndTruststore(keystorePath, "localhost");
 
         final KeyStore keystore = KeyStore.getInstance("jks");

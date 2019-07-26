@@ -11,11 +11,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import sun.security.x509.X509CertImpl;
 
 import javax.net.ssl.SSLContext;
@@ -31,13 +29,10 @@ import static com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse.stati
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JzonbieHttpsTest {
+class JzonbieHttpsTest {
 
-    // TODO: Use Jzonbie Extension with junit5
     private static final Jzonbie defaultHttpsJzonbie = new Jzonbie(options().withHttps());
     private static final Jzonbie configuredHttpsJzonbie = new Jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(Resources.getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
-
-    @Rule public ExpectedException expectedException = ExpectedException.none();
 
     private HttpUriRequest httpRequest;
     private HttpUriRequest defaultHttpsRequest;
@@ -45,8 +40,8 @@ public class JzonbieHttpsTest {
     private HttpClient httpClient;
     private HttpClient httpsClient;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         httpRequest = RequestBuilder.get("http://localhost:" + defaultHttpsJzonbie.getHttpPort() + "/").build();
         defaultHttpsRequest = RequestBuilder.get("https://localhost:" + defaultHttpsJzonbie.getHttpsPort() + "/").build();
         configuredHttpsRequest = RequestBuilder.get("https://localhost:" + configuredHttpsJzonbie.getHttpsPort() + "/").build();
@@ -61,14 +56,14 @@ public class JzonbieHttpsTest {
         httpsClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         defaultHttpsJzonbie.reset();
         configuredHttpsJzonbie.reset();
     }
 
     @Test
-    public void jzonbieServesPrimedResponsesOverHttp() throws Exception {
+    void jzonbieServesPrimedResponsesOverHttp() throws Exception {
         defaultHttpsJzonbie.prime(
                 get("/").build(),
                 staticDefault(ok().build())
@@ -80,7 +75,7 @@ public class JzonbieHttpsTest {
     }
 
     @Test
-    public void jzonbieServesPrimedResponsesOverDefaultHttps() throws Exception {
+    void jzonbieServesPrimedResponsesOverDefaultHttps() throws Exception {
         defaultHttpsJzonbie.prime(
                 get("/").build(),
                 staticDefault(ok().build())
@@ -92,7 +87,7 @@ public class JzonbieHttpsTest {
     }
 
     @Test
-    public void jzonbieServesPrimedResponsesOverConfiguredHttps() throws Exception {
+    void jzonbieServesPrimedResponsesOverConfiguredHttps() throws Exception {
         configuredHttpsJzonbie.prime(
                 get("/").build(),
                 staticDefault(ok().build())
@@ -104,7 +99,7 @@ public class JzonbieHttpsTest {
     }
 
     @Test
-    public void jzonbieCanSetCommonNameOfDefaultSslCertificate() throws Exception {
+    void jzonbieCanSetCommonNameOfDefaultSslCertificate() throws Exception {
         new Jzonbie(options().withHttps(HttpsOptions.httpsOptions().withCommonName("notLocalHost")));
 
         final KeyStore keystore = KeyStore.getInstance("jks");

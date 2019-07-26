@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.base.Stopwatch;
+import com.jonnymatts.jzonbie.junit.JzonbieExtension;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -8,9 +9,10 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -28,15 +30,13 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JzonbieConcurrencyTest {
-
-    // TODO: Use Jzonbie Extension with junit5
-    private static final Jzonbie jzonbie = new Jzonbie();
+@ExtendWith(JzonbieExtension.class)
+class JzonbieConcurrencyTest {
 
     private HttpClient httpClient;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(10);
         connectionManager.setDefaultMaxPerRoute(10);
@@ -45,13 +45,13 @@ public class JzonbieConcurrencyTest {
         IntStream.range(0, 10).boxed().forEach(this::primeZombieWithDelay);
     }
 
-    @After
-    public void tearDown() throws Exception {
-        jzonbie.reset();
+    @AfterEach
+    void tearDown() throws Exception {
+        JzonbieExtension.getJzonbie().reset();
     }
 
     @Test
-    public void jzonbieCanServePrimedResponsesWithDifferentDelaysConcurrently() throws Exception {
+    void jzonbieCanServePrimedResponsesWithDifferentDelaysConcurrently() throws Exception {
         final List<Callable<Integer>> callables = IntStream.range(0, 10).boxed()
                 .map(i -> (Callable<Integer>)() -> {
                     final HttpUriRequest request = createRequest(i);
@@ -97,11 +97,11 @@ public class JzonbieConcurrencyTest {
     }
 
     private HttpUriRequest createRequest(int i) {
-        return RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/" + i).build();
+        return RequestBuilder.get("http://localhost:" + JzonbieExtension.getJzonbie().getHttpPort() + "/" + i).build();
     }
 
     private void primeZombieWithDelay(int i) {
-        jzonbie.prime(
+        JzonbieExtension.getJzonbie().prime(
                 get("/" + i).build(),
                 ok().withDelay(Duration.of(i, SECONDS)).build()
         );

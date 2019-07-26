@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.priming;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +13,14 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CallHistoryTest {
+class CallHistoryTest {
 
     private final ZombiePriming zombiePriming1 = new ZombiePriming(get("").build(), ok().build());
     private final ZombiePriming zombiePriming2 = new ZombiePriming(get("").build(), ok().build());
     private final ZombiePriming zombiePriming3 = new ZombiePriming(get("").build(), ok().build());
 
     @Test
-    public void getEntriesReturnsAllCallsInHistory() throws Exception {
+    void getEntriesReturnsAllCallsInHistory() throws Exception {
         final CallHistory callHistory = new CallHistory(asList(zombiePriming1, zombiePriming2, zombiePriming3));
 
         final List<ZombiePriming> got = callHistory.getEntries();
@@ -28,7 +29,7 @@ public class CallHistoryTest {
     }
 
     @Test
-    public void addAddsPrimingToCallHistory() throws Exception {
+    void addAddsPrimingToCallHistory() throws Exception {
         final CallHistory callHistory = new CallHistory(new ArrayList<>());
 
         callHistory.add(zombiePriming1);
@@ -39,7 +40,7 @@ public class CallHistoryTest {
     }
 
     @Test
-    public void clearRemovesAllHistory() throws Exception {
+    void clearRemovesAllHistory() throws Exception {
         final CallHistory callHistory = new CallHistory(new ArrayList<ZombiePriming>(){{
             add(zombiePriming1);
             add(zombiePriming2);
@@ -54,7 +55,7 @@ public class CallHistoryTest {
     }
 
     @Test
-    public void countReturnsRequestCountOfMatchingRequestWhenHistoryHasASingleRequest() throws Exception {
+    void countReturnsRequestCountOfMatchingRequestWhenHistoryHasASingleRequest() throws Exception {
         final CallHistory callHistory = new CallHistory(singletonList(zombiePriming1));
 
         final int got = callHistory.count(zombiePriming1.getRequest());
@@ -63,7 +64,7 @@ public class CallHistoryTest {
     }
 
     @Test
-    public void countReturnsRequestZeroIfCallHistoryIsEmpty() throws Exception {
+    void countReturnsRequestZeroIfCallHistoryIsEmpty() throws Exception {
         final CallHistory callHistory = new CallHistory(emptyList());
 
         final int got = callHistory.count(zombiePriming1.getRequest());

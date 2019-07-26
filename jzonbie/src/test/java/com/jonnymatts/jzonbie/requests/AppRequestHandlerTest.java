@@ -8,14 +8,11 @@ import com.jonnymatts.jzonbie.priming.CallHistory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.responses.AppResponse;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
@@ -24,23 +21,17 @@ import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AppRequestHandlerTest {
-
-    @Rule public ExpectedException expectedException = ExpectedException.none();
+@ExtendWith(MockitoExtension.class)
+class AppRequestHandlerTest {
 
     @Mock private PrimingContext primingContext;
-
     @Mock private CallHistory callHistory;
-
     @Mock private List<AppRequest> failedRequests;
-
     @Mock private AppRequestFactory appRequestFactory;
-
     @Mock private Request request;
 
     private ZombiePriming zombiePriming;
@@ -51,8 +42,8 @@ public class AppRequestHandlerTest {
 
     private AppResponse appResponse;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
 
         appRequest = get("/").build();
@@ -66,31 +57,30 @@ public class AppRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
+    void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
         final Response got = appRequestHandler.handle(request);
 
         assertThat(got).isEqualTo(appResponse);
     }
 
     @Test
-    public void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
+    void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
         appRequestHandler.handle(request);
 
         verify(callHistory).add(zombiePriming);
     }
 
     @Test
-    public void handleThrowsPrimingNotFoundExceptionIfPrimingIsNotFound() throws Exception {
+    void handleThrowsPrimingNotFoundExceptionIfPrimingIsNotFound() throws Exception {
         when(primingContext.getResponse(appRequest)).thenReturn(empty());
 
-        expectedException.expect(PrimingNotFoundException.class);
-        expectedException.expect(Matchers.hasProperty("request", equalTo(appRequest)));
-
-        appRequestHandler.handle(request);
+        assertThatThrownBy(() -> appRequestHandler.handle(request))
+                .isExactlyInstanceOf(PrimingNotFoundException.class)
+                .hasFieldOrPropertyWithValue("request", appRequest);
     }
 
     @Test
-    public void handleAddsRequestToFailedRequestsIfPrimingIsNotFound() throws Exception {
+    void handleAddsRequestToFailedRequestsIfPrimingIsNotFound() throws Exception {
         when(primingContext.getResponse(appRequest)).thenReturn(empty());
 
         try{

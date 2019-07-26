@@ -18,7 +18,8 @@ dependencies {
     compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.1'
     testCompile project(':jzonbie-test-util')
     testCompile project(':jzonbie-client')
-    testCompile group: 'ro.pippo', name: 'pippo-test', version: '1.12.0'
+    testCompile group: 'io.rest-assured', name: 'rest-assured', version: '4.0.0'
+
 }
 
 compileJava {

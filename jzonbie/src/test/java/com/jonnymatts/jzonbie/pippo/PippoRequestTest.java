@@ -1,13 +1,11 @@
 package com.jonnymatts.jzonbie.pippo;
 
-import com.flextrade.jfixture.annotations.Fixture;
-import com.flextrade.jfixture.rules.FixtureRule;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.flextrade.jfixture.JFixture;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ro.pippo.core.FileItem;
 import ro.pippo.core.ParameterValue;
 
@@ -26,24 +24,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PippoRequestTest {
+@ExtendWith(MockitoExtension.class)
+class PippoRequestTest {
 
-    @Rule
-    public FixtureRule fixtureRule = FixtureRule.initFixtures();
+    private static final JFixture FIXTURE = new JFixture();
 
     @Mock(answer = RETURNS_DEEP_STUBS) private ro.pippo.core.Request request;
     @Mock private FileItem fileItem;
 
-    @Fixture private String path;
-    @Fixture private String method;
-    @Fixture private List<String> headerNames;
-    @Fixture private String body;
+    private static final String path = FIXTURE.create(String.class);
+    private static final String method = FIXTURE.create(String.class);
+    private static final List<String> headerNames = singletonList(FIXTURE.create(String.class));
+    private static final String body = FIXTURE.create(String.class);
 
     private PippoRequest pippoRequest;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         when(request.getPath()).thenReturn(path);
         when(request.getMethod()).thenReturn(method);
         when(request.getHttpServletRequest().getHeaderNames()).thenReturn(asEnumeration(headerNames.iterator()));
@@ -60,21 +57,21 @@ public class PippoRequestTest {
     }
 
     @Test
-    public void getPathReturnsTheCorrectPath() throws Exception {
+    void getPathReturnsTheCorrectPath() throws Exception {
         final String got = pippoRequest.getPath();
 
         assertThat(got).isEqualTo(path);
     }
 
     @Test
-    public void getMethodReturnsTheCorrectMethod() throws Exception {
+    void getMethodReturnsTheCorrectMethod() throws Exception {
         final String got = pippoRequest.getMethod();
 
         assertThat(got).isEqualTo(method);
     }
 
     @Test
-    public void getHeadersReturnsTheCorrectHeaders() throws Exception {
+    void getHeadersReturnsTheCorrectHeaders() throws Exception {
         final Map<String, String> expectedHeaders = headerNames.stream().collect(toMap(identity(), String::toUpperCase));
 
         final Map<String, String> got = pippoRequest.getHeaders();
@@ -83,14 +80,14 @@ public class PippoRequestTest {
     }
 
     @Test
-    public void getBodyReturnsTheCorrectBody() throws Exception {
+    void getBodyReturnsTheCorrectBody() throws Exception {
         final String got = pippoRequest.getBody();
 
         assertThat(got).isEqualTo(body);
     }
 
     @Test
-    public void getQueryParamsReturnsTheCorrectQueryParams() throws Exception {
+    void getQueryParamsReturnsTheCorrectQueryParams() throws Exception {
         final Map<String, List<String>> expectedMap = new HashMap<String, List<String>>(){{
             put("qVar1", asList("qVal1", "qVal2"));
             put("qVar2", singletonList("qVal1"));
@@ -103,7 +100,7 @@ public class PippoRequestTest {
     }
 
     @Test
-    public void getPrimingFileContentReturnsContentOfPrimingFile() throws Exception {
+    void getPrimingFileContentReturnsContentOfPrimingFile() throws Exception {
         when(request.getContentType()).thenReturn("multipart/form-data");
 
         final String got = new PippoRequest(request).getPrimingFileContent();
@@ -112,7 +109,7 @@ public class PippoRequestTest {
     }
 
     @Test
-    public void getPrimingFileContentReturnsNullIfPrimingFileIsNotPresent() throws Exception {
+    void getPrimingFileContentReturnsNullIfPrimingFileIsNotPresent() throws Exception {
         when(request.getContentType()).thenReturn("multipart/form-data");
 
         final String got = new PippoRequest(request).getPrimingFileContent();

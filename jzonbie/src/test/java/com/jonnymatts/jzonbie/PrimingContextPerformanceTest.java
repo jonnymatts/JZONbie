@@ -7,9 +7,9 @@ import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,16 +20,16 @@ import java.util.stream.IntStream;
 import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 
-@Ignore("Run this only if you are changing the priming context")
-public class PrimingContextPerformanceTest {
+@Disabled("Run this only if you are changing the priming context")
+class PrimingContextPerformanceTest {
 
     private JFixture fixture;
     private PrimingContext primingContext;
     private List<ZombiePriming> primings;
     private Set<Integer> indices;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         fixture = new JFixture();
         primingContext = new PrimingContext();
         System.out.println("Fixturing data...");
@@ -65,7 +65,7 @@ public class PrimingContextPerformanceTest {
     // naive,loop                100,    10
     // map, linear insert        100,     6
     // map, get on insert        0.1, 0.005
-    public void getResponseFromPrimedContext() {
+    void getResponseFromPrimedContext() {
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         primings.forEach(primingContext::add);

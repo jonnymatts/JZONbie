@@ -1,17 +1,15 @@
 package com.jonnymatts.jzonbie.priming;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.flextrade.jfixture.annotations.Fixture;
-import com.flextrade.jfixture.rules.FixtureRule;
+import com.flextrade.jfixture.JFixture;
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.requests.AppRequest;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,17 +28,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AppRequestFactoryTest {
+@ExtendWith(MockitoExtension.class)
+class AppRequestFactoryTest {
 
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
+    private static final JFixture FIXTURE = new JFixture();
 
     @Mock private Deserializer deserializer;
     @Mock private Request request;
 
-    @Fixture private String path;
-    @Fixture private String requestMethod;
-    @Fixture private String requestBody;
+    private String path = FIXTURE.create(String.class);
+    private String requestMethod = FIXTURE.create(String.class);
+    private String requestBody = FIXTURE.create(String.class);
 
     private final Map<String, Object> bodyMap = singletonMap("var", "val");
     private final Map<String, String> headers = singletonMap("hVar", "hVal");
@@ -51,8 +49,8 @@ public class AppRequestFactoryTest {
 
     private AppRequestFactory appRequestFactory;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         expectedMap = new HashMap<String, Object>() {{
             put("path", path);
             put("method", requestMethod);
@@ -66,7 +64,7 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createForRequest() throws Exception {
+    void createForRequest() throws Exception {
         appRequest.setBody(objectBody(bodyMap));
 
         when(request.getPath()).thenReturn(path);
@@ -84,7 +82,7 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createReturnsNullBodyIfBodyIsNull() throws Exception {
+    void createReturnsNullBodyIfBodyIsNull() throws Exception {
         when(request.getPath()).thenReturn(path);
         when(request.getMethod()).thenReturn(requestMethod);
         when(request.getHeaders()).thenReturn(headers);
@@ -99,7 +97,7 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createReturnsNullBodyIfBodyIsEmptyString() throws Exception {
+    void createReturnsNullBodyIfBodyIsEmptyString() throws Exception {
         when(request.getPath()).thenReturn(path);
         when(request.getMethod()).thenReturn(requestMethod);
         when(request.getHeaders()).thenReturn(headers);
@@ -114,7 +112,7 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createReturnsLiteralBodyContentBodyIfBodyIsALiteral() throws Exception {
+    void createReturnsLiteralBodyContentBodyIfBodyIsALiteral() throws Exception {
         final String bodyString = "<jzonbie>message</jzonbie>";
         appRequest.setBody(literalBody(bodyString));
 
@@ -132,7 +130,7 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createReturnsListBodyContentBodyIfBodyIsAList() throws Exception {
+    void createReturnsListBodyContentBodyIfBodyIsAList() throws Exception {
         final String bodyString = "[\"val1\", \"val2\"]";
         final List<String> bodyList = asList("val1", "val2");
         appRequest.setBody(arrayBody(bodyList));
@@ -153,7 +151,7 @@ public class AppRequestFactoryTest {
     }
 
     @Test
-    public void createReturnsJsonStringBodyContentBodyIfBodyIsAString() throws Exception {
+    void createReturnsJsonStringBodyContentBodyIfBodyIsAString() throws Exception {
         final String bodyString = "\"jsonString\"";
         appRequest.setBody(stringBody("jsonString"));
 

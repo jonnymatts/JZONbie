@@ -1,8 +1,7 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.flextrade.jfixture.annotations.Fixture;
-import com.flextrade.jfixture.rules.FixtureRule;
+import com.flextrade.jfixture.JFixture;
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
@@ -16,13 +15,11 @@ import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileRe
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.verification.CountResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +34,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
 import static org.eclipse.jetty.http.HttpStatus.OK_200;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ZombieRequestHandlerTest {
+@ExtendWith(MockitoExtension.class)
+class ZombieRequestHandlerTest {
 
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
-    @Rule public ExpectedException expectedException = ExpectedException.none();
+    private static final JFixture FIXTURE = new JFixture();
 
     @Mock private PrimingContext primingContext;
     @Mock private Deserializer deserializer;
@@ -56,7 +51,7 @@ public class ZombieRequestHandlerTest {
     @Mock private FileResponse fileResponse;
     @Mock private PrimedMappingUploader primedMappingUploader;
 
-    @Fixture private String primingFileContent;
+    private static final String primingFileContent = FIXTURE.create(String.class);
 
     private List<AppRequest> appRequests;
     private List<AppResponse> appResponses;
@@ -70,8 +65,8 @@ public class ZombieRequestHandlerTest {
     private List<PrimedMapping> primedRequests;
     private ZombieRequestHandler zombieRequestHandler;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         appRequests = asList(
                 get("/1").build(),
                 get("/2").build(),
@@ -115,12 +110,12 @@ public class ZombieRequestHandlerTest {
         }};
         primedRequests = appRequests.stream().map(request -> new PrimedMapping(request, defaultingQueue)).collect(toList());
 
-        when(zombiePriming.getRequest()).thenReturn(zombieRequest);
-        when(zombiePriming.getResponse()).thenReturn(zombieResponse);
+        lenient().when(zombiePriming.getRequest()).thenReturn(zombieRequest);
+        lenient().when(zombiePriming.getResponse()).thenReturn(zombieResponse);
     }
 
     @Test
-    public void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
+    void handleAddsRequestToPrimingContextIfZombieHeaderHasPrimingValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
         when(zombieRequest.getPath()).thenReturn("path");
@@ -134,7 +129,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleAddsDefaultRequestToPrimingContextIfZombieHeaderHasDefaultPrimingValue() throws JsonProcessingException {
+    void handleAddsDefaultRequestToPrimingContextIfZombieHeaderHasDefaultPrimingValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-default"));
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
         when(zombieRequest.getPath()).thenReturn("path");
@@ -148,7 +143,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleAddsPrimingFromFileToPrimingContextIfZombieHeaderHasPrimingFileValue() throws JsonProcessingException {
+    void handleAddsPrimingFromFileToPrimingContextIfZombieHeaderHasPrimingFileValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming-file"));
         when(request.getPrimingFileContent()).thenReturn(primingFileContent);
         when(deserializer.deserializeCollection(primingFileContent, PrimedMapping.class)).thenReturn(primedRequests);
@@ -160,27 +155,29 @@ public class ZombieRequestHandlerTest {
         verify(primedMappingUploader).upload(primedRequests);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void handleThrowsExceptionIfMethodNotPresentInPrimedRequest() throws JsonProcessingException {
+    @Test
+    void handleThrowsExceptionIfMethodNotPresentInPrimedRequest() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(zombieRequest.getMethod()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        zombieRequestHandler.handle(request);
+        assertThatThrownBy(() -> zombieRequestHandler.handle(request))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void handleThrowsExceptionIfPathNotPresentInPrimedRequest() throws JsonProcessingException {
+    @Test
+    void handleThrowsExceptionIfPathNotPresentInPrimedRequest() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "priming"));
         when(zombieRequest.getMethod()).thenReturn("GET");
         when(zombieRequest.getPath()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        zombieRequestHandler.handle(request);
+        assertThatThrownBy(() -> zombieRequestHandler.handle(request))
+                .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    public void handleReturnsPrimingContextMappingsIfZombieHeaderHasCurrentValue() throws JsonProcessingException {
+    void handleReturnsPrimingContextMappingsIfZombieHeaderHasCurrentValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "current"));
         when(primingContext.getCurrentPriming()).thenReturn(primedRequests);
 
@@ -190,7 +187,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsFileResponseIfZombieHeaderHasCurrentFileValue() throws JsonProcessingException {
+    void handleReturnsFileResponseIfZombieHeaderHasCurrentFileValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "current-file"));
         when(primingContext.getCurrentPriming()).thenReturn(primedRequests);
         when(currentPrimingFileResponseFactory.create(primedRequests)).thenReturn(fileResponse);
@@ -201,7 +198,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleClearsPrimingContextCallHistoryAndFailedRequestsIfZombieHeaderHasResetValue() throws JsonProcessingException {
+    void handleClearsPrimingContextCallHistoryAndFailedRequestsIfZombieHeaderHasResetValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "reset"));
 
         assertThat(callHistory.getEntries()).isNotEmpty();
@@ -217,7 +214,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsCallHistoryIfZombieHeaderHasHistoryValue() throws JsonProcessingException {
+    void handleReturnsCallHistoryIfZombieHeaderHasHistoryValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "history"));
 
         final Response got = zombieRequestHandler.handle(request);
@@ -226,7 +223,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsFailedRequestsIfZombieHeaderHasFailedValue() throws JsonProcessingException {
+    void handleReturnsFailedRequestsIfZombieHeaderHasFailedValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "failed"));
 
         final Response got = zombieRequestHandler.handle(request);
@@ -235,7 +232,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleReturnsRequestCountForMatchingRequestResultIfZombieHeaderHasCountValue() throws Exception {
+    void handleReturnsRequestCountForMatchingRequestResultIfZombieHeaderHasCountValue() throws Exception {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "count"));
         when(deserializer.deserialize(request, AppRequest.class)).thenReturn(zombiePriming1.getRequest());
 
@@ -245,7 +242,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void handleThrowsRuntimeExceptionIfZombieHeaderHasUnknownValue() throws JsonProcessingException {
+    void handleThrowsRuntimeExceptionIfZombieHeaderHasUnknownValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "unknownValue"));
 
         assertThatThrownBy(() -> zombieRequestHandler.handle(request))
@@ -254,7 +251,7 @@ public class ZombieRequestHandlerTest {
     }
 
     @Test
-    public void zombieHeaderNameCanBeSet() throws JsonProcessingException {
+    void zombieHeaderNameCanBeSet() throws JsonProcessingException {
         zombieRequestHandler = new ZombieRequestHandler("name", primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader, new HttpsSupport());
 
         when(request.getHeaders()).thenReturn(singletonMap("name", "history"));

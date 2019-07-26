@@ -1,15 +1,13 @@
 package com.jonnymatts.jzonbie.responses;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.flextrade.jfixture.annotations.Fixture;
-import com.flextrade.jfixture.rules.FixtureRule;
+import com.flextrade.jfixture.JFixture;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileResponse;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,21 +18,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CurrentPrimingFileResponseFactoryTest {
+@ExtendWith(MockitoExtension.class)
+class CurrentPrimingFileResponseFactoryTest {
 
-    @Rule public FixtureRule fixtureRule = FixtureRule.initFixtures();
+    private static final JFixture FIXTURE = new JFixture();
 
-    @Fixture private String seriliazedBody;
+    private String serializedBody = FIXTURE.create(String.class);
 
     @Mock private List<PrimedMapping> primedMappings;
     @Mock private ObjectMapper objectMapper;
 
     @Test
-    public void createReturnsAFileResponse() throws Exception {
+    void createReturnsAFileResponse() throws Exception {
         final CurrentPrimingFileResponseFactory factory = new CurrentPrimingFileResponseFactory(objectMapper);
 
-        when(objectMapper.writeValueAsString(primedMappings)).thenReturn(seriliazedBody);
+        when(objectMapper.writeValueAsString(primedMappings)).thenReturn(serializedBody);
 
         final FileResponse got = factory.create(primedMappings);
 
@@ -42,11 +40,11 @@ public class CurrentPrimingFileResponseFactoryTest {
         final String expectedFileName = "jzonbie-current-priming-" + localDateTime.toLocalDate();
 
         assertThat(got.getFileName()).startsWith(expectedFileName);
-        assertThat(got.getContents()).isEqualTo(seriliazedBody);
+        assertThat(got.getContents()).isEqualTo(serializedBody);
     }
 
     @Test
-    public void createThrowsExceptionIfObjectMapperThrowsException() throws Exception {
+    void createThrowsExceptionIfObjectMapperThrowsException() throws Exception {
         final CurrentPrimingFileResponseFactory factory = new CurrentPrimingFileResponseFactory(objectMapper);
 
         when(objectMapper.writeValueAsString(primedMappings)).thenThrow(new RuntimeException("blah"));

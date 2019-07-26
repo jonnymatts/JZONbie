@@ -4,11 +4,11 @@ import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
@@ -20,8 +20,8 @@ import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PrimedMappingUploaderTest {
+@ExtendWith(MockitoExtension.class)
+class PrimedMappingUploaderTest {
 
     private static final AppRequest APP_REQUEST_1 = get("/").build();
     private static final AppRequest APP_REQUEST_2 = post("/").build();
@@ -33,13 +33,13 @@ public class PrimedMappingUploaderTest {
 
     private PrimedMappingUploader uploader;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
          uploader = new PrimedMappingUploader(primingContext);
     }
 
     @Test
-    public void uploadAddsPrimedMappingsToPrimingContext() throws Exception {
+    void uploadAddsPrimedMappingsToPrimingContext() throws Exception {
         final List<PrimedMapping> primedMappings = asList(
                 new PrimedMapping(APP_REQUEST_1, new DefaultingQueue() {{
                     add(APP_RESPONSE_1);

@@ -5,7 +5,6 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.7'
     testCompile project(':jzonbie-test-util')
     testCompile project(':jzonbie')
-    testCompile project(':jzonbie-junit4') // TODO: remove when JzonbieExtension is done
 }
 
 jar {

@@ -2,8 +2,6 @@ package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.priming.*;
@@ -16,15 +14,15 @@ import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory;
 import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
 import com.jonnymatts.jzonbie.templating.ResponseTransformer;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ro.pippo.core.Pippo;
 import ro.pippo.core.util.IoUtils;
-import ro.pippo.test.PippoRule;
-import ro.pippo.test.PippoTest;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -37,6 +35,7 @@ import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.responses.AppResponse.*;
 import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
+import static io.restassured.RestAssured.given;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -47,8 +46,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PippoApplicationTest extends PippoTest {
+class PippoApplicationTest {
 
     private static PrimingContext primingContext = new PrimingContext();
     private static final CallHistory callHistory = new CallHistory();
@@ -65,12 +63,16 @@ public class PippoApplicationTest extends PippoTest {
     private AppResponse appResponse;
     private ZombiePriming zombiePriming;
 
-    @ClassRule
-    public static PippoRule pippoRule = new PippoRule(new PippoApplication("zombie", singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok())), appRequestHandler, zombieRequestHandler, pippoResponder));
+    @BeforeAll
+    static void beforeAll() {
+        final PippoApplication application = new PippoApplication("zombie", singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok())), appRequestHandler, zombieRequestHandler, pippoResponder);
+        final Pippo pippo = new Pippo(application);
+        pippo.start();
+        RestAssured.port = pippo.getServer().getPort();
+    }
 
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         primingContext.reset();
         callHistory.clear();
 
@@ -83,7 +85,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testPriming() throws Exception {
+    void testPriming() throws Exception {
         final Response pippoResponse = given()
                 .header("zombie", "priming")
                 .contentType(ContentType.JSON)
@@ -98,7 +100,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testPrimingDefault() throws Exception {
+    void testPrimingDefault() throws Exception {
         final Response pippoResponse = given()
                 .header("zombie", "priming-default")
                 .contentType(ContentType.JSON)
@@ -117,7 +119,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testPrimingFile() throws Exception {
+    void testPrimingFile() throws Exception {
         final Response pippoResponse = given()
                 .header("zombie", "priming-file")
                 .contentType("multipart/form-data")
@@ -151,7 +153,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testPrimingWithDelay() throws Exception {
+    void testPrimingWithDelay() throws Exception {
         zombiePriming.getResponse().setDelay(Duration.ofSeconds(10));
 
         final Response pippoResponse = given()
@@ -169,7 +171,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testCurrent() throws Exception {
+    void testCurrent() throws Exception {
         primingContext.add(zombiePriming);
 
         final Response pippoResponse = given()
@@ -184,7 +186,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testCurrentAsFile() throws Exception {
+    void testCurrentAsFile() throws Exception {
         primingContext.add(zombiePriming);
 
         final Response pippoResponse = given()
@@ -196,7 +198,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testHistory() throws Exception {
+    void testHistory() throws Exception {
         callHistory.add(zombiePriming);
 
         final Response pippoResponse = given()
@@ -210,7 +212,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testFailedRequests() throws Exception {
+    void testFailedRequests() throws Exception {
         failedRequests.add(appRequest);
 
         final Response pippoResponse = given()
@@ -224,7 +226,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testReset() throws Exception {
+    void testReset() throws Exception {
         primingContext.add(zombiePriming);
         callHistory.add(zombiePriming);
         failedRequests.add(appRequest);
@@ -243,7 +245,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequest() throws Exception {
+    void testAppRequest() throws Exception {
         final AppRequest request = AppRequest.get("/path").build();
         final AppResponse response = forbidden().build();
 
@@ -257,7 +259,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithResponseDelay() throws Exception {
+    void testAppRequestWithResponseDelay() throws Exception {
         final AppRequest request = AppRequest.get("/path").build();
         final AppResponse response = forbidden().withDelay(Duration.of(5, SECONDS)).build();
 
@@ -276,7 +278,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithMapBodyPriming() throws Exception {
+    void testAppRequestWithMapBodyPriming() throws Exception {
         final Map<String, String> requestBody = singletonMap("key", "val");
         final String errorMessage = "Something bad happened!";
         final AppRequest request = AppRequest.get("/path").withBody(objectBody(requestBody)).build();
@@ -296,7 +298,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithLiteralBodyPriming() throws Exception {
+    void testAppRequestWithLiteralBodyPriming() throws Exception {
         final String requestBody = "<jzonbie>message</jzonbie>";
         final String responseBody = "<error>Something bad happened!</error>";
         final AppRequest request = AppRequest.get("/path").withBody(literalBody(requestBody)).build();
@@ -312,7 +314,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithJsonStringBodyPriming() throws Exception {
+    void testAppRequestWithJsonStringBodyPriming() throws Exception {
         final AppRequest request = AppRequest.get("/path").withBody(stringBody("request")).build();
         final AppResponse response = forbidden().withBody(stringBody("response")).build();
 
@@ -326,7 +328,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithListBodyPriming() throws Exception {
+    void testAppRequestWithListBodyPriming() throws Exception {
         final List<String> responseBody = singletonList("response1");
         final AppRequest request = AppRequest.get("/path").withBody(arrayBody(singletonList("request1"))).build();
         final AppResponse response = forbidden().contentType("application/json").withBody(arrayBody(responseBody)).build();
@@ -341,7 +343,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithNumberBodyPriming() throws Exception {
+    void testAppRequestWithNumberBodyPriming() throws Exception {
         final AppRequest request = AppRequest.get("/path").withBody(literalBody(1)).build();
         final AppResponse response = forbidden().contentType("text/plain").withBody(literalBody(2)).build();
 
@@ -355,7 +357,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testCount() throws Exception {
+    void testCount() throws Exception {
         final AppRequest appRequest = AppRequest.get("/")
                 .withBody(objectBody(singletonMap("key", "val")))
                 .build();
@@ -375,7 +377,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void additionalRoutesCanBeAdded() throws Exception {
+    void additionalRoutesCanBeAdded() throws Exception {
         final Response pippoResponse = given()
                 .get("/ready");
 
@@ -384,7 +386,7 @@ public class PippoApplicationTest extends PippoTest {
     }
 
     @Test
-    public void testAppRequestWithTemplatedPriming() throws Exception {
+    void testAppRequestWithTemplatedPriming() throws Exception {
         final AppRequest request = AppRequest.get("/path").build();
         final AppResponse response =
                 ok().withHeader("method", "{{ request.method }}")
