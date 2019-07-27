@@ -102,8 +102,8 @@ class JzonbieConcurrencyTest {
 
     private void primeZombieWithDelay(int i) {
         JzonbieExtension.getJzonbie().prime(
-                get("/" + i).build(),
-                ok().withDelay(Duration.of(i, SECONDS)).build()
+                get("/" + i),
+                ok().withDelay(Duration.of(i, SECONDS))
         );
     }
 }

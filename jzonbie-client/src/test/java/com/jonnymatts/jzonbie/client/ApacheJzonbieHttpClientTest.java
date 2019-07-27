@@ -41,8 +41,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ExtendWith(JzonbieExtension.class)
 class ApacheJzonbieHttpClientTest {
 
-    private static final AppRequest REQUEST = get("/").build();
-    private static final AppResponse RESPONSE = ok().build();
+    private static final AppRequest REQUEST = get("/");
+    private static final AppResponse RESPONSE = ok();
     private static final StaticDefaultAppResponse DEFAULT_RESPONSE = staticDefault(RESPONSE);
     private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
 

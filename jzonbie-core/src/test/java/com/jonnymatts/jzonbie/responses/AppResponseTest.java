@@ -1,11 +1,13 @@
 package com.jonnymatts.jzonbie.responses;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AppResponseTest {
@@ -33,17 +35,26 @@ class AppResponseTest {
     void staticBuildersCreatesResponse(StaticBuilderData data) {
         System.out.println("Testing static builder: " + data.status);
 
-        final AppResponse request = data.builder.get().build();
+        final AppResponse request = data.builder.get();
 
         assertThat(request.getStatusCode()).isEqualTo(data.statusCode);
+    }
+
+    @Test
+    void cloneResponseClonesTemplatedField() {
+        final AppResponse templatedResponse = ok().templated();
+
+        final AppResponse got = new AppResponse(templatedResponse);
+
+        assertThat(got).isEqualTo(templatedResponse);
     }
 
     private static class StaticBuilderData {
         private final String status;
         private final int statusCode;
-        private final Supplier<com.jonnymatts.jzonbie.responses.AppResponseBuilder> builder;
+        private final Supplier<com.jonnymatts.jzonbie.responses.AppResponse> builder;
 
-        private StaticBuilderData(String status, int statusCode, Supplier<AppResponseBuilder> builder) {
+        private StaticBuilderData(String status, int statusCode, Supplier<AppResponse> builder) {
             this.status = status;
             this.statusCode = statusCode;
             this.builder = builder;

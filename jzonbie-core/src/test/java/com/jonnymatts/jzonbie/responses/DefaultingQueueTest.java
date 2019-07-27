@@ -14,9 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultingQueueTest {
 
-    private final AppResponse response1 = ok().build();
-    private final AppResponse response2 = notFound().build();
-    private final AppResponse response3 = internalServerError().build();
+    private final AppResponse response1 = ok();
+    private final AppResponse response2 = notFound();
+    private final AppResponse response3 = internalServerError();
 
     @Test
     void pollReturnsNullIfThereIsNoDefaultElementSetAndQueueIsEmpty() throws Exception {

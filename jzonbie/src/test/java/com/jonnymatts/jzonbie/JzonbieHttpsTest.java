@@ -65,8 +65,8 @@ class JzonbieHttpsTest {
     @Test
     void jzonbieServesPrimedResponsesOverHttp() throws Exception {
         defaultHttpsJzonbie.prime(
-                get("/").build(),
-                staticDefault(ok().build())
+                get("/"),
+                staticDefault(ok())
         );
 
         final HttpResponse response = httpClient.execute(httpRequest);
@@ -77,8 +77,8 @@ class JzonbieHttpsTest {
     @Test
     void jzonbieServesPrimedResponsesOverDefaultHttps() throws Exception {
         defaultHttpsJzonbie.prime(
-                get("/").build(),
-                staticDefault(ok().build())
+                get("/"),
+                staticDefault(ok())
         );
 
         final HttpResponse response = httpsClient.execute(defaultHttpsRequest);
@@ -89,8 +89,8 @@ class JzonbieHttpsTest {
     @Test
     void jzonbieServesPrimedResponsesOverConfiguredHttps() throws Exception {
         configuredHttpsJzonbie.prime(
-                get("/").build(),
-                staticDefault(ok().build())
+                get("/"),
+                staticDefault(ok())
         );
 
         final HttpResponse response = httpsClient.execute(configuredHttpsRequest);

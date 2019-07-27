@@ -11,7 +11,7 @@ public class CustomJzonbie extends Jzonbie {
     CustomJzonbie() {
         super(
                 options()
-                        .withPriming(priming(get("/").build(), ok().build()))
+                        .withPriming(priming(get("/"), ok()))
         );
     }
 

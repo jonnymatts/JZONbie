@@ -20,7 +20,6 @@ import static com.jonnymatts.jzonbie.body.LiteralBodyContent.literalBody;
 import static com.jonnymatts.jzonbie.body.ObjectBodyContent.objectBody;
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
-import static com.jonnymatts.jzonbie.util.Cloner.cloneRequest;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +42,7 @@ class AppRequestFactoryTest {
     private final Map<String, Object> bodyMap = singletonMap("var", "val");
     private final Map<String, String> headers = singletonMap("hVar", "hVal");
     private final Map<String, List<String>> queryParams = singletonMap("qVar", asList("qVal1", "qVal2"));
-    private final AppRequest appRequest = get("/").build();
+    private final AppRequest appRequest = get("/");
 
     private HashMap<String, Object> expectedMap;
 
@@ -74,7 +73,7 @@ class AppRequestFactoryTest {
         when(request.getBody()).thenReturn(requestBody);
 
         when(deserializer.deserialize(requestBody)).thenReturn(bodyMap);
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(new AppRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -89,7 +88,7 @@ class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn(null);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(new AppRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -104,7 +103,7 @@ class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn("");
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(new AppRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -122,7 +121,7 @@ class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn(bodyString);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(new AppRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -143,7 +142,7 @@ class AppRequestFactoryTest {
 
         when(deserializer.deserialize(eq(bodyString), any(TypeReference.class))).thenReturn(bodyList);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(new AppRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 
@@ -161,7 +160,7 @@ class AppRequestFactoryTest {
         when(request.getQueryParams()).thenReturn(queryParams);
         when(request.getBody()).thenReturn(bodyString);
 
-        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(cloneRequest(appRequest));
+        when(deserializer.deserialize(expectedMap, AppRequest.class)).thenReturn(new AppRequest(appRequest));
 
         final AppRequest got = appRequestFactory.create(request);
 

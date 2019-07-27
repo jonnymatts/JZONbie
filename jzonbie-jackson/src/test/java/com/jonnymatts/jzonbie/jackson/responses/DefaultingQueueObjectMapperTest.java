@@ -16,10 +16,10 @@ class DefaultingQueueObjectMapperTest {
 
     @Test
     void defaultingQueueCanBeSerializedAndDeserialized() throws Exception {
-        final AppResponse response1 = ok().build();
-        final AppResponse response2 = created().build();
-        final AppResponse response3 = accepted().build();
-        final StaticDefaultAppResponse defaultResponse = staticDefault(notFound().build());
+        final AppResponse response1 = ok();
+        final AppResponse response2 = created();
+        final AppResponse response3 = accepted();
+        final StaticDefaultAppResponse defaultResponse = staticDefault(notFound());
         final DefaultingQueue queue = new DefaultingQueue();
         queue.setDefault(defaultResponse);
         queue.add(response1);

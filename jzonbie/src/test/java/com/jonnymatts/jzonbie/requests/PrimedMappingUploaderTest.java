@@ -23,11 +23,11 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class PrimedMappingUploaderTest {
 
-    private static final AppRequest APP_REQUEST_1 = get("/").build();
-    private static final AppRequest APP_REQUEST_2 = post("/").build();
+    private static final AppRequest APP_REQUEST_1 = get("/");
+    private static final AppRequest APP_REQUEST_2 = post("/");
 
-    private static final AppResponse APP_RESPONSE_1 = ok().build();
-    private static final AppResponse APP_RESPONSE_2 = notFound().build();
+    private static final AppResponse APP_RESPONSE_1 = ok();
+    private static final AppResponse APP_RESPONSE_2 = notFound();
 
     @Mock private PrimingContext primingContext;
 

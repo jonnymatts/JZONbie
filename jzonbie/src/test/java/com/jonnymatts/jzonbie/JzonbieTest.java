@@ -66,8 +66,8 @@ class JzonbieTest {
     @Test
     void jzonbieCanBePrimed(Jzonbie jzonbie) throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                get("/").build(),
-                ok().withBody(objectBody(singletonMap("key", "val"))).build()
+                get("/"),
+                ok().withBody(objectBody(singletonMap("key", "val")))
         );
 
         final List<PrimedMapping> got = jzonbie.getCurrentPriming();
@@ -83,8 +83,8 @@ class JzonbieTest {
     @Test
     void jzonbieCanBePrimedWithStringBodyContent(Jzonbie jzonbie) throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                post("/").withBody(stringBody("<jzonbie>message</jzonbie>")).build(),
-                ok().withBody(stringBody("<response>message</response>")).build()
+                post("/").withBody(stringBody("<jzonbie>message</jzonbie>")),
+                ok().withBody(stringBody("<response>message</response>"))
         );
 
         final List<PrimedMapping> got = jzonbie.getCurrentPriming();
@@ -100,8 +100,8 @@ class JzonbieTest {
     @Test
     void jzonbieCanBePrimedWithListBodyContent(Jzonbie jzonbie) throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                post("/").withBody(arrayBody(singletonList("request"))).build(),
-                ok().withBody(arrayBody(singletonList("response"))).build()
+                post("/").withBody(arrayBody(singletonList("request"))),
+                ok().withBody(arrayBody(singletonList("response")))
         );
 
         final List<PrimedMapping> got = jzonbie.getCurrentPriming();
@@ -117,8 +117,8 @@ class JzonbieTest {
     @Test
     void jzonbieCanBePrimedWithJsonStringListBodyContent(Jzonbie jzonbie) throws Exception {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                post("/").withBody(stringBody("request")).build(),
-                ok().withBody(stringBody("response")).build()
+                post("/").withBody(stringBody("request")),
+                ok().withBody(stringBody("response"))
         );
 
         final List<PrimedMapping> got = jzonbie.getCurrentPriming();
@@ -133,8 +133,8 @@ class JzonbieTest {
 
     @Test
     void jzonbieCanBePrimedForStaticDefault(Jzonbie jzonbie) throws Exception {
-        final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
-                staticDefault(ok().build())
+        final ZombiePriming zombiePriming = jzonbie.prime( get("/"),
+                staticDefault(ok())
         );
 
         final List<PrimedMapping> got = jzonbie.getCurrentPriming();
@@ -149,8 +149,8 @@ class JzonbieTest {
 
     @Test
     void jzonbieCanBePrimedForDynamicDefault(Jzonbie jzonbie) throws Exception {
-        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().withBody(objectBody(singletonMap("key", "val"))).build());
-        final ZombiePriming zombiePriming = jzonbie.prime( get("/").build(),
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().withBody(objectBody(singletonMap("key", "val"))));
+        final ZombiePriming zombiePriming = jzonbie.prime( get("/"),
                 defaultResponse
         );
 
@@ -186,8 +186,8 @@ class JzonbieTest {
         final String zombieHeaderName = "jzonbie";
         final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
 
-        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.prime( get("/").build(),
-                ok().withBody(objectBody(singletonMap("key", "val"))).build()
+        final ZombiePriming zombiePriming = jzonbieWithZombieHeaderNameSet.prime( get("/"),
+                ok().withBody(objectBody(singletonMap("key", "val")))
         );
 
         final JzonbieClient apacheJzonbieHttpClient = new ApacheJzonbieHttpClient(
@@ -235,7 +235,7 @@ class JzonbieTest {
     void getFailedRequestReturnsRequestForWhichThereIsNoPriming(Jzonbie jzonbie) throws Exception {
         client.execute(httpRequest);
 
-        final AppRequest expectedRequest = get("/").build();
+        final AppRequest expectedRequest = get("/");
 
         final List<AppRequest> got = jzonbie.getFailedRequests();
 
@@ -294,7 +294,7 @@ class JzonbieTest {
         final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
 
         try {
-            jzonbie.prime(get("/ready").build(), internalServerError().build());
+            jzonbie.prime(get("/ready"), internalServerError());
 
             final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/ready").build());
 
@@ -310,8 +310,8 @@ class JzonbieTest {
     void jzonbieCanBePrimedWithDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withPriming(
-                        priming(get("/").build(), ok().build()),
-                        defaultPriming(get("/default").build(), staticDefault(ok().build()))
+                        priming(get("/"), ok()),
+                        defaultPriming(get("/default"), staticDefault(ok()))
                 )
         );
 
@@ -332,8 +332,8 @@ class JzonbieTest {
     void jzonbieCanBePrimedWithDefaultResponseDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withPriming(
-                        priming(get("/").build(), ok().build()),
-                        defaultPriming(get("/default").build(), staticDefault(ok().build()))
+                        priming(get("/"), ok()),
+                        defaultPriming(get("/default"), staticDefault(ok()))
                 )
         );
 
@@ -354,8 +354,8 @@ class JzonbieTest {
     void jzonbieCanBePrimedWithTemplatedResponseDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withPriming(
-                        priming(get("/templated/path").build(), ok().templated().withBody(literalBody("{{ request.path }}")).build()),
-                        defaultPriming(get("/default").build(), staticDefault(ok().build()))
+                        priming(get("/templated/path"), ok().templated().withBody(literalBody("{{ request.path }}"))),
+                        defaultPriming(get("/default"), staticDefault(ok()))
                 )
         );
 
@@ -383,8 +383,8 @@ class JzonbieTest {
 
     ZombiePriming callJzonbieWithPrimedRequest(int times, Jzonbie jzonbie) throws IOException {
         final ZombiePriming zombiePriming = jzonbie.prime(
-                get("/").build(),
-                staticDefault(ok().withBody(objectBody(singletonMap("key", "val"))).build())
+                get("/"),
+                staticDefault(ok().withBody(objectBody(singletonMap("key", "val"))))
         );
 
         for(int i = 0; i < times; i++) {

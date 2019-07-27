@@ -7,7 +7,6 @@ import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +16,6 @@ import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.internalServerError;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
 import static com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse.staticDefault;
-import static com.jonnymatts.jzonbie.util.Cloner.cloneRequest;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,9 +33,8 @@ class PrimingContextTest {
                 get("/path")
                         .withHeader("header", "value")
                         .withQueryParam("param", "value")
-                        .withBody(objectBody(singletonMap("bodyKey", "bodyVal")))
-                        .build(),
-                ok().build()
+                        .withBody(objectBody(singletonMap("bodyKey", "bodyVal"))),
+                ok()
         );
     }
 
@@ -190,10 +187,7 @@ class PrimingContextTest {
     void getResponseRemovesPrimingFromContextIfSingleResponseExistsForPrimingOfAppRequestIgnoringExtraHeadersOnIncomingRequest() throws Exception {
         primingContext.add(zombiePriming);
 
-        final AppRequest copy = cloneRequest(zombiePriming.getRequest());
-        final HashMap<String, String> headersCopy = new HashMap<>(zombiePriming.getRequest().getHeaders());
-        headersCopy.put("extra", "header");
-        copy.setHeaders(headersCopy);
+        final AppRequest copy = zombiePriming.getRequest().withHeader("extra", "header");
 
         primingContext.getResponse(copy);
 
@@ -225,9 +219,9 @@ class PrimingContextTest {
         primingContext.add(zombiePriming);
 
         final AppRequest appRequest = zombiePriming.getRequest();
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         copy.setHeaders(singletonMap("key", "val"));
-        final AppResponse response = internalServerError().build();
+        final AppResponse response = internalServerError();
         primingContext.add(new ZombiePriming(copy, response));
 
         final Optional<AppResponse> got = primingContext.getResponse(copy);

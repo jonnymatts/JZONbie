@@ -13,7 +13,7 @@ public class JzonbieRuleTest {
 
     @Test
     public void jzonbieRuleWorksCorrectly() {
-        jzonbieRule.prime(get("/").build(), ok().build());
+        jzonbieRule.prime(get("/"), ok());
 
         assertThat(jzonbieRule.getCurrentPriming()).hasSize(1);
     }

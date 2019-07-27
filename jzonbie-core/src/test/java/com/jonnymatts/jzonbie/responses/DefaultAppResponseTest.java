@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultAppResponseTest {
 
-    private final AppResponse response1 = ok().build();
-    private final AppResponse response2 = notFound().build();
+    private final AppResponse response1 = ok();
+    private final AppResponse response2 = notFound();
 
     @Test
     void getResponseFromStaticDefaultResponseReturnsResponse() throws Exception {

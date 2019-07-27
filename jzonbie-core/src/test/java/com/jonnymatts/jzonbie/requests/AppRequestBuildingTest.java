@@ -7,23 +7,22 @@ import com.jonnymatts.jzonbie.body.ObjectBodyContent;
 import org.junit.jupiter.api.Test;
 
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
-import static com.jonnymatts.jzonbie.requests.AppRequest.builder;
+import static com.jonnymatts.jzonbie.requests.AppRequest.request;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-class AppRequestBuilderTest {
+class AppRequestBuildingTest {
 
     @Test
-    void builderCanConstructInstances() {
+    void requestsCanBeBuilt() {
         final BodyContent body = stringBody("test");
-        final AppRequest request = builder("GET", "/.*")
+        final AppRequest request = request("GET", "/.*")
                 .withBody(body)
                 .withBasicAuth("username", "password")
                 .withHeader("header-name", "header-value")
-                .withQueryParam("param-name", "param-value")
-                .build();
+                .withQueryParam("param-name", "param-value");
 
         assertThat(request.getMethod()).isEqualTo("GET");
         assertThat(request.getPath()).isEqualTo("/.*");
@@ -35,68 +34,62 @@ class AppRequestBuilderTest {
 
     @Test
     void acceptAddsAcceptHeader() {
-        final AppRequest response = builder("GET", "/.*")
-                .accept("header-value")
-                .build();
+        final AppRequest response = request("GET", "/.*")
+                .accept("header-value");
 
         assertThat(response.getHeaders()).contains(entry("Accept", "header-value"));
     }
 
     @Test
     void contentTypeAddsContentTypeHeader() {
-        final AppRequest response = builder("GET", "/.*")
-                .contentType("header-value")
-                .build();
+        final AppRequest response = request("GET", "/.*")
+                .contentType("header-value");
 
         assertThat(response.getHeaders()).contains(entry("Content-Type", "header-value"));
     }
 
     @Test
-    void builderCanBeReused() {
-        final AppRequestBuilder builder = builder("GET", "/");
+    void requestsAreImmutable() {
+        final AppRequest builder = request("GET", "/");
 
-        final AppRequest request1 = builder.withBody(stringBody("test1")).build();
-        final AppRequest request2 = builder.withBody(stringBody("test2")).build();
+        final AppRequest request1 = builder.withBody(stringBody("test1"));
+        final AppRequest request2 = builder.withBody(stringBody("test2"));
 
         assertThat(request1.getBody().getContent()).isEqualTo("test1");
         assertThat(request2.getBody().getContent()).isEqualTo("test2");
     }
 
     @Test
-    void builderWithMapBodyReturnsRequestWithObjectBody() {
-        final AppRequest request = builder("GET", "/")
-                .withBody(singletonMap("key", "val"))
-                .build();
+    void requestWithMapBodyReturnsRequestWithObjectBody() {
+        final AppRequest request = request("GET", "/")
+                .withBody(singletonMap("key", "val"));
 
         assertThat(request.getBody()).isInstanceOf(ObjectBodyContent.class);
         assertThat(request.getBody().getContent()).isEqualTo(singletonMap("key", "val"));
     }
 
     @Test
-    void builderWithStringBodyReturnsRequestWithLiteralBody() {
-        final AppRequest request = builder("GET", "/")
-                .withBody("literal")
-                .build();
+    void requestWithStringBodyReturnsRequestWithLiteralBody() {
+        final AppRequest request = request("GET", "/")
+                .withBody("literal");
 
         assertThat(request.getBody()).isInstanceOf(LiteralBodyContent.class);
         assertThat(request.getBody().getContent()).isEqualTo("literal");
     }
 
     @Test
-    void builderWithListBodyReturnsRequestWithArrayBody() {
-        final AppRequest request = builder("GET", "/")
-                .withBody(singletonList("val"))
-                .build();
+    void requestWithListBodyReturnsRequestWithArrayBody() {
+        final AppRequest request = request("GET", "/")
+                .withBody(singletonList("val"));
 
         assertThat(request.getBody()).isInstanceOf(ArrayBodyContent.class);
         assertThat(request.getBody().getContent()).isEqualTo(singletonList("val"));
     }
 
     @Test
-    void builderWithNumberBodyReturnsRequestWithLiteralBody() {
-        final AppRequest request = builder("GET", "/")
-                .withBody(1)
-                .build();
+    void requestWithNumberBodyReturnsRequestWithLiteralBody() {
+        final AppRequest request = request("GET", "/")
+                .withBody(1);
 
         assertThat(request.getBody()).isInstanceOf(LiteralBodyContent.class);
         assertThat(request.getBody().getContent()).isEqualTo("1");

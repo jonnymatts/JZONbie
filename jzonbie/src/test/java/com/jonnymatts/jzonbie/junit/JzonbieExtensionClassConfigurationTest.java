@@ -19,7 +19,7 @@ class JzonbieExtensionClassConfigurationTest {
     @RepeatedTest(10)
     void jzonbieIsInjectedThroughParameters(CustomJzonbie jzonbie) {
         currentJzonbie = jzonbie;
-        jzonbie.prime(get("/").build(), ok().build());
+        jzonbie.prime(get("/"), ok());
 
         assertThat(jzonbie.getCurrentPriming()).hasSize(1);
     }

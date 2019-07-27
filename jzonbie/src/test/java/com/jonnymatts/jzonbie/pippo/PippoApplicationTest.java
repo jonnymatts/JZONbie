@@ -76,8 +76,8 @@ class PippoApplicationTest {
         primingContext.reset();
         callHistory.clear();
 
-        appRequest = AppRequest.get("").build();
-        appResponse = ok().build();
+        appRequest = AppRequest.get("");
+        appResponse = ok();
 
         appResponse.setDelay(Duration.ZERO);
 
@@ -141,14 +141,12 @@ class PippoApplicationTest {
                 ok()
                         .contentType("application/json")
                         .withBody(objectBody(singletonMap("key", "val")))
-                        .build()
         ));
 
         assertThat(mapping.getResponses().getPrimed()).contains(
                 created()
                         .contentType("application/json")
                         .withBody(objectBody(singletonMap("key", "val")))
-                        .build()
         );
     }
 
@@ -246,8 +244,8 @@ class PippoApplicationTest {
 
     @Test
     void testAppRequest() throws Exception {
-        final AppRequest request = AppRequest.get("/path").build();
-        final AppResponse response = forbidden().build();
+        final AppRequest request = AppRequest.get("/path");
+        final AppResponse response = forbidden();
 
         primingContext.add(request, response);
 
@@ -260,8 +258,8 @@ class PippoApplicationTest {
 
     @Test
     void testAppRequestWithResponseDelay() throws Exception {
-        final AppRequest request = AppRequest.get("/path").build();
-        final AppResponse response = forbidden().withDelay(Duration.of(5, SECONDS)).build();
+        final AppRequest request = AppRequest.get("/path");
+        final AppResponse response = forbidden().withDelay(Duration.of(5, SECONDS));
 
         primingContext.add(request, response);
 
@@ -281,8 +279,8 @@ class PippoApplicationTest {
     void testAppRequestWithMapBodyPriming() throws Exception {
         final Map<String, String> requestBody = singletonMap("key", "val");
         final String errorMessage = "Something bad happened!";
-        final AppRequest request = AppRequest.get("/path").withBody(objectBody(requestBody)).build();
-        final AppResponse response = forbidden().contentType("application/json").withBody(objectBody(singletonMap("error", errorMessage))).build();
+        final AppRequest request = AppRequest.get("/path").withBody(objectBody(requestBody));
+        final AppResponse response = forbidden().contentType("application/json").withBody(objectBody(singletonMap("error", errorMessage)));
 
         primingContext.add(request, response);
 
@@ -301,8 +299,8 @@ class PippoApplicationTest {
     void testAppRequestWithLiteralBodyPriming() throws Exception {
         final String requestBody = "<jzonbie>message</jzonbie>";
         final String responseBody = "<error>Something bad happened!</error>";
-        final AppRequest request = AppRequest.get("/path").withBody(literalBody(requestBody)).build();
-        final AppResponse response = forbidden().contentType("application/xml").withBody(literalBody(responseBody)).build();
+        final AppRequest request = AppRequest.get("/path").withBody(literalBody(requestBody));
+        final AppResponse response = forbidden().contentType("application/xml").withBody(literalBody(responseBody));
 
         primingContext.add(request, response);
 
@@ -315,8 +313,8 @@ class PippoApplicationTest {
 
     @Test
     void testAppRequestWithJsonStringBodyPriming() throws Exception {
-        final AppRequest request = AppRequest.get("/path").withBody(stringBody("request")).build();
-        final AppResponse response = forbidden().withBody(stringBody("response")).build();
+        final AppRequest request = AppRequest.get("/path").withBody(stringBody("request"));
+        final AppResponse response = forbidden().withBody(stringBody("response"));
 
         primingContext.add(request, response);
 
@@ -330,8 +328,8 @@ class PippoApplicationTest {
     @Test
     void testAppRequestWithListBodyPriming() throws Exception {
         final List<String> responseBody = singletonList("response1");
-        final AppRequest request = AppRequest.get("/path").withBody(arrayBody(singletonList("request1"))).build();
-        final AppResponse response = forbidden().contentType("application/json").withBody(arrayBody(responseBody)).build();
+        final AppRequest request = AppRequest.get("/path").withBody(arrayBody(singletonList("request1")));
+        final AppResponse response = forbidden().contentType("application/json").withBody(arrayBody(responseBody));
 
         primingContext.add(request, response);
 
@@ -344,8 +342,8 @@ class PippoApplicationTest {
 
     @Test
     void testAppRequestWithNumberBodyPriming() throws Exception {
-        final AppRequest request = AppRequest.get("/path").withBody(literalBody(1)).build();
-        final AppResponse response = forbidden().contentType("text/plain").withBody(literalBody(2)).build();
+        final AppRequest request = AppRequest.get("/path").withBody(literalBody(1));
+        final AppResponse response = forbidden().contentType("text/plain").withBody(literalBody(2));
 
         primingContext.add(request, response);
 
@@ -359,9 +357,8 @@ class PippoApplicationTest {
     @Test
     void testCount() throws Exception {
         final AppRequest appRequest = AppRequest.get("/")
-                .withBody(objectBody(singletonMap("key", "val")))
-                .build();
-        final AppResponse appResponse = ok().build();
+                .withBody(objectBody(singletonMap("key", "val")));
+        final AppResponse appResponse = ok();
 
         callHistory.add(new ZombiePriming(appRequest, appResponse));
 
@@ -387,12 +384,11 @@ class PippoApplicationTest {
 
     @Test
     void testAppRequestWithTemplatedPriming() throws Exception {
-        final AppRequest request = AppRequest.get("/path").build();
+        final AppRequest request = AppRequest.get("/path");
         final AppResponse response =
                 ok().withHeader("method", "{{ request.method }}")
                         .withBody(literalBody("{\"path\": \"{{ request.path }}\"}"))
-                        .templated()
-                        .build();
+                        .templated();
 
         primingContext.add(request, response);
 

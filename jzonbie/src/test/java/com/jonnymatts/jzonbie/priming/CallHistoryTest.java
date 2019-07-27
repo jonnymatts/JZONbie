@@ -15,9 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CallHistoryTest {
 
-    private final ZombiePriming zombiePriming1 = new ZombiePriming(get("").build(), ok().build());
-    private final ZombiePriming zombiePriming2 = new ZombiePriming(get("").build(), ok().build());
-    private final ZombiePriming zombiePriming3 = new ZombiePriming(get("").build(), ok().build());
+    private final ZombiePriming zombiePriming1 = new ZombiePriming(get(""), ok());
+    private final ZombiePriming zombiePriming2 = new ZombiePriming(get(""), ok());
+    private final ZombiePriming zombiePriming3 = new ZombiePriming(get(""), ok());
 
     @Test
     void getEntriesReturnsAllCallsInHistory() throws Exception {

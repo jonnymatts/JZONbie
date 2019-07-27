@@ -43,10 +43,9 @@ class PrimingContextPerformanceTest {
                                 .withHeader("key4", fixtureString())
                                 .withQueryParam("param1", fixtureString())
                                 .withQueryParam("param2", fixtureString())
-                                .withQueryParam("param3", fixtureString())
-                                .build(),
+                                .withQueryParam("param3", fixtureString()),
 
-                        AppResponse.builder(fixture.create(Integer.class)).build()
+                        AppResponse.response(fixture.create(Integer.class))
                 )
         ).collect(Collectors.toList());
         System.out.println("... done.");

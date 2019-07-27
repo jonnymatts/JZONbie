@@ -8,8 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
-import static com.jonnymatts.jzonbie.responses.AppResponse.builder;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
+import static com.jonnymatts.jzonbie.responses.AppResponse.response;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(JzonbieExtension.class)
@@ -21,7 +21,7 @@ class JzonbieExtensionTest {
     @RepeatedTest(10)
     void defaultJzonbieIsInjected(Jzonbie jzonbie) {
         currentJzonbie = jzonbie;
-        jzonbie.prime(get("/").build(), ok().build());
+        jzonbie.prime(get("/"), ok());
 
         assertThat(jzonbie.getCurrentPriming()).hasSize(1);
     }
@@ -29,7 +29,7 @@ class JzonbieExtensionTest {
     @ParameterizedTest
     @ValueSource(ints = {200, 400, 500})
     void jzonbieIsInjectedInParameterizedTest(int i, Jzonbie jzonbie) {
-        jzonbie.prime(get("/").build(), builder(i).build());
+        jzonbie.prime(get("/"), response(i));
     }
 
     @AfterEach

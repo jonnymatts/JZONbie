@@ -46,8 +46,8 @@ class AppRequestHandlerTest {
     void setUp() throws Exception {
         appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, appRequestFactory);
 
-        appRequest = get("/").build();
-        appResponse = ok().build();
+        appRequest = get("/");
+        appResponse = ok();
 
         zombiePriming = new ZombiePriming(appRequest, appResponse);
 

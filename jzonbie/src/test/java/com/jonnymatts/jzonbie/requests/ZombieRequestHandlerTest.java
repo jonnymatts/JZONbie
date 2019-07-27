@@ -68,30 +68,30 @@ class ZombieRequestHandlerTest {
     @BeforeEach
     void setUp() {
         appRequests = asList(
-                get("/1").build(),
-                get("/2").build(),
-                get("/3").build()
+                get("/1"),
+                get("/2"),
+                get("/3")
         );
 
         appResponses = asList(
-                ok().build(),
-                ok().build(),
-                ok().build()
+                ok(),
+                ok(),
+                ok()
         );
 
         zombiePriming1 = new ZombiePriming(
-                get("/4").build(),
-                ok().build()
+                get("/4"),
+                ok()
         );
 
         zombiePriming2 = new ZombiePriming(
-                get("/5").build(),
-                ok().build()
+                get("/5"),
+                ok()
         );
 
         zombiePriming3 = new ZombiePriming(
-                get("/6").build(),
-                ok().build()
+                get("/6"),
+                ok()
         );
 
         callHistory = new CallHistory(new ArrayList<ZombiePriming>(){{

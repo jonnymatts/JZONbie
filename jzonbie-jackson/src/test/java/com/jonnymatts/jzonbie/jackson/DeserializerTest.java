@@ -47,8 +47,8 @@ class DeserializerTest {
 
         assertThat(got).isEqualTo(
                 new ZombiePriming(
-                        get("/").build(),
-                        ok().build()
+                        get("/"),
+                        ok()
                 )
         );
     }
@@ -59,8 +59,8 @@ class DeserializerTest {
 
         assertThat(got).isEqualTo(
                 new ZombiePriming(
-                        get("/").build(),
-                        ok().build()
+                        get("/"),
+                        ok()
                 )
         );
     }

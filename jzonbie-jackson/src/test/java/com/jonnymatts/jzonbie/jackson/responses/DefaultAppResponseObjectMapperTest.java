@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.jackson.responses;
 
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DynamicDefaultAppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.StaticDefaultAppResponse;
@@ -18,7 +19,7 @@ class DefaultAppResponseObjectMapperTest {
 
     @Test
     void staticDefaultCanBeSerializedAndDeserialized() throws Exception {
-        final StaticDefaultAppResponse defaultResponse = staticDefault(ok().build());
+        final StaticDefaultAppResponse defaultResponse = staticDefault(ok());
 
         final String string = JZONBIE_OBJECT_MAPPER.writeValueAsString(defaultResponse);
         final DefaultAppResponse got = JZONBIE_OBJECT_MAPPER.readValue(string, DefaultAppResponse.class);
@@ -28,7 +29,7 @@ class DefaultAppResponseObjectMapperTest {
 
     @Test
     void dynamicDefaultCannotBeSerialized() throws Exception {
-        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().build());
+        final DynamicDefaultAppResponse defaultResponse = dynamicDefault(AppResponse::ok);
 
         assertThatThrownBy(() -> JZONBIE_OBJECT_MAPPER.writeValueAsString(defaultResponse))
             .hasRootCauseInstanceOf(UnsupportedOperationException.class);

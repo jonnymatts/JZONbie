@@ -14,9 +14,7 @@ import java.util.stream.Stream;
 
 import static com.jonnymatts.jzonbie.body.StringBodyContent.stringBody;
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
-import static com.jonnymatts.jzonbie.util.Cloner.cloneRequest;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AppRequestTest {
@@ -33,8 +31,7 @@ class AppRequestTest {
         appRequest = get("/")
                 .contentType("application/json")
                 .withBody(stringBody("test"))
-                .withQueryParam("param", "value")
-                .build();
+                .withQueryParam("param", "value");
     }
 
     @Test
@@ -42,28 +39,16 @@ class AppRequestTest {
         final String authValue = String.format("%s:%s", username, password);
         final String encodedAuthValue = Base64.getEncoder().encodeToString(authValue.getBytes());
 
-        appRequest.setBasicAuth(username, password);
+        final AppRequest requestWithBasicAuth = appRequest.withBasicAuth(username, password);
 
-        final Map<String, String> headers = appRequest.getHeaders();
-
-        assertThat(headers).containsEntry("Authorization", "Basic " + encodedAuthValue);
-    }
-
-    @Test
-    void setBasicAuthAddsAuthorizationHeaderToHeadersWithMapInput() {
-        final String authValue = String.format("%s:%s", username, password);
-        final String encodedAuthValue = Base64.getEncoder().encodeToString(authValue.getBytes());
-
-        appRequest.setBasicAuth(singletonMap(username, password));
-
-        final Map<String, String> headers = appRequest.getHeaders();
+        final Map<String, String> headers = requestWithBasicAuth.getHeaders();
 
         assertThat(headers).containsEntry("Authorization", "Basic " + encodedAuthValue);
     }
 
     @Test
     void matchesReturnsFalseIfPathsDoNotMatch() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         copy.setPath(appRequest.getPath() + "notEqual");
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -73,7 +58,7 @@ class AppRequestTest {
     void matchesReturnsTrueIfPathsMatchRegex() throws Exception {
         appRequest.setPath("path.*");
 
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         copy.setPath(appRequest.getPath() + "extraStuff");
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -81,7 +66,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsFalseIfMethodsDoNotMatch() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         copy.setMethod(appRequest.getMethod() + "notEqual");
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -89,7 +74,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsFalseIfHeadersOfThatRequestDoesNotContainTheHeadersOfThisRequest() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.getHeaders().put("var", "val");
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -97,7 +82,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsTrueIfHeadersOfThisRequestIsEmptyAndEverythingElseMatches() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.getHeaders().clear();
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -105,7 +90,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsTrueIfHeadersOfThatRequestContainsTheHeadersOfThisRequest() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.getHeaders().remove(appRequest.getHeaders().keySet().iterator().next());
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -117,7 +102,7 @@ class AppRequestTest {
         appRequestHeaders.clear();
         appRequestHeaders.put("key", "val.*");
 
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
 
         copy.getHeaders().put("key", "value");
 
@@ -126,7 +111,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsFalseIfQueryParamsOfThatRequestDoesNotContainTheQueryParamsOfThisRequest() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.getQueryParams().put("var", singletonList("val"));
 
         assertThat(appRequest.matches(copy)).isFalse();
@@ -134,7 +119,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsTrueIfQueryParamsOfThisRequestIsEmptyAndEverythingElseMatches() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.getQueryParams().clear();
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -142,7 +127,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsTrueIfQueryParamsOfThatRequestContainsTheQueryParamsOfThisRequest() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.getQueryParams().remove(appRequest.getQueryParams().keySet().iterator().next());
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -154,7 +139,7 @@ class AppRequestTest {
         appRequestParams.clear();
         appRequestParams.put("key", singletonList("val.*"));
 
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
 
         copy.getQueryParams().put("key", singletonList("value"));
 
@@ -163,7 +148,7 @@ class AppRequestTest {
 
     @Test
     void matchesReturnsTrueIfEveryFieldMatches() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
@@ -172,14 +157,14 @@ class AppRequestTest {
     void matchesReturnsTrueIfBodyOfThisRequestIsNullAndBodyOfThatRequestIsNull() throws Exception {
         appRequest.setBody(null);
 
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
 
         assertThat(appRequest.matches(copy)).isTrue();
     }
 
     @Test
     void matchesReturnsTrueIfBodyOfThisRequestIsNullAndBodyOfThatRequestIsNotNull() throws Exception {
-        final AppRequest copy = cloneRequest(appRequest);
+        final AppRequest copy = new AppRequest(appRequest);
         appRequest.setBody(null);
 
         assertThat(appRequest.matches(copy)).isTrue();
@@ -201,7 +186,7 @@ class AppRequestTest {
     void staticBuildersCreatesRequest(StaticBuilderData data) {
         System.out.println("Testing static builder: " + data.method);
 
-        final AppRequest request = data.builderFunc.apply("/.*").build();
+        final AppRequest request = data.builderFunc.apply("/.*");
 
         assertThat(request.getMethod()).isEqualTo(data.method);
         assertThat(request.getPath()).isEqualTo("/.*");
@@ -209,9 +194,9 @@ class AppRequestTest {
 
     private static class StaticBuilderData {
         private final String method;
-        private final Function<String, AppRequestBuilder> builderFunc;
+        private final Function<String, AppRequest> builderFunc;
 
-        private StaticBuilderData(String method, Function<String, AppRequestBuilder> builderFunc) {
+        private StaticBuilderData(String method, Function<String, AppRequest> builderFunc) {
             this.method = method;
             this.builderFunc = builderFunc;
         }

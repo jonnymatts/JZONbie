@@ -37,8 +37,7 @@ public class AppRequestFactory {
         primedRequestMap.put("headers", request.getHeaders());
 
         final AppRequest deserializedAppRequest = deserializer.deserialize(primedRequestMap, AppRequest.class);
-        deserializedAppRequest.setBody(bodyContent);
-        return deserializedAppRequest;
+        return deserializedAppRequest.withBody(bodyContent);
     }
 
     private BodyContent getBodyContent(String bodyString) {
