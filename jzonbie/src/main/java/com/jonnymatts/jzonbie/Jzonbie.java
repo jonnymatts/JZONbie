@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
+import com.jonnymatts.jzonbie.logging.Logging;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.pippo.PippoResponder;
 import com.jonnymatts.jzonbie.priming.*;
@@ -36,9 +37,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static ch.qos.logback.classic.Level.ERROR;
+import static ch.qos.logback.classic.Level.OFF;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
 public class Jzonbie implements JzonbieClient {
+
+    static {
+        Logging.setLevel("org.eclipse", ERROR);
+        Logging.setLevel("ro.pippo", OFF);
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Jzonbie.class);
 
     private final PrimingContext primingContext;
