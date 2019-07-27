@@ -1,28 +1,20 @@
 package com.jonnymatts.jzonbie;
 
-import java.util.Optional;
-import java.util.function.Function;
-
-import static com.jonnymatts.jzonbie.JzonbieOptions.options;
-import static java.lang.String.format;
-import static java.util.function.Function.identity;
+import com.jonnymatts.jzonbie.cli.CommandLineOptions;
+import picocli.CommandLine;
 
 public class App {
 
     public static void main(String[] args) {
-        final JzonbieOptions options = options();
-        getEnvironmentVariable("ZOMBIE_HEADER_NAME", identity())
-                .map(options::withZombieHeaderName);
+        final CommandLineOptions commandLineOptions = CommandLineOptions.parse(args);
 
-        final Integer port = getEnvironmentVariable("JZONBIE_PORT", Integer::parseInt).orElse(8080);
-        options.withHttpPort(port);
+        if(commandLineOptions.usageHelpRequested) {
+            CommandLine.usage(commandLineOptions, System.out);
+            System.exit(0);
+        }
 
-        final Jzonbie jzonbie = new Jzonbie(options);
+        final JzonbieOptions jzonbieOptions = CommandLineOptions.toJzonbieOptions(commandLineOptions);
 
-        System.out.println(format("Started server on port: %s", jzonbie.getHttpPort()));
-    }
-
-    private static <T> Optional<T> getEnvironmentVariable(String variableName, Function<String, T> mapper) {
-        return Optional.ofNullable(System.getenv(variableName)).map(mapper);
+        new Jzonbie(jzonbieOptions);
     }
 }

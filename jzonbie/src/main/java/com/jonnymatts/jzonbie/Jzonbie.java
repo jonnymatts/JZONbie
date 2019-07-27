@@ -21,6 +21,8 @@ import com.jonnymatts.jzonbie.templating.JzonbieHandlebars;
 import com.jonnymatts.jzonbie.templating.ResponseTransformer;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ro.pippo.core.Pippo;
 import ro.pippo.core.WebServerSettings;
 import ro.pippo.core.util.IoUtils;
@@ -37,6 +39,7 @@ import java.util.Optional;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
 public class Jzonbie implements JzonbieClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Jzonbie.class);
 
     private final PrimingContext primingContext;
     private final CallHistory callHistory = new CallHistory();
@@ -93,6 +96,8 @@ public class Jzonbie implements JzonbieClient {
             httpsPippo = null;
             httpsPort = null;
         }
+
+        LOGGER.info("Jzonbie started - HTTP port: {}{}", httpPort, httpsPort == null ? "" : ", HTTPS port: " + httpsPort);
     }
 
     public int getHttpPort() {

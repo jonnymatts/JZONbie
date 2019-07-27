@@ -16,6 +16,7 @@ dependencies {
     compile group: 'com.github.jknack', name: 'handlebars', version: '4.1.2'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
     compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.1'
+    compile group: 'info.picocli', name: 'picocli', version: '4.0.1'
     testCompile project(':jzonbie-test-util')
     testCompile project(':jzonbie-client')
     testCompile group: 'io.rest-assured', name: 'rest-assured', version: '4.0.0'
