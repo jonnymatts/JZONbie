@@ -126,36 +126,32 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming prime(AppRequest request, AppResponse response) {
+    public void prime(AppRequest request, AppResponse response) {
         final ZombiePriming zombiePriming = new ZombiePriming(request, response);
         final ZombiePriming deserialized = normalizeForPriming(zombiePriming, ZombiePriming.class);
         primingContext.add(deserialized);
-        return deserialized;
     }
 
     @Override
-    public List<PrimedMapping> prime(File file) {
+    public void prime(File file) {
         try {
             final String mappingsString = IoUtils.toString(new FileInputStream(file));
             final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(mappingsString, PrimedMapping.class);
             primedMappingUploader.upload(primedMappings);
-            return primedMappings;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public ZombiePriming prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
+    public void prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
         final AppRequest appRequest = normalizeForPriming(request, AppRequest.class);
 
         if(defaultAppResponse instanceof StaticDefaultAppResponse) {
             primingContext.addDefault(appRequest, normalizeStaticDefault(defaultAppResponse));
-            return new ZombiePriming(request, defaultAppResponse.getResponse());
         }
 
         primingContext.addDefault(appRequest, defaultAppResponse);
-        return new ZombiePriming(request, null);
     }
 
     private DefaultAppResponse normalizeStaticDefault(DefaultAppResponse defaultAppResponse) {

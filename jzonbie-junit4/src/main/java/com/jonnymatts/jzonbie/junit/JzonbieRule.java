@@ -48,16 +48,16 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
         return jzonbie.getHttpsPort();
     }
 
-    public ZombiePriming prime(AppRequest appRequest, AppResponse appResponse) {
-        return jzonbie.prime(appRequest, appResponse);
+    public void prime(AppRequest appRequest, AppResponse appResponse) {
+        jzonbie.prime(appRequest, appResponse);
     }
 
-    public ZombiePriming prime(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {
-        return jzonbie.prime(appRequest, defaultAppResponse);
+    public void prime(AppRequest appRequest, DefaultAppResponse defaultAppResponse) {
+        jzonbie.prime(appRequest, defaultAppResponse);
     }
 
-    public List<PrimedMapping> prime(File file) {
-        return jzonbie.prime(file);
+    public void prime(File file) {
+        jzonbie.prime(file);
     }
 
     public void verify(AppRequest appRequest) throws VerificationException {

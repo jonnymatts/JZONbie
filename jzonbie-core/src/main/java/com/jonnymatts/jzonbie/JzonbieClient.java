@@ -16,11 +16,11 @@ import static com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria
 
 public interface JzonbieClient {
 
-    ZombiePriming prime(AppRequest request, AppResponse response);
+    void prime(AppRequest request, AppResponse response);
 
-    ZombiePriming prime(AppRequest request, DefaultAppResponse response);
+    void prime(AppRequest request, DefaultAppResponse response);
 
-    List<PrimedMapping> prime(File file);
+    void prime(File file);
 
     List<PrimedMapping> getCurrentPriming();
 

@@ -63,9 +63,9 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public ZombiePriming prime(AppRequest request, AppResponse response) {
+    public void prime(AppRequest request, AppResponse response) {
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieRequest(request, response);
-        return execute(
+        execute(
                 primeZombieRequest,
                 httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), ZombiePriming.class),
                 format("Failed to prime. %s, %s", request, response)
@@ -73,19 +73,19 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public List<PrimedMapping> prime(File file) {
+    public void prime(File file) {
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieWithFileRequest(file);
-        return execute(
+        execute(
                 primeZombieRequest, httpResponse -> deserializer.deserializeCollection(getHttpResponseBody(httpResponse), PrimedMapping.class),
                 format("Failed to prime with file %s.", file.getAbsolutePath())
         );
     }
 
     @Override
-    public ZombiePriming prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
+    public void prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
         if(defaultAppResponse instanceof DynamicDefaultAppResponse) throw new UnsupportedOperationException("Priming dynamic default for zombie over HTTP not supported");
         final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, defaultAppResponse.getResponse());
-        return execute(
+        execute(
                 primeZombieRequest,
                 httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), ZombiePriming.class),
                 format("Failed to prime. %s, %s", request, defaultAppResponse)

@@ -66,24 +66,10 @@ class ApacheJzonbieHttpClientTest {
     }
 
     @Test
-    void primeZombieReturnsRequestedPriming() {
-        final ZombiePriming got = underTest.prime(REQUEST, RESPONSE);
-
-        assertThat(got).isEqualTo(zombiePriming);
-    }
-
-    @Test
     void primeZombieAddsPriming() {
         underTest.prime(REQUEST, RESPONSE);
 
         assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
-    }
-
-    @Test
-    void primeZombieWithDefaultResponseReturnsRequestedPriming() {
-        final ZombiePriming got = underTest.prime(REQUEST, DEFAULT_RESPONSE);
-
-        assertThat(got).isEqualTo(zombiePriming);
     }
 
     @Test
@@ -93,13 +79,6 @@ class ApacheJzonbieHttpClientTest {
         final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_RESPONSE);
 
         assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
-    }
-
-    @Test
-    void primeZombieWithFileReturnsPrimedMappings() {
-        final List<PrimedMapping> got = underTest.prime(FILE);
-
-        assertThat(got).containsExactly(primedMapping);
     }
 
     @Test
