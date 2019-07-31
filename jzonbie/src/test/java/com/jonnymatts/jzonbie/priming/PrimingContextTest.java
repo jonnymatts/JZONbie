@@ -187,7 +187,7 @@ class PrimingContextTest {
     void getResponseRemovesPrimingFromContextIfSingleResponseExistsForPrimingOfAppRequestIgnoringExtraHeadersOnIncomingRequest() throws Exception {
         primingContext.add(zombiePriming);
 
-        final AppRequest copy = zombiePriming.getRequest().withHeader("extra", "header");
+        final AppRequest copy = new AppRequest(zombiePriming.getRequest()).withHeader("extra", "header");
 
         primingContext.getResponse(copy);
 

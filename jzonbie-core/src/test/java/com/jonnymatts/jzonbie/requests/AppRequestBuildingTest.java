@@ -49,17 +49,6 @@ class AppRequestBuildingTest {
     }
 
     @Test
-    void requestsAreImmutable() {
-        final AppRequest builder = request("GET", "/");
-
-        final AppRequest request1 = builder.withBody(stringBody("test1"));
-        final AppRequest request2 = builder.withBody(stringBody("test2"));
-
-        assertThat(request1.getBody().getContent()).isEqualTo("test1");
-        assertThat(request2.getBody().getContent()).isEqualTo("test2");
-    }
-
-    @Test
     void requestWithMapBodyReturnsRequestWithObjectBody() {
         final AppRequest request = request("GET", "/")
                 .withBody(singletonMap("key", "val"));

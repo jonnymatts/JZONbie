@@ -99,49 +99,42 @@ public class AppRequest {
     }
 
     public AppRequest withHeader(String name, String value) {
-        final AppRequest clone = new AppRequest(this);
-        if(clone.getHeaders() == null)
-            clone.setHeaders(new HashMap<>());
-        clone.getHeaders().put(name, value);
-        return clone;
+        if(this.getHeaders() == null)
+            this.setHeaders(new HashMap<>());
+        this.getHeaders().put(name, value);
+        return this;
     }
 
     public AppRequest withBody(BodyContent<?> body) {
-        final AppRequest clone = new AppRequest(this);
-        clone.setBody(body);
-        return clone;
+        this.setBody(body);
+        return this;
     }
 
     public AppRequest withBody(Map<String, ?> body) {
-        final AppRequest clone = new AppRequest(this);
-        clone.setBody(objectBody(body));
-        return clone;
+        this.setBody(objectBody(body));
+        return this;
     }
 
     public AppRequest withBody(String body) {
-        final AppRequest clone = new AppRequest(this);
-        clone.setBody(literalBody(body));
-        return clone;
+        this.setBody(literalBody(body));
+        return this;
     }
 
     public AppRequest withBody(List<?> body) {
-        final AppRequest clone = new AppRequest(this);
-        clone.setBody(arrayBody(body));
-        return clone;
+        this.setBody(arrayBody(body));
+        return this;
     }
 
     public AppRequest withBody(Number body) {
-        final AppRequest clone = new AppRequest(this);
-        clone.setBody(literalBody(new BigDecimal(body.doubleValue())));
-        return clone;
+        this.setBody(literalBody(new BigDecimal(body.doubleValue())));
+        return this;
     }
 
     public AppRequest withQueryParam(String name, String value) {
-        final AppRequest clone = new AppRequest(this);
-        Map<String, List<String>> queryParams = clone.getQueryParams();
+        Map<String, List<String>> queryParams = this.getQueryParams();
         if (queryParams == null) {
             queryParams = new HashMap<>();
-            clone.setQueryParams(queryParams);
+            this.setQueryParams(queryParams);
         }
 
         if (!queryParams.containsKey(name)) {
@@ -150,13 +143,12 @@ public class AppRequest {
 
         queryParams.get(name).add(value);
 
-        return clone;
+        return this;
     }
 
     public AppRequest withBasicAuth(String username, String password) {
-        final AppRequest clone = new AppRequest(this);
-        clone.setBasicAuth(username, password);
-        return clone;
+        this.setBasicAuth(username, password);
+        return this;
     }
 
     public AppRequest accept(String contentType) {

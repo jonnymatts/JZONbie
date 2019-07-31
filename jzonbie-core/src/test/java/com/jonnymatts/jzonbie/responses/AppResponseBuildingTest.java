@@ -45,17 +45,6 @@ class AppResponseBuildingTest {
     }
 
     @Test
-    void responsesAreImmutable() throws Exception {
-        final AppResponse response = response(201);
-
-        final AppResponse response1 = response.withBody(stringBody("test1"));
-        final AppResponse response2 = response.withBody(stringBody("test2"));
-
-        assertThat(response1.getBody().getContent()).isEqualTo("test1");
-        assertThat(response2.getBody().getContent()).isEqualTo("test2");
-    }
-
-    @Test
     void responseWithMapBodyReturnsResponseWithObjectBody() {
         final AppResponse request = ok()
                 .withBody(singletonMap("key", "val"));

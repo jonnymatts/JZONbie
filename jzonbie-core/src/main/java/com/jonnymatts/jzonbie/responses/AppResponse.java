@@ -84,53 +84,45 @@ public class AppResponse implements Response {
     }
 
     public AppResponse templated() {
-        final AppResponse clone = new AppResponse(this);
-        clone.setTemplated(true);
-        return clone;
+        this.setTemplated(true);
+        return this;
     }
 
     public AppResponse withHeader(String name, String value) {
-        final AppResponse clone = new AppResponse(this);
-        if(clone.getHeaders() == null)
-            clone.setHeaders(new HashMap<>());
-        clone.getHeaders().put(name, value);
-        return clone;
+        if(this.getHeaders() == null)
+            this.setHeaders(new HashMap<>());
+        this.getHeaders().put(name, value);
+        return this;
     }
 
     public AppResponse withBody(BodyContent<?> body) {
-        final AppResponse clone = new AppResponse(this);
-        clone.setBody(body);
-        return clone;
+        this.setBody(body);
+        return this;
     }
 
     public AppResponse withBody(Map<String, ?> body) {
-        final AppResponse clone = new AppResponse(this);
-        clone.setBody(objectBody(body));
-        return clone;
+        this.setBody(objectBody(body));
+        return this;
     }
 
     public AppResponse withBody(String body) {
-        final AppResponse clone = new AppResponse(this);
-        clone.setBody(literalBody(body));
-        return clone;
+        this.setBody(literalBody(body));
+        return this;
     }
 
     public AppResponse withBody(List<?> body) {
-        final AppResponse clone = new AppResponse(this);
-        clone.setBody(arrayBody(body));
-        return clone;
+        this.setBody(arrayBody(body));
+        return this;
     }
 
     public AppResponse withBody(Number body) {
-        final AppResponse clone = new AppResponse(this);
-        clone.setBody(literalBody(new BigDecimal(body.doubleValue())));
-        return clone;
+        this.setBody(literalBody(new BigDecimal(body.doubleValue())));
+        return this;
     }
 
     public AppResponse withDelay(Duration delay) {
-        final AppResponse clone = new AppResponse(this);
-        clone.setDelay(delay);
-        return clone;
+        this.setDelay(delay);
+        return this;
     }
 
     public AppResponse contentType(String contentType) {
