@@ -3,25 +3,25 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
+import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.Exchange;
+import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
-import com.jonnymatts.jzonbie.priming.CallHistory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
-import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 
-import java.util.List;
 import java.util.Optional;
 
 public class AppRequestHandler implements RequestHandler {
 
     private final PrimingContext primingContext;
     private final CallHistory callHistory;
-    private final List<AppRequest> failedRequests;
+    private final FixedCapacityCache<AppRequest> failedRequests;
     private final AppRequestFactory appRequestFactory;
 
     public AppRequestHandler(PrimingContext primingContext,
                              CallHistory callHistory,
-                             List<AppRequest> failedRequests,
+                             FixedCapacityCache<AppRequest> failedRequests,
                              AppRequestFactory appRequestFactory) {
         this.primingContext = primingContext;
         this.callHistory = callHistory;
@@ -42,7 +42,7 @@ public class AppRequestHandler implements RequestHandler {
 
         final AppResponse zombieResponse = primedResponseOpt.get();
 
-        callHistory.add(new ZombiePriming(appRequest, zombieResponse));
+        callHistory.add(new Exchange(appRequest, zombieResponse));
 
         return zombieResponse;
     }

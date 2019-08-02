@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flextrade.jfixture.JFixture;
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
+import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.Exchange;
+import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
-import com.jonnymatts.jzonbie.priming.CallHistory;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -21,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
@@ -58,9 +59,12 @@ class ZombieRequestHandlerTest {
     private ZombiePriming zombiePriming1;
     private ZombiePriming zombiePriming2;
     private ZombiePriming zombiePriming3;
+    private Exchange exchange1;
+    private Exchange exchange2;
+    private Exchange exchange3;
 
     private CallHistory callHistory;
-    private List<AppRequest> failedRequests;
+    private FixedCapacityCache<AppRequest> failedRequests;
     private DefaultingQueue defaultingQueue;
     private List<PrimedMapping> primedRequests;
     private ZombieRequestHandler zombieRequestHandler;
@@ -73,36 +77,32 @@ class ZombieRequestHandlerTest {
                 get("/3")
         );
 
+        final AppResponse response = ok();
         appResponses = asList(
-                ok(),
-                ok(),
-                ok()
+                response,
+                response,
+                response
         );
 
-        zombiePriming1 = new ZombiePriming(
-                get("/4"),
-                ok()
-        );
+        final AppRequest request1 = get("/4");
+        zombiePriming1 = new ZombiePriming(request1, response);
+        exchange1 = new Exchange(request1, response);
 
-        zombiePriming2 = new ZombiePriming(
-                get("/5"),
-                ok()
-        );
+        final AppRequest request2 = get("/5");
+        zombiePriming2 = new ZombiePriming(request2, response);
+        exchange2 = new Exchange(request2, response);
 
-        zombiePriming3 = new ZombiePriming(
-                get("/6"),
-                ok()
-        );
+        final AppRequest request3 = get("/6");
+        zombiePriming3 = new ZombiePriming(request3, response);
+        exchange3 = new Exchange(request3, response);
 
-        callHistory = new CallHistory(new ArrayList<ZombiePriming>(){{
-            add(zombiePriming1);
-            add(zombiePriming2);
-            add(zombiePriming3);
-        }});
+        callHistory = new CallHistory(100);
+        callHistory.add(exchange1);
+        callHistory.add(exchange2);
+        callHistory.add(exchange3);
 
-        failedRequests = new ArrayList<AppRequest>(){{
-            add(appRequests.get(0));
-        }};
+        failedRequests = new FixedCapacityCache<>(100);
+        failedRequests.add(appRequests.get(0));
 
         zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, currentPrimingFileResponseFactory, primedMappingUploader, new HttpsSupport());
         defaultingQueue = new DefaultingQueue() {{
@@ -201,14 +201,14 @@ class ZombieRequestHandlerTest {
     void handleClearsPrimingContextCallHistoryAndFailedRequestsIfZombieHeaderHasResetValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "reset"));
 
-        assertThat(callHistory.getEntries()).isNotEmpty();
-        assertThat(failedRequests).isNotEmpty();
+        assertThat(callHistory.getValues()).isNotEmpty();
+        assertThat(failedRequests.getValues()).isNotEmpty();
 
         final Response got = zombieRequestHandler.handle(request);
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, singletonMap("message", "Zombie Reset")));
-        assertThat(callHistory.getEntries()).isEmpty();
-        assertThat(failedRequests).isEmpty();
+        assertThat(callHistory.getValues()).isEmpty();
+        assertThat(failedRequests.getValues()).isEmpty();
 
         verify(primingContext).reset();
     }

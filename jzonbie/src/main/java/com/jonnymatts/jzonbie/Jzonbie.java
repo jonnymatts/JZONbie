@@ -3,12 +3,18 @@ package com.jonnymatts.jzonbie;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
+import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.Exchange;
+import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
 import com.jonnymatts.jzonbie.logging.Logging;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.pippo.PippoResponder;
-import com.jonnymatts.jzonbie.priming.*;
+import com.jonnymatts.jzonbie.priming.AppRequestFactory;
+import com.jonnymatts.jzonbie.priming.PrimedMapping;
+import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
@@ -33,7 +39,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,8 +56,8 @@ public class Jzonbie implements JzonbieClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(Jzonbie.class);
 
     private final PrimingContext primingContext;
-    private final CallHistory callHistory = new CallHistory();
-    private final List<AppRequest> failedRequests = new ArrayList<>();
+    private final CallHistory callHistory;
+    private final FixedCapacityCache<AppRequest> failedRequests;
     private final int httpPort;
     private final Integer httpsPort;
     private final Pippo httpPippo;
@@ -71,6 +76,8 @@ public class Jzonbie implements JzonbieClient {
     public Jzonbie(JzonbieOptions options) {
         this.httpsSupport = new HttpsSupport();
         primingContext = new PrimingContext(options.getPriming());
+        callHistory = new CallHistory(options.getCallHistoryCapacity());
+        failedRequests = new FixedCapacityCache<>(options.getFailedRequestsCapacity());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
         deserializer = new Deserializer(objectMapper);
@@ -172,13 +179,13 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public List<ZombiePriming> getHistory() {
-        return callHistory.getEntries();
+    public List<Exchange> getHistory() {
+        return callHistory.getValues();
     }
 
     @Override
     public List<AppRequest> getFailedRequests() {
-        return failedRequests;
+        return failedRequests.getValues();
     }
 
     @Override

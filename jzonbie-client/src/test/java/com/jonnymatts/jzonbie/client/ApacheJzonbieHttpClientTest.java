@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.client;
 
 import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieClient;
+import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.junit.JzonbieExtension;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -47,6 +48,7 @@ class ApacheJzonbieHttpClientTest {
     private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
 
     private ZombiePriming zombiePriming;
+    private Exchange exchange;
     private PrimedMapping primedMapping;
 
     private TestingClient testingClient;
@@ -57,6 +59,7 @@ class ApacheJzonbieHttpClientTest {
     @BeforeEach
     void setUp() {
         zombiePriming = new ZombiePriming(REQUEST, RESPONSE);
+        exchange = new Exchange(REQUEST, RESPONSE);
         primedMapping = createPrimedMapping(RESPONSE);
 
         final String zombieBaseUrl = "http://localhost:" + JzonbieExtension.getJzonbie().getHttpPort();
@@ -102,13 +105,13 @@ class ApacheJzonbieHttpClientTest {
         underTest.prime(REQUEST, RESPONSE);
         testingClient.execute(REQUEST);
 
-        final List<ZombiePriming> got = underTest.getHistory();
+        final List<Exchange> got = underTest.getHistory();
 
         assertThat(got).hasSize(1);
 
         got.get(0).getRequest().getHeaders().clear();
 
-        assertThat(got).containsExactly(this.zombiePriming);
+        assertThat(got).containsExactly(exchange);
     }
 
     @Test

@@ -2,8 +2,9 @@ package com.jonnymatts.jzonbie.requests;
 
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
+import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
-import com.jonnymatts.jzonbie.priming.CallHistory;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -24,7 +25,7 @@ public class ZombieRequestHandler implements RequestHandler {
 
     private final PrimingContext primingContext;
     private final CallHistory callHistory;
-    private final List<AppRequest> failedRequests;
+    private final FixedCapacityCache<AppRequest> failedRequests;
     private final Deserializer deserializer;
     private final String zombieHeaderName;
     private final CurrentPrimingFileResponseFactory fileResponseFactory;
@@ -34,7 +35,7 @@ public class ZombieRequestHandler implements RequestHandler {
     public ZombieRequestHandler(String zombieHeaderName,
                                 PrimingContext primingContext,
                                 CallHistory callHistory,
-                                List<AppRequest> failedRequests,
+                                FixedCapacityCache<AppRequest> failedRequests,
                                 Deserializer deserializer,
                                 CurrentPrimingFileResponseFactory fileResponseFactory,
                                 PrimedMappingUploader primedMappingUploader,

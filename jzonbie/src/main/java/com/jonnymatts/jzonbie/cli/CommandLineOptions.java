@@ -34,6 +34,12 @@ public class CommandLineOptions {
     @Option(names = {"-cn", "--common-name"}, paramLabel = "NAME", description = "common name of generated HTTPS certificate")
     public String commonName;
 
+    @Option(names = {"--call-history-capacity"}, paramLabel = "SIZE", description = "maximum capacity of the stored call history")
+    public Integer callHistoryCapacity;
+
+    @Option(names = {"--failed-requests-capacity"}, paramLabel = "SIZE", description = "maximum capacity of the stored failed requests")
+    public Integer failedRequestsCapacity;
+
     public static CommandLineOptions parse(String[] args) {
         final CommandLine cmd = new CommandLine(CommandLineOptions.class);
         cmd.parseArgs(args);
@@ -47,6 +53,12 @@ public class CommandLineOptions {
         }
         if(commandLineOptions.zombieHeaderName != null) {
             options.withZombieHeaderName(commandLineOptions.zombieHeaderName);
+        }
+        if(commandLineOptions.callHistoryCapacity != null) {
+            options.withCallHistoryCapacity(commandLineOptions.callHistoryCapacity);
+        }
+        if(commandLineOptions.failedRequestsCapacity != null) {
+            options.withFailedRequestsCapacity(commandLineOptions.failedRequestsCapacity);
         }
         if(commandLineOptions.httpsEnabled) {
             final HttpsOptions httpsOptions = httpsOptions();

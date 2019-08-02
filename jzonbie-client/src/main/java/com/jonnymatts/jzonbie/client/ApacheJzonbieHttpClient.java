@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.client;
 
 import com.jonnymatts.jzonbie.JzonbieClient;
+import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
@@ -103,11 +104,11 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public List<ZombiePriming> getHistory() {
+    public List<Exchange> getHistory() {
         final HttpUriRequest getHistoryRequest = apacheJzonbieRequestFactory.createGetHistoryRequest();
         return execute(
                 getHistoryRequest,
-                httpResponse -> deserializer.deserializeCollection(getHttpResponseBody(httpResponse), ZombiePriming.class),
+                httpResponse -> deserializer.deserializeCollection(getHttpResponseBody(httpResponse), Exchange.class),
                 "Failed to get history."
         );
     }

@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie;
 
+import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
-import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
@@ -24,7 +24,7 @@ public interface JzonbieClient {
 
     List<PrimedMapping> getCurrentPriming();
 
-    List<ZombiePriming> getHistory();
+    List<Exchange> getHistory();
 
     List<AppRequest> getFailedRequests();
 

@@ -3,8 +3,10 @@ package com.jonnymatts.jzonbie.requests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
+import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.Exchange;
+import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
-import com.jonnymatts.jzonbie.priming.CallHistory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.responses.AppResponse;
@@ -13,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
@@ -30,11 +30,12 @@ class AppRequestHandlerTest {
 
     @Mock private PrimingContext primingContext;
     @Mock private CallHistory callHistory;
-    @Mock private List<AppRequest> failedRequests;
+    @Mock private FixedCapacityCache<AppRequest> failedRequests;
     @Mock private AppRequestFactory appRequestFactory;
     @Mock private Request request;
 
     private ZombiePriming zombiePriming;
+    private Exchange exchange;
 
     private AppRequestHandler appRequestHandler;
 
@@ -50,6 +51,7 @@ class AppRequestHandlerTest {
         appResponse = ok();
 
         zombiePriming = new ZombiePriming(appRequest, appResponse);
+        exchange = new Exchange(appRequest, appResponse);
 
         when(appRequestFactory.create(request)).thenReturn(appRequest);
         when(primingContext.getResponse(appRequest))
@@ -67,7 +69,7 @@ class AppRequestHandlerTest {
     void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
         appRequestHandler.handle(request);
 
-        verify(callHistory).add(zombiePriming);
+        verify(callHistory).add(exchange);
     }
 
     @Test

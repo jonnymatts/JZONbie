@@ -2,9 +2,15 @@ package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.Exchange;
+import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
-import com.jonnymatts.jzonbie.priming.*;
+import com.jonnymatts.jzonbie.priming.AppRequestFactory;
+import com.jonnymatts.jzonbie.priming.PrimedMapping;
+import com.jonnymatts.jzonbie.priming.PrimingContext;
+import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.requests.AppRequestHandler;
 import com.jonnymatts.jzonbie.requests.PrimedMappingUploader;
@@ -25,7 +31,6 @@ import ro.pippo.core.Pippo;
 import ro.pippo.core.util.IoUtils;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +54,8 @@ import static org.hamcrest.Matchers.startsWith;
 class PippoApplicationTest {
 
     private static PrimingContext primingContext = new PrimingContext();
-    private static final CallHistory callHistory = new CallHistory();
-    private static final List<AppRequest> failedRequests = new ArrayList<>();
+    private static final CallHistory callHistory = new CallHistory(3);
+    private static final FixedCapacityCache<AppRequest> failedRequests = new FixedCapacityCache<>(3);
     private static final ObjectMapper objectMapper = new JzonbieObjectMapper();
     private static final Deserializer deserializer = new Deserializer(objectMapper);
     private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, new AppRequestFactory(deserializer));
@@ -62,6 +67,7 @@ class PippoApplicationTest {
     private AppRequest appRequest;
     private AppResponse appResponse;
     private ZombiePriming zombiePriming;
+    private Exchange exchange;
 
     @BeforeAll
     static void beforeAll() {
@@ -82,6 +88,7 @@ class PippoApplicationTest {
         appResponse.setDelay(Duration.ZERO);
 
         zombiePriming = new ZombiePriming(appRequest, appResponse);
+        exchange = new Exchange(appRequest, appResponse);
     }
 
     @Test
@@ -197,7 +204,7 @@ class PippoApplicationTest {
 
     @Test
     void testHistory() throws Exception {
-        callHistory.add(zombiePriming);
+        callHistory.add(exchange);
 
         final Response pippoResponse = given()
                 .header("zombie", "history")
@@ -226,7 +233,7 @@ class PippoApplicationTest {
     @Test
     void testReset() throws Exception {
         primingContext.add(zombiePriming);
-        callHistory.add(zombiePriming);
+        callHistory.add(exchange);
         failedRequests.add(appRequest);
 
         final Response pippoResponse = given()
@@ -238,8 +245,8 @@ class PippoApplicationTest {
         pippoResponse.then().body("message", equalTo("Zombie Reset"));
 
         assertThat(primingContext.getCurrentPriming()).isEmpty();
-        assertThat(callHistory.getEntries()).isEmpty();
-        assertThat(failedRequests).isEmpty();
+        assertThat(callHistory.getValues()).isEmpty();
+        assertThat(failedRequests.getValues()).isEmpty();
     }
 
     @Test
@@ -360,7 +367,7 @@ class PippoApplicationTest {
                 .withBody(objectBody(singletonMap("key", "val")));
         final AppResponse appResponse = ok();
 
-        callHistory.add(new ZombiePriming(appRequest, appResponse));
+        callHistory.add(new Exchange(appRequest, appResponse));
 
         final Response pippoResponse = given()
                 .header("zombie", "count")

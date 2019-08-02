@@ -14,11 +14,13 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 public class JzonbieOptions {
-    public static final int DEFAULT_PORT = 0;
-    public static final String DEFAULT_ZOMBIE_HEADER_NAME = "zombie";
-    public static final ObjectMapper DEFAULT_JSON_OBJECT_MAPPER = new JzonbieObjectMapper();
-    public static final List<JzonbieRoute> DEFAULT_ROUTES = emptyList();
-    public static final List<Priming> DEFAULT_PRIMING = emptyList();
+    private static final int DEFAULT_PORT = 0;
+    private static final String DEFAULT_ZOMBIE_HEADER_NAME = "zombie";
+    private static final ObjectMapper DEFAULT_JSON_OBJECT_MAPPER = new JzonbieObjectMapper();
+    private static final List<JzonbieRoute> DEFAULT_ROUTES = emptyList();
+    private static final List<Priming> DEFAULT_PRIMING = emptyList();
+    private static final int DEFAULT_CALL_HISTORY_CAPACITY = 1000;
+    private static final int DEFAULT_FAILD_REQUESTS_CAPACITY = 1000;
 
     private int httpPort;
     private String zombieHeaderName;
@@ -27,6 +29,8 @@ public class JzonbieOptions {
     private List<JzonbieRoute> routes;
     private List<Priming> priming;
     private HttpsOptions httpsOptions;
+    private int callHistoryCapacity;
+    private int failedRequestsCapacity;
 
     private JzonbieOptions() {
         this.httpPort = DEFAULT_PORT;
@@ -34,6 +38,8 @@ public class JzonbieOptions {
         this.objectMapper = DEFAULT_JSON_OBJECT_MAPPER;
         this.routes = DEFAULT_ROUTES;
         this.priming = DEFAULT_PRIMING;
+        this.callHistoryCapacity = DEFAULT_CALL_HISTORY_CAPACITY;
+        this.failedRequestsCapacity = DEFAULT_FAILD_REQUESTS_CAPACITY;
     }
 
     public static JzonbieOptions options() {
@@ -85,6 +91,16 @@ public class JzonbieOptions {
         return this;
     }
 
+    public JzonbieOptions withCallHistoryCapacity(int capacity) {
+        this.callHistoryCapacity = capacity;
+        return this;
+    }
+
+    public JzonbieOptions withFailedRequestsCapacity(int capacity) {
+        this.failedRequestsCapacity = capacity;
+        return this;
+    }
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -109,5 +125,13 @@ public class JzonbieOptions {
 
     public List<Priming> getPriming() {
         return priming;
+    }
+
+    public int getCallHistoryCapacity() {
+        return callHistoryCapacity;
+    }
+
+    public int getFailedRequestsCapacity() {
+        return failedRequestsCapacity;
     }
 }

@@ -206,7 +206,7 @@ class JzonbieTest {
     @Test
     void verifyThrowsVerificationExceptionIfCallVerificationCriteriaIsFalse(Jzonbie jzonbie) throws Exception {
         final AppRequest request = get("/");
-        callJzonbieWithPrimedRequest(3, jzonbie, request, ok().withBody(objectBody(singletonMap("key", "val"))));
+        callJzonbieWithRequest(3, jzonbie, request, ok().withBody(objectBody(singletonMap("key", "val"))), true);
 
         assertThatThrownBy(() -> jzonbie.verify(request, equalTo(2)))
                 .isExactlyInstanceOf(VerificationException.class)
@@ -217,7 +217,7 @@ class JzonbieTest {
     @Test
     void verifyDoesNotThrowExceptionIfCallVerificationCriteriaIsTrue(Jzonbie jzonbie) throws Exception {
         final AppRequest request = get("/");
-        callJzonbieWithPrimedRequest(2, jzonbie, request, ok().withBody(objectBody(singletonMap("key", "val"))));
+        callJzonbieWithRequest(2, jzonbie, request, ok().withBody(objectBody(singletonMap("key", "val"))), true);
 
         jzonbie.verify(request, equalTo(2));
     }
@@ -225,7 +225,7 @@ class JzonbieTest {
     @Test
     void verifyDoesNotThrowExceptionIfNoVerificationIsPassedAndCallIsMadeOnce(Jzonbie jzonbie) throws Exception {
         final AppRequest request = get("/");
-        callJzonbieWithPrimedRequest(1, jzonbie, request, ok().withBody(objectBody(singletonMap("key", "val"))));
+        callJzonbieWithRequest(1, jzonbie, request, ok().withBody(objectBody(singletonMap("key", "val"))), true);
 
         jzonbie.verify(request);
     }
@@ -380,11 +380,36 @@ class JzonbieTest {
                 .hasMessageContaining("https");
     }
 
-    void callJzonbieWithPrimedRequest(int times, Jzonbie jzonbie, AppRequest request, AppResponse response) throws IOException {
-        jzonbie.prime(request, staticDefault(response));
+    @Test
+    void jzonbieCallHistoryCapacityCanBeSet() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withCallHistoryCapacity(2)
+        );
 
+        callJzonbieWithRequest(4, jzonbie, get("/"), ok().withBody(objectBody(singletonMap("key", "val"))), true);
+
+        assertThat(jzonbie.getHistory()).hasSize(2);
+    }
+
+    @Test
+    void jzonbieFailedRequestsCapacityCanBeSet() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withFailedRequestsCapacity(2)
+        );
+
+        callJzonbieWithRequest(4, jzonbie, get("/"), ok().withBody(objectBody(singletonMap("key", "val"))), false);
+
+        assertThat(jzonbie.getFailedRequests()).hasSize(2);
+    }
+
+    void callJzonbieWithRequest(int times, Jzonbie jzonbie, AppRequest request, AppResponse response, boolean shouldPrime) throws IOException {
+        if(shouldPrime) {
+            jzonbie.prime(request, staticDefault(response));
+        }
+
+        final HttpUriRequest clientRequest = RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/").build();
         for(int i = 0; i < times; i++) {
-            client.execute(httpRequest);
+            client.execute(clientRequest);
         }
     }
 }

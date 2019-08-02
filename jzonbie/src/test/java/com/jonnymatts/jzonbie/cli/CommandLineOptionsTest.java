@@ -20,6 +20,8 @@ class CommandLineOptionsTest {
         assertThat(commandLineOptions.httpsPort).isNull();
         assertThat(commandLineOptions.keystoreLocation).isNull();
         assertThat(commandLineOptions.keystorePassword).isNull();
+        assertThat(commandLineOptions.callHistoryCapacity).isNull();
+        assertThat(commandLineOptions.failedRequestsCapacity).isNull();
     }
 
     @Test
@@ -107,20 +109,40 @@ class CommandLineOptionsTest {
     }
 
     @Test
+    void callHistoryCapacity() {
+        final CommandLineOptions commandLineOptions = getCommandLineOptions("--call-history-capacity", "100");
+
+        assertThat(commandLineOptions.callHistoryCapacity).isEqualTo(100);
+    }
+
+    @Test
+    void failedRequestsCapacity() {
+        final CommandLineOptions commandLineOptions = getCommandLineOptions("--failed-requests-capacity", "100");
+
+        assertThat(commandLineOptions.failedRequestsCapacity).isEqualTo(100);
+    }
+
+    @Test
     void toJzonbieOptions() {
         final JzonbieOptions jzonbieOptions = CommandLineOptions.toJzonbieOptions(
                 CommandLineOptions.parse(new String[]{
-                "-p", "8000",
-                "-z", "name",
-                "--https",
-                "--https-port", "8001",
-                "-k", "keystore",
-                "-kp", "password",
-                "-cn", "common-name"
-        }));
+                                "-p", "8000",
+                                "-z", "name",
+                                "--https",
+                                "--https-port", "8001",
+                                "-k", "keystore",
+                                "-kp", "password",
+                                "-cn", "common-name",
+                                "--call-history-capacity", "100",
+                                "--failed-requests-capacity", "50",
+                        }
+                )
+        );
 
         assertThat(jzonbieOptions.getHttpPort()).isEqualTo(8000);
         assertThat(jzonbieOptions.getZombieHeaderName()).isEqualTo("name");
+        assertThat(jzonbieOptions.getCallHistoryCapacity()).isEqualTo(100);
+        assertThat(jzonbieOptions.getFailedRequestsCapacity()).isEqualTo(50);
 
         final HttpsOptions httpsOptions = jzonbieOptions.getHttpsOptions().get();
         assertThat(httpsOptions.getPort()).isEqualTo(8001);
@@ -136,6 +158,7 @@ class CommandLineOptionsTest {
         assertThat(jzonbieOptions.getHttpPort()).isZero();
         assertThat(jzonbieOptions.getZombieHeaderName()).isEqualTo("zombie");
         assertThat(jzonbieOptions.getHttpsOptions()).isEmpty();
+        assertThat(jzonbieOptions.getCallHistoryCapacity()).isEqualTo(1000);
     }
 
     private CommandLineOptions getCommandLineOptions(String... args) {

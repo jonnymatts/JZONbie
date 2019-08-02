@@ -3,8 +3,8 @@ package com.jonnymatts.jzonbie.junit;
 import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieClient;
 import com.jonnymatts.jzonbie.JzonbieOptions;
+import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
-import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
@@ -72,7 +72,7 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
         return jzonbie.getCurrentPriming();
     }
 
-    public List<ZombiePriming> getHistory() {
+    public List<Exchange> getHistory() {
         return jzonbie.getHistory();
     }
 
