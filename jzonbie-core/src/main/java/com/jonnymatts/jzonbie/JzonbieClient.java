@@ -102,9 +102,11 @@ public interface JzonbieClient {
      * Resets the state of this Jzonbie.
      * <p>
      * Resets:
+     * <ul>
      * <li> Current history
      * <li> Failed requests
      * <li> Current priming - standard and default
+     * </ul>
      */
     void reset();
 

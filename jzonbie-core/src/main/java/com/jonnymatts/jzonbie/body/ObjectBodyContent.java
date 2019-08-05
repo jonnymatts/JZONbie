@@ -19,7 +19,6 @@ import static com.jonnymatts.jzonbie.util.Matching.mapValuesMatchWithRegex;
  * }
  * <p>
  * would be the same as the JSON:
- * <p>
  * <pre>
  * {"key": "value"}
  * </pre>

@@ -13,7 +13,6 @@ import com.jonnymatts.jzonbie.Body;
  * }
  * <p>
  * would be the same as the response:
- * <p>
  * <pre>
  * {@code
  * <data>1</data>

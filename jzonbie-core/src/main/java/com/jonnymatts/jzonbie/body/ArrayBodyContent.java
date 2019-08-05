@@ -19,7 +19,6 @@ import static com.jonnymatts.jzonbie.util.Matching.listsMatchesRegex;
  * }
  * <p>
  * would be the same as the JSON:
- * <p>
  * <pre>
  * [1, 2, 3]
  * </pre>
