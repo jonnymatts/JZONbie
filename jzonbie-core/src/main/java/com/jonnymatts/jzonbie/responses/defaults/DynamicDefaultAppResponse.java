@@ -6,9 +6,19 @@ import java.util.function.Supplier;
 
 import static com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponseType.DYNAMIC;
 
+/**
+ * A default response that will defer to a supplier when the response is queried.
+ */
 public class DynamicDefaultAppResponse extends DefaultAppResponse {
     private Supplier<AppResponse> supplier;
 
+    /**
+     * Returns a {@code DynamicDefaultAppResponse} backed by the supplier.
+     * <p>
+     * Use {@link DefaultAppResponse#dynamicDefault factory method} instead.
+     *
+     * @param supplier response supplier
+     */
     public DynamicDefaultAppResponse(Supplier<AppResponse> supplier) {
         this.supplier = supplier;
     }

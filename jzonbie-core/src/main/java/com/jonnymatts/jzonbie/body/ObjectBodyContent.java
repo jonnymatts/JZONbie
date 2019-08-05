@@ -8,6 +8,22 @@ import java.util.Map;
 
 import static com.jonnymatts.jzonbie.util.Matching.mapValuesMatchWithRegex;
 
+/**
+ * Request/response body containing a {@link Map}. This will be recognized as
+ * a JSON object in requests and responses.
+ * <p>
+ * The body content:
+ * <p>
+ * {@code
+ * objectBody(singletonMap("key", "value"))
+ * }
+ * <p>
+ * would be the same as the JSON:
+ * <p>
+ * <pre>
+ * {"key": "value"}
+ * </pre>
+ */
 public class ObjectBodyContent extends BodyContent<Map<String, Object>> {
 
     private Map<String, Object> content;
@@ -36,6 +52,12 @@ public class ObjectBodyContent extends BodyContent<Map<String, Object>> {
         return BodyContentType.OBJECT;
     }
 
+    /**
+     * Creates an {@link ObjectBodyContent} body content containing the map content.
+     *
+     * @param content map content
+     * @return map body content
+     */
     public static ObjectBodyContent objectBody(Map<String, ?> content) {
         return new ObjectBodyContent(content);
     }

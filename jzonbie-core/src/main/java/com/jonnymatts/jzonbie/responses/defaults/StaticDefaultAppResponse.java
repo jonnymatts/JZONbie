@@ -4,9 +4,19 @@ import com.jonnymatts.jzonbie.responses.AppResponse;
 
 import static com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponseType.STATIC;
 
+/**
+ * A default response that will always respond with the same response.
+ */
 public class StaticDefaultAppResponse extends DefaultAppResponse {
     private AppResponse response;
 
+    /**
+     * Returns a {@code StaticDefaultAppResponse} with the response.
+     * <p>
+     * Use {@link DefaultAppResponse#staticDefault factory method} instead.
+     *
+     * @param response static response
+     */
     public StaticDefaultAppResponse(AppResponse response) {
         this.response = response;
     }

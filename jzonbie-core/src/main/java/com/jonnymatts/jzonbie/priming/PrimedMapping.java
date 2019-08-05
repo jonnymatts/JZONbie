@@ -1,8 +1,13 @@
 package com.jonnymatts.jzonbie.priming;
 
 import com.jonnymatts.jzonbie.requests.AppRequest;
+import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 
+/**
+ * Pairs {@link AppRequest}s with the {@link AppResponse}s Jzonbie will return
+ * when the request is matched.
+ */
 public class PrimedMapping {
 
     public PrimedMapping() {}

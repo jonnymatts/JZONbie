@@ -124,8 +124,8 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
     }
 
     @Override
-    public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
-        final HttpUriRequest verifyRequest = apacheJzonbieRequestFactory.createVerifyRequest(appRequest);
+    public void verify(AppRequest request, InvocationVerificationCriteria criteria) throws VerificationException {
+        final HttpUriRequest verifyRequest = apacheJzonbieRequestFactory.createVerifyRequest(request);
         final CountResult count = execute(
                 verifyRequest,
                 httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), CountResult.class),

@@ -3,6 +3,9 @@ package com.jonnymatts.jzonbie.history;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 
+/**
+ * {@link AppRequest}/{@link AppResponse} pair
+ */
 public class Exchange {
 
     private AppRequest request;

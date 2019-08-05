@@ -1,7 +1,7 @@
 package com.jonnymatts.jzonbie.requests;
 
 import com.google.common.collect.Sets;
-import com.jonnymatts.jzonbie.body.BodyContent;
+import com.jonnymatts.jzonbie.body.*;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -16,6 +16,25 @@ import static com.jonnymatts.jzonbie.util.Matching.mapValuesMatchWithRegex;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
+/**
+ * Defines a request Jzonbie will match against when an incoming request is received.
+ * <p>
+ * A request must be configured with a HTTP method and a path. Static factory methods
+ * are provided for the most common HTTP methods. The request headers, body, query params,
+ * and basic authentication can also be configured.
+ * <p>
+ * When creating requests, it is recommended to use the builder "withX" methods.
+ * <p>
+ * {@code
+ * final AppRequest request = get("/api/data")
+ *                 .accept("application/json")
+ *                 .withBasicAuth("username", "password")
+ *                 .withHeader("Trace-Id", "trace-.*");
+ * }
+ * <p>
+ * When matching against the request, the path, header values, query param values are
+ * treated as regex patterns. Request bodies are matched according to {@link BodyContentType}.
+ */
 public class AppRequest {
 
     private String path;
@@ -29,6 +48,16 @@ public class AppRequest {
         this.queryParams = new HashMap<>();
     }
 
+    /**
+     * Creates a new {@code AppRequest} with the given HTTP method and path pattern.
+     * <p>
+     * It is recommended to use the provided static factory methods.
+     * <p>
+     * eg. {@link #get(String path)}, {@link #post(String path)}, {@link #put(String path)}, etc.
+     *
+     * @param method HTTP method
+     * @param path path pattern
+     */
     public AppRequest(String method, String path) {
         this.method = method;
         this.path = path;
@@ -36,13 +65,18 @@ public class AppRequest {
         this.queryParams = new HashMap<>();
     }
 
-    public AppRequest(AppRequest appRequest) {
-        this(appRequest.method, appRequest.path);
-        setPath(appRequest.getPath());
-        setMethod(appRequest.getMethod());
-        setQueryParams(copyMap(appRequest.getQueryParams()));
-        setHeaders(copyMap(appRequest.getHeaders()));
-        setBody(copyBodyContent(appRequest.getBody()));
+    /**
+     * Creates a new {@code AppRequest} that copies all fields of the input {@code AppRequest}.
+     *
+     * @param request request to copy
+     */
+    public AppRequest(AppRequest request) {
+        this(request.method, request.path);
+        setPath(request.getPath());
+        setMethod(request.getMethod());
+        setQueryParams(copyMap(request.getQueryParams()));
+        setHeaders(copyMap(request.getHeaders()));
+        setBody(copyBodyContent(request.getBody()));
     }
 
     public String getPath() {
@@ -98,6 +132,13 @@ public class AppRequest {
         this.queryParams = queryParams;
     }
 
+    /**
+     * Adds the header to this request.
+     *
+     * @param name header name
+     * @param value header value
+     * @return this request with the added header
+     */
     public AppRequest withHeader(String name, String value) {
         if(this.getHeaders() == null)
             this.setHeaders(new HashMap<>());
@@ -105,31 +146,68 @@ public class AppRequest {
         return this;
     }
 
+    /**
+     * Configures this request with the given {@link BodyContent} body.
+     *
+     * @param body body content
+     * @return this request with a body
+     */
     public AppRequest withBody(BodyContent<?> body) {
         this.setBody(body);
         return this;
     }
 
+    /**
+     * Configures this request with an {@link ObjectBodyContent} body.
+     *
+     * @param body object body
+     * @return this request with a body
+     */
     public AppRequest withBody(Map<String, ?> body) {
         this.setBody(objectBody(body));
         return this;
     }
 
+    /**
+     * Configures this request with a {@link LiteralBodyContent} body.
+     *
+     * @param body string body
+     * @return this request with a body
+     */
     public AppRequest withBody(String body) {
         this.setBody(literalBody(body));
         return this;
     }
 
+    /**
+     * Configures this request with an {@link ArrayBodyContent} body.
+     *
+     * @param body list body
+     * @return this request with a body
+     */
     public AppRequest withBody(List<?> body) {
         this.setBody(arrayBody(body));
         return this;
     }
 
+    /**
+     * Configures this request with a {@link BigDecimal} {@link LiteralBodyContent} body.
+     *
+     * @param body number body
+     * @return this request with a body
+     */
     public AppRequest withBody(Number body) {
         this.setBody(literalBody(new BigDecimal(body.doubleValue())));
         return this;
     }
 
+    /**
+     * Adds the query param to this request.
+     *
+     * @param name param name
+     * @param value param value
+     * @return this request with the added query param
+     */
     public AppRequest withQueryParam(String name, String value) {
         Map<String, List<String>> queryParams = this.getQueryParams();
         if (queryParams == null) {
@@ -146,43 +224,107 @@ public class AppRequest {
         return this;
     }
 
+    /**
+     * Adds the "Authorization" header with the Basic Authentication value.
+     * <p>
+     * Header value is "Basic {encodedValue}" where {@code encodedValue} is "{username}:{password}" base-64 encoded.
+     *
+     * @param username basic authentication username
+     * @param password basic authentication password
+     * @return this request with the authorization header configured for Basic Authentication
+     */
     public AppRequest withBasicAuth(String username, String password) {
         this.setBasicAuth(username, password);
         return this;
     }
 
+    /**
+     * Sets the "Accept" header of this request.
+     *
+     * @param contentType accepted content type
+     * @return this request with an accept header
+     */
     public AppRequest accept(String contentType) {
         return withHeader("Accept", contentType);
     }
 
+    /**
+     * Sets the "Content-Type" header of this request.
+     *
+     * @param contentType content type header value
+     * @return this request with a content type header
+     */
     public AppRequest contentType(String contentType) {
         return withHeader("Content-Type", contentType);
     }
 
+    /**
+     * Returns a request with the given HTTP method and path pattern.
+     *
+     * @param method HTTP method of the request
+     * @param path Path pattern of the request
+     * @return reuqest with HTTP method and path
+     */
     public static AppRequest request(String method, String path) {
         return new AppRequest(method, path);
     }
 
+    /**
+     * Returns a request with the GET HTTP method at the given path.
+     *
+     * @param path path
+     * @return GET request at path
+     */
     public static AppRequest get(String path) {
         return new AppRequest("GET", path);
     }
 
+    /**
+     * Returns a request with the POST HTTP method at the given path.
+     *
+     * @param path path
+     * @return POST request at path
+     */
     public static AppRequest post(String path) {
         return new AppRequest("POST", path);
     }
 
+    /**
+     * Returns a request with the HEAD HTTP method at the given path.
+     *
+     * @param path path
+     * @return HEAD request at path
+     */
     public static AppRequest head(String path) {
         return new AppRequest("HEAD", path);
     }
 
+    /**
+     * Returns a request with the PUT HTTP method at the given path.
+     *
+     * @param path path
+     * @return PUT request at path
+     */
     public static AppRequest put(String path) {
         return new AppRequest("PUT", path);
     }
 
+    /**
+     * Returns a request with the OPTIONS HTTP method at the given path.
+     *
+     * @param path path
+     * @return OPTIONS request at path
+     */
     public static AppRequest options(String path) {
         return new AppRequest("OPTIONS", path);
     }
 
+    /**
+     * Returns a request with the DELETE HTTP method at the given path.
+     *
+     * @param path path
+     * @return DELETE request at path
+     */
     public static AppRequest delete(String path) {
         return new AppRequest("DELETE", path);
     }

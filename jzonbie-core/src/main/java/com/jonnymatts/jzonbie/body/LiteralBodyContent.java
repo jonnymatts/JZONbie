@@ -2,6 +2,24 @@ package com.jonnymatts.jzonbie.body;
 
 import com.jonnymatts.jzonbie.Body;
 
+/**
+ * Request/response body defining a literal response. This will not be recognized as
+ * JSON in requests and responses.
+ * <p>
+ * The body content:
+ * <p>
+ * {@code
+ * literalBody("<data>1</data>")
+ * }
+ * <p>
+ * would be the same as the response:
+ * <p>
+ * <pre>
+ * {@code
+ * <data>1</data>
+ * }
+ * </pre>
+ */
 public class LiteralBodyContent extends BodyContent<String> {
 
     private final String content;
@@ -30,6 +48,12 @@ public class LiteralBodyContent extends BodyContent<String> {
         return BodyContentType.LITERAL;
     }
 
+    /**
+     * Creates a {@link LiteralBodyContent} body content containing the literal content.
+     *
+     * @param content literal content
+     * @return literal body content
+     */
     public static LiteralBodyContent literalBody(Object content) {
         return new LiteralBodyContent(content);
     }

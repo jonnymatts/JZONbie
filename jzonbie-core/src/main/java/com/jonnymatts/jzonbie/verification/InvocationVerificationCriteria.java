@@ -1,8 +1,13 @@
 package com.jonnymatts.jzonbie.verification;
 
 
+import com.jonnymatts.jzonbie.requests.AppRequest;
+
 import static java.lang.String.format;
 
+/**
+ * Criteria defining how many times a matching {@link AppRequest} has been called.
+ */
 public class InvocationVerificationCriteria {
 
     private final Integer expectedAtLeast;
@@ -14,18 +19,43 @@ public class InvocationVerificationCriteria {
         this.expectedAtMost = expectedAtMost;
     }
 
+    /**
+     * Verifies that the matching {@code AppRequest} has been called at least this many times.
+     *
+     * @param times minimum occurrences
+     * @return criteria with minimum value
+     */
     public static InvocationVerificationCriteria atLeast(int times) {
         return new InvocationVerificationCriteria(times, null);
     }
 
+    /**
+     * Verifies that the matching {@code AppRequest} has been called at most this many times.
+     *
+     * @param times maximum occurrences
+     * @return criteria with maximum value
+     */
     public static InvocationVerificationCriteria atMost(int times) {
         return new InvocationVerificationCriteria(null, times);
     }
 
+    /**
+     * Verifies that the matching {@code AppRequest} has been called exactly this many times.
+     *
+     * @param times exact occurrences
+     * @return criteria with exact value
+     */
     public static InvocationVerificationCriteria equalTo(int times) {
         return new InvocationVerificationCriteria(times, times);
     }
 
+    /**
+     * Verifies that the matching {@code AppRequest} has been called between these two times.
+     *
+     * @param atLeast minimum occurrences
+     * @param atMost maximum occurrences
+     * @return criteria with minimum and maximum values
+     */
     public static InvocationVerificationCriteria between(int atLeast, int atMost) {
         return new InvocationVerificationCriteria(atLeast, atMost);
     }

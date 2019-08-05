@@ -189,8 +189,8 @@ public class Jzonbie implements JzonbieClient {
     }
 
     @Override
-    public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
-        final int count = callHistory.count(appRequest);
+    public void verify(AppRequest request, InvocationVerificationCriteria criteria) throws VerificationException {
+        final int count = callHistory.count(request);
         criteria.verify(count);
     }
 

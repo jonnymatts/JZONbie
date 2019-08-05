@@ -64,8 +64,8 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
         jzonbie.verify(appRequest);
     }
 
-    public void verify(AppRequest appRequest, InvocationVerificationCriteria criteria) throws VerificationException {
-        jzonbie.verify(appRequest, criteria);
+    public void verify(AppRequest request, InvocationVerificationCriteria criteria) throws VerificationException {
+        jzonbie.verify(request, criteria);
     }
 
     public List<PrimedMapping> getCurrentPriming() {

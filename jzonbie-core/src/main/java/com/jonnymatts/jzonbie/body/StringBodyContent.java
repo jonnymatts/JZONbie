@@ -2,11 +2,27 @@ package com.jonnymatts.jzonbie.body;
 
 import com.jonnymatts.jzonbie.Body;
 
+/**
+ * Request/response body containing a {@link String}. This will be recognized as
+ * a JSON string in requests and responses.
+ * <p>
+ * The body content:
+ * <p>
+ * {@code
+ * stringBody("data")
+ * }
+ * <p>
+ * would be the same as the JSON:
+ * <p>
+ * <pre>
+ * "data"
+ * </pre>
+ */
 public class StringBodyContent extends BodyContent<String> {
 
     private String content;
 
-    StringBodyContent(String content) {
+    private StringBodyContent(String content) {
         this.content = content;
     }
 
@@ -30,6 +46,12 @@ public class StringBodyContent extends BodyContent<String> {
         return BodyContentType.STRING;
     }
 
+    /**
+     * Creates a {@link StringBodyContent} body content containing the string content.
+     *
+     * @param content string content
+     * @return string body content
+     */
     public static StringBodyContent stringBody(String content) {
         return new StringBodyContent(content);
     }
