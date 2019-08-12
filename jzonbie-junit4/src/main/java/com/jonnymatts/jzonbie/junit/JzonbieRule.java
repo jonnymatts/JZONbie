@@ -26,10 +26,8 @@ import static com.jonnymatts.jzonbie.JzonbieOptions.options;
  * <p>
  * Every test method will receive a new instance of Jzonbie.
  * <pre>
- * {@code
- * @Rule
+ * &#64;Rule
  * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
- * }
  * </pre>
  * <p>
  * The {@link ClassRule} annotation can be used to receive the same Jzonbie instance
@@ -37,14 +35,12 @@ import static com.jonnymatts.jzonbie.JzonbieOptions.options;
  * test.
  * <p>
  * <pre>
- * {@code
- * @ClassRule
+ * &#64;ClassRule
  * public static JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
  *
- * @Before
+ * &#64;Before
  * public void setUp() throws Exception {
  *     jzonbieRule.reset();
- * }
  * }
  * </pre>
  *
@@ -63,10 +59,8 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
      * Returns a {@code JzonbieRule} with a default Jzonbie.
      * <p>
      * <pre>
-     * {@code
-     * @Rule
+     * &#64;Rule
      * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
-     * }
      * </pre>
      * @return default Jzonbie rule
      */
@@ -78,10 +72,8 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
      * Returns a {@code JzonbieRule} with a customized Jzonbie.
      * <p>
      * <pre>
-     * {@code
-     * @Rule
+     * &#64;Rule
      * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie(options().withHttpPort(8080));
-     * }
      * </pre>
      * @return default Jzonbie rule
      */
@@ -93,10 +85,8 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
      * Returns a {@code JzonbieRule} with a Jzonbie of the supplied class.
      * <p>
      * <pre>
-     * {@code
-     * @Rule
+     * &#64;Rule
      * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie(CustomJzonbie::new);
-     * }
      * </pre>
      *
      * @param jzonbie supplier of custom jzonbie
@@ -171,14 +161,12 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
      * Returns the underlying Jzonbie.
      * <p>
      * <pre>
-     * {@code
-     * @Rule
-     * public JzonbieRule<CustomJzonbie> jzonbieRule = JzonbieRule.jzonbie(CustomJzonbie::new);
+     * &#64;Rule
+     * public JzonbieRule&#60;CustomJzonbie&#62; jzonbieRule = JzonbieRule.jzonbie(CustomJzonbie::new);
      *
      * ...
      *
      * final CustomJzonbie customJzonbie = jzonbieRule.getJzonbie();
-     * }
      * </pre>
      *
      * @return jzonbie instance

@@ -15,16 +15,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * All test methods will use the same Jzonbie. The Jzonbie will be reset after
  * each test.
  * <pre>
- * {@code
- * @ExtendWith(JzonbieExtension.class)
+ * &#64;ExtendWith(JzonbieExtension.class)
  * class ExampleTest {
  *
- *     @Test
+ *     &#64;Test
  *     void testMethod(Jzonbie jzonbie) {
  *         jzonbie.prime(get("/"), ok());
  *         ...
  *     }
- * }
  * }
  * </pre>
  * <p>
@@ -33,17 +31,15 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * argument constructor.
  * <p>
  * <pre>
- * {@code
- * @ExtendWith(JzonbieExtension.class)
- * @JzonbieConfiguration(CustomJzonbie.class)
+ * &#64;ExtendWith(JzonbieExtension.class)
+ * &#64;JzonbieConfiguration(CustomJzonbie.class)
  * class ExampleTest {
  *
- *     @Test
+ *     &#64;Test
  *     void testMethod(CustomJzonbie jzonbie) {
  *         jzonbie.prime(get("/"), ok());
  *         ...
  *     }
- * }
  * }
  * </pre>
  */
