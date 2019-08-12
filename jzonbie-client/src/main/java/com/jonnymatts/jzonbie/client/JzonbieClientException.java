@@ -1,5 +1,9 @@
 package com.jonnymatts.jzonbie.client;
 
+/**
+ * Thrown to indicate that an error has occurred when communicating
+ * with the Jzonbie over HTTP.
+ */
 public class JzonbieClientException extends RuntimeException {
 
     public JzonbieClientException(String message) {

@@ -54,8 +54,8 @@ class JzonbieTest {
     private HttpClient client;
 
     @BeforeEach
-    void setUp() throws Exception {
-        httpRequest = RequestBuilder.get("http://localhost:" + JzonbieExtension.getJzonbie().getHttpPort() + "/").build();
+    void setUp(Jzonbie jzonbie) throws Exception {
+        httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/").build();
 
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(10);

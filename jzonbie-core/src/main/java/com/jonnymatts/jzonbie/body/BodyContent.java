@@ -3,7 +3,7 @@ package com.jonnymatts.jzonbie.body;
 import com.jonnymatts.jzonbie.Body;
 
 /**
- * Abstract class to define for request and response bodies.
+ * Abstract class to define request and response bodies.
  *
  * @param <T> the type of the body content
  */

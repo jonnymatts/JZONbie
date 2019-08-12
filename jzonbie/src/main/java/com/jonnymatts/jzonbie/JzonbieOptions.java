@@ -13,6 +13,36 @@ import static com.jonnymatts.jzonbie.HttpsOptions.httpsOptions;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
+/**
+ * Class that defines the configuration of a custom Jzonbie.
+ * <p>
+ * By default, a Jzonbie will be configured to serve HTTP traffic on a
+ * random, available port. The Jzonbie functions can be accessed over
+ * HTTP using the header "zombie".
+ * <pre>
+ * {@code
+ * options().withHttpPort(9000).withZombieHeaderName("other")
+ * }
+ * </pre>
+ * Jzonbie can be configured with {@link Priming} that will be set when
+ * started and reset.
+ * <pre>
+ * {@code
+ * options().withPriming(
+ *      priming(get("/"), ok()),
+ *      defaultPriming(post("/create"), staticDefault(created()))
+ * )
+ * }
+ * </pre>
+ * It can also be configured with custom {@link JzonbieRoute} endpoints.
+ * <pre>
+ * {@code
+ * options().withRoutes(
+ *      get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())
+ * )
+ * }
+ * </pre>
+ */
 public class JzonbieOptions {
     private static final int DEFAULT_PORT = 0;
     private static final String DEFAULT_ZOMBIE_HEADER_NAME = "zombie";
@@ -20,7 +50,7 @@ public class JzonbieOptions {
     private static final List<JzonbieRoute> DEFAULT_ROUTES = emptyList();
     private static final List<Priming> DEFAULT_PRIMING = emptyList();
     private static final int DEFAULT_CALL_HISTORY_CAPACITY = 1000;
-    private static final int DEFAULT_FAILD_REQUESTS_CAPACITY = 1000;
+    private static final int DEFAULT_FAILED_REQUESTS_CAPACITY = 1000;
 
     private int httpPort;
     private String zombieHeaderName;
@@ -39,63 +69,145 @@ public class JzonbieOptions {
         this.routes = DEFAULT_ROUTES;
         this.priming = DEFAULT_PRIMING;
         this.callHistoryCapacity = DEFAULT_CALL_HISTORY_CAPACITY;
-        this.failedRequestsCapacity = DEFAULT_FAILD_REQUESTS_CAPACITY;
+        this.failedRequestsCapacity = DEFAULT_FAILED_REQUESTS_CAPACITY;
     }
 
+    /**
+     * Returns the default Jzonbie configuration.
+     *
+     * @return default Jzonbie configuration
+     */
     public static JzonbieOptions options() {
         return new JzonbieOptions();
     }
 
+    /**
+     * Configures Jzonbie to serve HTTP traffic on the given port.
+     * <p>
+     * By default Jzonbie will choose a random, available port.
+     *
+     * @param httpPort HTTP port
+     * @return this Jzonbie configuration with a configured port
+     */
     public JzonbieOptions withHttpPort(int httpPort) {
         this.httpPort = httpPort;
         return this;
     }
 
+    /**
+     * Configures Jzonbie to serve HTTPS traffic with the given configuration.
+     *
+     * @param httpsOptions HTTPS configuration
+     * @return this Jzonbie configuration with HTTPS configuration
+     */
     public JzonbieOptions withHttps(HttpsOptions httpsOptions) {
         this.httpsOptions = httpsOptions;
         return this;
     }
 
+    /**
+     * Configures Jzonbie to serve HTTPS traffic with the default configuration.
+     *
+     * @return this Jzonbie configuration with default HTTPS configuration
+     */
     public JzonbieOptions withHttps() {
         this.httpsOptions = httpsOptions();
         return this;
     }
 
+    /**
+     * Configures Jzonbie to provide access to functions over HTTP using the given header.
+     *
+     * @param zombieHeaderName header name
+     * @return this Jzonbie configuration with HTTPS configuration
+     */
     public JzonbieOptions withZombieHeaderName(String zombieHeaderName) {
         this.zombieHeaderName = zombieHeaderName;
         return this;
     }
 
+    /**
+     * Configures Jzonbie to (de)serialize with the given {@link ObjectMapper}.
+     * <p>
+     * By default Jzonbie will use {@link JzonbieObjectMapper}.
+     *
+     * @param mapper {@link ObjectMapper}
+     * @return this Jzonbie configuration with a configured {@link ObjectMapper}
+     */
     public JzonbieOptions withObjectMapper(ObjectMapper mapper) {
         this.objectMapper = mapper;
         return this;
     }
 
+    /**
+     * Configures Jzonbie to wait for a given duration after it is stopped.
+     * <p>
+     * This is useful when a Jzonbie is repeatedly restarted using the same port.
+     *
+     * @param waitAfterStopFor wait duration
+     * @return this Jzonbie configuration with a configured duration to wait after stopping
+     */
     public JzonbieOptions withWaitAfterStopping(Duration waitAfterStopFor) {
         this.waitAfterStopping = waitAfterStopFor;
         return this;
     }
 
+    /**
+     * Configures Jzonbie with the given custom endpoints.
+     *
+     * @param routes custom endpoints
+     * @return this Jzonbie configuration with custom endpoints
+     */
     public JzonbieOptions withRoutes(List<JzonbieRoute> routes) {
         this.routes = routes;
         return this;
     }
 
+    /**
+     * Configures Jzonbie with the given custom endpoints.
+     *
+     * @param routes custom endpoints
+     * @return this Jzonbie configuration with custom endpoints
+     */
     public JzonbieOptions withRoutes(JzonbieRoute... routes) {
         this.routes = asList(routes);
         return this;
     }
 
+    /**
+     * Configures Jzonbie with the given default priming.
+     * <p>
+     * The priming will be set on start and reset.
+     *
+     * @param priming default
+     * @return this Jzonbie configuration with default priming
+     */
     public JzonbieOptions withPriming(Priming... priming) {
         this.priming = asList(priming);
         return this;
     }
 
+    /**
+     * Configures max capacity of Jzonbie call history cache.
+     * <p>
+     * By default Jzonbie will have a call history capacity of <b>1000</b>.
+     *
+     * @param capacity call history capacity
+     * @return this Jzonbie configuration with the given call history capacity
+     */
     public JzonbieOptions withCallHistoryCapacity(int capacity) {
         this.callHistoryCapacity = capacity;
         return this;
     }
 
+    /**
+     * Configures max capacity of Jzonbie failed requests cache.
+     * <p>
+     * By default Jzonbie will have a failed request capacity of <b>1000</b>.
+     *
+     * @param capacity failed request capacity
+     * @return this Jzonbie configuration with the given failed request capacity
+     */
     public JzonbieOptions withFailedRequestsCapacity(int capacity) {
         this.failedRequestsCapacity = capacity;
         return this;

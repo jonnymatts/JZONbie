@@ -10,6 +10,8 @@ import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
 import com.jonnymatts.jzonbie.verification.InvocationVerificationCriteria;
 import com.jonnymatts.jzonbie.verification.VerificationException;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 
 import java.io.File;
@@ -19,6 +21,35 @@ import java.util.function.Supplier;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
+/**
+ * JUnit {@link Rule} that provides a {@link Jzonbie} in a test suite.
+ * <p>
+ * Every test method will receive a new instance of Jzonbie.
+ * <pre>
+ * {@code
+ * @Rule
+ * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
+ * }
+ * </pre>
+ * <p>
+ * The {@link ClassRule} annotation can be used to receive the same Jzonbie instance
+ * for every method. When using this annotation, the Jzonbie must be reset after every
+ * test.
+ * <p>
+ * <pre>
+ * {@code
+ * @ClassRule
+ * public static JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
+ *
+ * @Before
+ * public void setUp() throws Exception {
+ *     jzonbieRule.reset();
+ * }
+ * }
+ * </pre>
+ *
+ * @param <T> class of Jzonbie instance
+ */
 public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements JzonbieClient {
 
     private Supplier<T> jzonbieCreator;
@@ -28,22 +59,69 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
         this.jzonbieCreator = jzonbieCreator;
     }
 
+    /**
+     * Returns a {@code JzonbieRule} with a default Jzonbie.
+     * <p>
+     * <pre>
+     * {@code
+     * @Rule
+     * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie();
+     * }
+     * </pre>
+     * @return default Jzonbie rule
+     */
     public static JzonbieRule<Jzonbie> jzonbie() {
         return jzonbie(options());
     }
 
+    /**
+     * Returns a {@code JzonbieRule} with a customized Jzonbie.
+     * <p>
+     * <pre>
+     * {@code
+     * @Rule
+     * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie(options().withHttpPort(8080));
+     * }
+     * </pre>
+     * @return default Jzonbie rule
+     */
     public static JzonbieRule<Jzonbie> jzonbie(JzonbieOptions options) {
         return new JzonbieRule<>(() -> new Jzonbie(options));
     }
 
+    /**
+     * Returns a {@code JzonbieRule} with a Jzonbie of the supplied class.
+     * <p>
+     * <pre>
+     * {@code
+     * @Rule
+     * public JzonbieRule jzonbieRule = JzonbieRule.jzonbie(CustomJzonbie::new);
+     * }
+     * </pre>
+     *
+     * @param jzonbie supplier of custom jzonbie
+     * @param <T> class extends Jzonbie
+     * @return customized Jzonbie rule
+     */
     public static <T extends Jzonbie> JzonbieRule<T> jzonbie(Supplier<T> jzonbie) {
         return new JzonbieRule<>(jzonbie);
     }
 
+    /**
+     * Returns the port the HTTP server is listening on.
+     *
+     * @return http port
+     */
     public int getHttpPort() {
         return jzonbie.getHttpPort();
     }
 
+    /**
+     * Returns the port the HTTPS server is listening on.
+     *
+     * @exception IllegalStateException if Jzonbie is not running with HTTPS enabled
+     * @return https port
+     */
     public int getHttpsPort() {
         return jzonbie.getHttpsPort();
     }
@@ -89,6 +167,22 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
         return jzonbie.getTruststore();
     }
 
+    /**
+     * Returns the underlying Jzonbie.
+     * <p>
+     * <pre>
+     * {@code
+     * @Rule
+     * public JzonbieRule<CustomJzonbie> jzonbieRule = JzonbieRule.jzonbie(CustomJzonbie::new);
+     *
+     * ...
+     *
+     * final CustomJzonbie customJzonbie = jzonbieRule.getJzonbie();
+     * }
+     * </pre>
+     *
+     * @return jzonbie instance
+     */
     public T getJzonbie() {
         return jzonbie;
     }

@@ -9,6 +9,44 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * JUnit {@link Extension} that provides a {@link Jzonbie} in a test suite.
+ * <p>
+ * All test methods will use the same Jzonbie. The Jzonbie will be reset after
+ * each test.
+ * <pre>
+ * {@code
+ * @ExtendWith(JzonbieExtension.class)
+ * class ExampleTest {
+ *
+ *     @Test
+ *     void testMethod(Jzonbie jzonbie) {
+ *         jzonbie.prime(get("/"), ok());
+ *         ...
+ *     }
+ * }
+ * }
+ * </pre>
+ * <p>
+ * The extension can provide a Jzonbie of any class that extends Jzonbie, specified
+ * by the {@link JzonbieExtension} annotation. The class provided must have a no
+ * argument constructor.
+ * <p>
+ * <pre>
+ * {@code
+ * @ExtendWith(JzonbieExtension.class)
+ * @JzonbieConfiguration(CustomJzonbie.class)
+ * class ExampleTest {
+ *
+ *     @Test
+ *     void testMethod(CustomJzonbie jzonbie) {
+ *         jzonbie.prime(get("/"), ok());
+ *         ...
+ *     }
+ * }
+ * }
+ * </pre>
+ */
 public class JzonbieExtension implements ParameterResolver, BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
     private static Jzonbie jzonbie;
@@ -41,11 +79,7 @@ public class JzonbieExtension implements ParameterResolver, BeforeAllCallback, B
         jzonbie.stop();
     }
 
-    public static Jzonbie getJzonbie() {
-        return getJzonbie(Jzonbie.class);
-    }
-
-    public static <T extends Jzonbie> T getJzonbie(Class<T> requestedJzonbieClass) {
+    private <T extends Jzonbie> T getJzonbie(Class<T> requestedJzonbieClass) {
         final Class<? extends Jzonbie> jzonbieClass = jzonbie.getClass();
         if(requestedJzonbieClass.isAssignableFrom(jzonbieClass)) {
             return requestedJzonbieClass.cast(jzonbie);

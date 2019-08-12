@@ -9,7 +9,6 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,25 +35,20 @@ class JzonbieConcurrencyTest {
     private HttpClient httpClient;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp(Jzonbie jzonbie) throws Exception {
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(10);
         connectionManager.setDefaultMaxPerRoute(10);
         httpClient = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
 
-        IntStream.range(0, 10).boxed().forEach(this::primeZombieWithDelay);
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-        JzonbieExtension.getJzonbie().reset();
+        IntStream.range(0, 10).boxed().forEach(i -> primeZombieWithDelay(i, jzonbie));
     }
 
     @Test
-    void jzonbieCanServePrimedResponsesWithDifferentDelaysConcurrently() throws Exception {
+    void jzonbieCanServePrimedResponsesWithDifferentDelaysConcurrently(Jzonbie jzonbie) throws Exception {
         final List<Callable<Integer>> callables = IntStream.range(0, 10).boxed()
                 .map(i -> (Callable<Integer>)() -> {
-                    final HttpUriRequest request = createRequest(i);
+                    final HttpUriRequest request = createRequest(i, jzonbie);
                     final Stopwatch stopwatch = Stopwatch.createStarted();
                     final HttpResponse response;
                     try {
@@ -96,12 +90,12 @@ class JzonbieConcurrencyTest {
         });
     }
 
-    private HttpUriRequest createRequest(int i) {
-        return RequestBuilder.get("http://localhost:" + JzonbieExtension.getJzonbie().getHttpPort() + "/" + i).build();
+    private HttpUriRequest createRequest(int i, Jzonbie jzonbie) {
+        return RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/" + i).build();
     }
 
-    private void primeZombieWithDelay(int i) {
-        JzonbieExtension.getJzonbie().prime(
+    private void primeZombieWithDelay(int i, Jzonbie jzonbie) {
+        jzonbie.prime(
                 get("/" + i),
                 ok().withDelay(Duration.of(i, SECONDS))
         );

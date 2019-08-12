@@ -5,7 +5,6 @@ import com.jonnymatts.jzonbie.JzonbieClient;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.junit.JzonbieExtension;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
-import com.jonnymatts.jzonbie.priming.ZombiePriming;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 import com.jonnymatts.jzonbie.responses.defaults.DefaultAppResponse;
@@ -47,7 +46,6 @@ class ApacheJzonbieHttpClientTest {
     private static final StaticDefaultAppResponse DEFAULT_RESPONSE = staticDefault(RESPONSE);
     private static final File FILE = new File(ApacheJzonbieHttpClient.class.getClassLoader().getResource("example-priming.json").getFile());
 
-    private ZombiePriming zombiePriming;
     private Exchange exchange;
     private PrimedMapping primedMapping;
 
@@ -57,38 +55,37 @@ class ApacheJzonbieHttpClientTest {
     private ApacheJzonbieHttpClient brokenClient;
 
     @BeforeEach
-    void setUp() {
-        zombiePriming = new ZombiePriming(REQUEST, RESPONSE);
+    void setUp(Jzonbie jzonbie) {
         exchange = new Exchange(REQUEST, RESPONSE);
         primedMapping = createPrimedMapping(RESPONSE);
 
-        final String zombieBaseUrl = "http://localhost:" + JzonbieExtension.getJzonbie().getHttpPort();
+        final String zombieBaseUrl = "http://localhost:" + jzonbie.getHttpPort();
         underTest = new ApacheJzonbieHttpClient(zombieBaseUrl);
         brokenClient = new ApacheJzonbieHttpClient("http://broken:8080");
         testingClient = new TestingClient(zombieBaseUrl);
     }
 
     @Test
-    void primeZombieAddsPriming() {
+    void primeZombieAddsPriming(Jzonbie jzonbie) {
         underTest.prime(REQUEST, RESPONSE);
 
-        assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    void primeZombieWithDefaultResponseAddsPriming() {
+    void primeZombieWithDefaultResponseAddsPriming(Jzonbie jzonbie) {
         underTest.prime(REQUEST, DEFAULT_RESPONSE);
 
         final PrimedMapping primedMapping = createPrimedMapping(DEFAULT_RESPONSE);
 
-        assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test
-    void primeZombieWithFileAddsPriming() {
+    void primeZombieWithFileAddsPriming(Jzonbie jzonbie) {
         underTest.prime(FILE);
 
-        assertThat(JzonbieExtension.getJzonbie().getCurrentPriming()).containsExactly(primedMapping);
+        assertThat(jzonbie.getCurrentPriming()).containsExactly(primedMapping);
     }
 
     @Test

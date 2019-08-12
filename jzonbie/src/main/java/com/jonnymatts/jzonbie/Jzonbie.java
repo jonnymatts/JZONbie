@@ -46,6 +46,34 @@ import static ch.qos.logback.classic.Level.ERROR;
 import static ch.qos.logback.classic.Level.OFF;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
+/**
+ * Class that provide a mock HTTP(S) server.
+ * <p>
+ * A Jzonbie can be primed to return responses when an incoming requests are matched.
+ * <pre>
+ * {@code
+ * final Jzonbie jzonbie = new Jzonbie();
+ *
+ * jzonbie.prime(
+ *      get("/"),
+ *      ok()
+ * );
+ * }
+ * </pre>
+ * A Jzonbie can be configured with {@link JzonbieOptions}.
+ * <pre>
+ * {@code
+ * final Jzonbie jzonbie = new Jzonbie(
+ *      options()
+ *          .withHttpPort(9000)
+ *          .withZombieHeaderName("header")
+ *          .withRoutes(
+ *              post("/action", ctx -> ctx.getRouteContext().getResponse().status(202).commit())
+ *          )
+ *      );
+ * }
+ * </pre>
+ */
 public class Jzonbie implements JzonbieClient {
 
     static {
@@ -116,10 +144,21 @@ public class Jzonbie implements JzonbieClient {
         LOGGER.info("Jzonbie started - HTTP port: {}{}", httpPort, httpsPort == null ? "" : ", HTTPS port: " + httpsPort);
     }
 
+    /**
+     * Returns the port that Jzonbie is serving HTTP traffic on.
+     *
+     * @return Jzonbie HTTP port
+     */
     public int getHttpPort() {
         return httpPort;
     }
 
+    /**
+     * Returns the port that Jzonbie is serving HTTPS traffic on.
+     *
+     * @throws IllegalStateException if HTTPS is not configured
+     * @return Jzonbie HTTPS port
+     */
     public int getHttpsPort() {
         if(httpsPort == null) {
             throw new IllegalStateException("No https server configured");
@@ -201,6 +240,9 @@ public class Jzonbie implements JzonbieClient {
         failedRequests.clear();
     }
 
+    /**
+     * Stops Jzonbie HTTP(S) server(s).
+     */
     public void stop() {
         httpPippo.stop();
         if(httpsPippo != null) {

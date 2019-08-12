@@ -32,12 +32,30 @@ import static java.util.Base64.getDecoder;
 import static java.util.function.Function.identity;
 import static org.apache.http.HttpStatus.SC_OK;
 
+/**
+ * Class to communicate with a Jzonbie over HTTP.
+ * <p>
+ * All methods defined on the {@link JzonbieClient} interface are implemented.
+ * However, the {@code ApacheJzonbieHttpClient} is unable to send or receive
+ * {@link DynamicDefaultAppResponse}s.
+ * <p>
+ * {@code
+ * final JzonbieClient jzonbie = new ApacheJzonbieHttpClient("http://jzonbie");
+ *
+ * jzonbie.prime(get("/"), ok());
+ * }
+ */
 public class ApacheJzonbieHttpClient implements JzonbieClient {
 
     private final ApacheJzonbieRequestFactory apacheJzonbieRequestFactory;
     private final CloseableHttpClient httpClient;
     private final Deserializer deserializer;
 
+    /**
+     * Creates a new client, communicating with a Jzonbie at the base URL.
+     *
+     * @param zombieBaseUrl base URL of the Jzonbie
+     */
     public ApacheJzonbieHttpClient(String zombieBaseUrl) {
         final JzonbieObjectMapper objectMapper = new JzonbieObjectMapper();
 
@@ -46,6 +64,14 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         this.deserializer = new Deserializer();
     }
 
+    /**
+     * Creates a new client, communicating with a Jzonbie at the base URL.
+     * The zombie header is the name of the header that is used to drive
+     * Jzonbie functions over HTTP.
+     *
+     * @param zombieBaseUrl base URL of the Jzonbie
+     * @param zombieHeaderName zombie header of the Jzonbie
+     */
     public ApacheJzonbieHttpClient(String zombieBaseUrl,
                                    String zombieHeaderName) {
         final JzonbieObjectMapper objectMapper = new JzonbieObjectMapper();
@@ -55,6 +81,25 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         this.deserializer = new Deserializer(objectMapper);
     }
 
+    /**
+     * Creates a new client, communicating with a Jzonbie at the base URL.
+     * Passing in a deserializer allows the client to serialize other classes.
+     * <p>
+     * <pre>
+     * {@code
+     * final CloseableHttpClient client = HttpClients.createDefault();
+     * final ApacheJzonbieRequestFactory requestFactory = new ApacheJzonbieRequestFactory("http://jzonbie");
+     * final Deserializer deserializer = new Deserializer(new CustomObjectMapper());
+     * final JzonbieClient jzonbie = new ApacheJzonbieHttpClient(client, requestFactory, deserializer);
+     *
+     * jzonbie.prime(get("/"), ok());
+     * }
+     * </pre>
+     *
+     * @param httpClient base client
+     * @param apacheJzonbieRequestFactory request factory
+     * @param deserializer body deserializer
+     */
     public ApacheJzonbieHttpClient(CloseableHttpClient httpClient,
                                    ApacheJzonbieRequestFactory apacheJzonbieRequestFactory,
                                    Deserializer deserializer) {
@@ -82,14 +127,25 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         );
     }
 
+    /**
+     * Prime this Jzonbie to return response when an incoming request matches the input request
+     * and there are no responses primed.
+     * <p>
+     * This is a permanent priming. It can only be removed by resetting this Jzonbie.
+     * However, it can be overridden by any standard priming.
+     *
+     * @exception UnsupportedOperationException if response is a {@link DynamicDefaultAppResponse}
+     * @param request  the request to match against
+     * @param response the response this Jzonbie will return by default
+     */
     @Override
-    public void prime(AppRequest request, DefaultAppResponse defaultAppResponse) {
-        if(defaultAppResponse instanceof DynamicDefaultAppResponse) throw new UnsupportedOperationException("Priming dynamic default for zombie over HTTP not supported");
-        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, defaultAppResponse.getResponse());
+    public void prime(AppRequest request, DefaultAppResponse response) {
+        if(response instanceof DynamicDefaultAppResponse) throw new UnsupportedOperationException("Priming dynamic default for zombie over HTTP not supported");
+        final HttpUriRequest primeZombieRequest = apacheJzonbieRequestFactory.createPrimeZombieForDefaultRequest(request, response.getResponse());
         execute(
                 primeZombieRequest,
                 httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), ZombiePriming.class),
-                format("Failed to prime. %s, %s", request, defaultAppResponse)
+                format("Failed to prime. %s, %s", request, response)
         );
     }
 
