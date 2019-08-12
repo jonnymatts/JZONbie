@@ -201,6 +201,20 @@ class ApacheJzonbieHttpClientTest {
         assertThat(new X509CertImpl(truststore.getCertificate("jzonbie").getEncoded()).getSubjectDN().getName()).isEqualTo("CN=localhost");
     }
 
+    @Test
+    void isReadyReturnsTrue() throws Exception {
+        final boolean got = underTest.isReady();
+
+        assertThat(got).isTrue();
+    }
+
+    @Test
+    void isReadyReturnsFalseIfJzonbieIsDown() throws Exception {
+        final boolean got = brokenClient.isReady();
+
+        assertThat(got).isFalse();
+    }
+
     static Stream<ExceptionTestData> exceptionTestDataPoints() {
         return Stream.of(
             new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),

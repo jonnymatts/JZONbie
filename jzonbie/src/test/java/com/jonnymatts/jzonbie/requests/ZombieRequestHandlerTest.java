@@ -260,4 +260,13 @@ class ZombieRequestHandlerTest {
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory));
     }
+
+    @Test
+    void handleReturnsEmptyResponseIfZombieHeaderHasUpValue() {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "up"));
+
+        final Response got = zombieRequestHandler.handle(request);
+
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, singletonMap("message", "Up!")));
+    }
 }

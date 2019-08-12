@@ -75,6 +75,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleResetRequest();
             case "truststore":
                 return handleTruststoreRequest();
+            case "up":
+                return handleUpRequest();
             default:
                 throw new RuntimeException(format("Unknown zombie method: %s", zombieHeaderValue));
         }
@@ -135,6 +137,10 @@ public class ZombieRequestHandler implements RequestHandler {
 
     private ZombieResponse handleTruststoreRequest() {
         return new ZombieResponse(OK_200, httpsSupport.getTrustStoreAsByteArray());
+    }
+
+    private ZombieResponse handleUpRequest() {
+        return new ZombieResponse(OK_200, singletonMap("message", "Up!"));
     }
 
     private ZombiePriming getZombiePriming(Request request) {

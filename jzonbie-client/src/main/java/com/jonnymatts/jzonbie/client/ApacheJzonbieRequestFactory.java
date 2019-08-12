@@ -97,6 +97,12 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
+    public HttpUriRequest createReadyRequest() {
+        return RequestBuilder.get(zombieBaseUrl)
+                .addHeader(zombieHeaderName, "up")
+                .build();
+    }
+
     private HttpUriRequest createPostRequest(Object requestBody, String zombieHeader) {
         try {
             return RequestBuilder.post(zombieBaseUrl)

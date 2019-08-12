@@ -211,6 +211,21 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         );
     }
 
+    /**
+     * Checks whether the Jzonbie is ready to serve traffic.
+     *
+     * @return jzonbie ready
+     */
+    public boolean isReady() {
+        final HttpUriRequest readyRequest = apacheJzonbieRequestFactory.createReadyRequest();
+
+        try(CloseableHttpResponse response = httpClient.execute(readyRequest)) {
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private <T> T execute(HttpUriRequest request, Function<HttpResponse, T> mapper, String messageIfFailureOccurs) {
         try(CloseableHttpResponse response = httpClient.execute(request)) {
             return mapper.apply(response);

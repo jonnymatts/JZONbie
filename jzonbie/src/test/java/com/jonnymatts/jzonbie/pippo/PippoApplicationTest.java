@@ -406,4 +406,13 @@ class PippoApplicationTest {
                 .header("method", "GET")
                 .body(equalTo("{\"path\": \"/path\"}"));
     }
+
+    @Test
+    void testUp() {
+        final Response pippoResponse = given()
+                .header("zombie", "up")
+                .get("/");
+        pippoResponse.then().statusCode(200);
+        pippoResponse.then().body("message", equalTo("Up!"));
+    }
 }
