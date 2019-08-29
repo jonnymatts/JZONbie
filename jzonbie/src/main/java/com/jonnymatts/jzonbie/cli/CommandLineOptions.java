@@ -45,6 +45,9 @@ public class CommandLineOptions {
     @Option(names = {"--initial-priming-file"}, paramLabel = "PATH", description = "path to initial priming file JSON")
     public File initialPrimingFile;
 
+    @Option(names = {"--default-priming-file"}, paramLabel = "PATH", description = "path to default priming file JSON")
+    public File defaultPrimingFile;
+
     public static CommandLineOptions parse(String[] args) {
         final CommandLine cmd = new CommandLine(CommandLineOptions.class);
         cmd.parseArgs(args);
@@ -83,6 +86,9 @@ public class CommandLineOptions {
         }
         if (commandLineOptions.initialPrimingFile != null) {
             options.withInitialPrimingFile(commandLineOptions.initialPrimingFile);
+        }
+        if (commandLineOptions.defaultPrimingFile != null) {
+            options.withDefaultPrimingFile(commandLineOptions.defaultPrimingFile);
         }
         return options;
     }

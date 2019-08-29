@@ -63,6 +63,7 @@ public class JzonbieOptions {
     private int callHistoryCapacity;
     private int failedRequestsCapacity;
     private File initialPrimingFile;
+    private File defaultPrimingFile;
 
     private JzonbieOptions() {
         this.httpPort = DEFAULT_PORT;
@@ -227,6 +228,17 @@ public class JzonbieOptions {
         return this;
     }
 
+    /**
+     * Specifies a JSON file containing default priming that will be applied on Jzonbie start-up.
+     *
+     * @param defaultPrimingFile the JSON default priming file
+     * @return this Jzonbie configuration with default priming file
+     */
+    public JzonbieOptions withDefaultPrimingFile(File defaultPrimingFile) {
+        this.defaultPrimingFile = defaultPrimingFile;
+        return this;
+    }
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -263,5 +275,9 @@ public class JzonbieOptions {
 
     public Optional<File> getInitialPrimingFile() {
         return Optional.ofNullable(initialPrimingFile);
+    }
+
+    public Optional<File> getDefaultPrimingFile() {
+        return Optional.ofNullable(defaultPrimingFile);
     }
 }

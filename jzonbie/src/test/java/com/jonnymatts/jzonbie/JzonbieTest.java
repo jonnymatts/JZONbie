@@ -180,6 +180,17 @@ class JzonbieTest {
     }
 
     @Test
+    void initialPrimingWithAFileIsRemovedOnReset() {
+        Jzonbie jzonbieWithInitialPrimings = new Jzonbie(options().withInitialPrimingFile(getExamplePrimingFile()));
+
+        jzonbieWithInitialPrimings.reset();
+
+        final List<PrimedMapping> currentPriming = jzonbieWithInitialPrimings.getCurrentPriming();
+
+        assertThat(currentPriming).isEmpty();
+    }
+
+    @Test
     void jzonbieWithAMissingInitialPrimingFile() {
         assertThatExceptionOfType(RuntimeException.class).isThrownBy(
                 () -> new Jzonbie(options().withInitialPrimingFile(new File("missing")))
@@ -405,6 +416,36 @@ class JzonbieTest {
         callJzonbieWithRequest(4, jzonbie, get("/"), ok().withBody(objectBody(singletonMap("key", "val"))), false);
 
         assertThat(jzonbie.getFailedRequests()).hasSize(2);
+    }
+
+    @Test
+    void jzonbieCanBePrimedWithAnDefaultPrimingFile() {
+        Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()));
+
+        assertPrimingFromExamplePrimingFile(jzonbieWithDefaultPrimings.getCurrentPriming());
+    }
+
+    @Test
+    void initialPrimingWithAFileIsNotRemovedOnReset() {
+        Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()));
+
+        jzonbieWithDefaultPrimings.reset();
+
+        assertPrimingFromExamplePrimingFile(jzonbieWithDefaultPrimings.getCurrentPriming());
+    }
+
+    @Test
+    void jzonbieWithAMissingDefaultPrimingFile() {
+        assertThatExceptionOfType(RuntimeException.class).isThrownBy(
+                () -> new Jzonbie(options().withDefaultPrimingFile(new File("missing")))
+        ).withCauseInstanceOf(FileNotFoundException.class);
+    }
+
+    @Test
+    void jzonbieCanAddPrimingThroughAFileAndJavaOptions() {
+        Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()).withPriming(priming(get("/"), ok())));
+
+        assertThat(jzonbieWithDefaultPrimings.getCurrentPriming()).hasSize(2);
     }
 
     void callJzonbieWithRequest(int times, Jzonbie jzonbie, AppRequest request, AppResponse response, boolean shouldPrime) throws IOException {

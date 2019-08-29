@@ -8,7 +8,6 @@ import picocli.CommandLine;
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommandLineOptionsTest {
 
@@ -25,6 +24,8 @@ class CommandLineOptionsTest {
         assertThat(commandLineOptions.keystorePassword).isNull();
         assertThat(commandLineOptions.callHistoryCapacity).isNull();
         assertThat(commandLineOptions.failedRequestsCapacity).isNull();
+        assertThat(commandLineOptions.initialPrimingFile).isNull();
+        assertThat(commandLineOptions.defaultPrimingFile).isNull();
     }
 
     @Test
@@ -132,6 +133,12 @@ class CommandLineOptionsTest {
     }
 
     @Test
+    void defaultPrimingFile() {
+        CommandLineOptions commandLineOptions = getCommandLineOptions("--default-priming-file", "missing-file");
+        assertThat(commandLineOptions.defaultPrimingFile).isEqualTo(new File("missing-file"));
+    }
+
+    @Test
     void toJzonbieOptions() {
         final JzonbieOptions jzonbieOptions = CommandLineOptions.toJzonbieOptions(
                 CommandLineOptions.parse(new String[]{
@@ -144,6 +151,8 @@ class CommandLineOptionsTest {
                                 "-cn", "common-name",
                                 "--call-history-capacity", "100",
                                 "--failed-requests-capacity", "50",
+                                "--initial-priming-file", "initial",
+                                "--default-priming-file", "default",
                         }
                 )
         );
@@ -152,6 +161,8 @@ class CommandLineOptionsTest {
         assertThat(jzonbieOptions.getZombieHeaderName()).isEqualTo("name");
         assertThat(jzonbieOptions.getCallHistoryCapacity()).isEqualTo(100);
         assertThat(jzonbieOptions.getFailedRequestsCapacity()).isEqualTo(50);
+        assertThat(jzonbieOptions.getInitialPrimingFile()).contains(new File("initial"));
+        assertThat(jzonbieOptions.getDefaultPrimingFile()).contains(new File("default"));
 
         final HttpsOptions httpsOptions = jzonbieOptions.getHttpsOptions().get();
         assertThat(httpsOptions.getPort()).isEqualTo(8001);

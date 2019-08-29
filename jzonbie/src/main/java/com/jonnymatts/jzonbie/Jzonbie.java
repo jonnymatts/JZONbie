@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jknack.handlebars.Handlebars;
+import com.jonnymatts.jzonbie.defaults.Priming;
 import com.jonnymatts.jzonbie.history.CallHistory;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
@@ -39,12 +40,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static ch.qos.logback.classic.Level.ERROR;
 import static ch.qos.logback.classic.Level.OFF;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
+import static com.jonnymatts.jzonbie.defaults.DefaultResponsePriming.defaultPriming;
+import static com.jonnymatts.jzonbie.defaults.StandardPriming.priming;
+import static java.util.Collections.emptyList;
 
 /**
  * Class that provide a mock HTTP(S) server.
@@ -103,12 +108,12 @@ public class Jzonbie implements JzonbieClient {
 
     public Jzonbie(JzonbieOptions options) {
         this.httpsSupport = new HttpsSupport();
-        primingContext = new PrimingContext(options.getPriming());
         callHistory = new CallHistory(options.getCallHistoryCapacity());
         failedRequests = new FixedCapacityCache<>(options.getFailedRequestsCapacity());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
         deserializer = new Deserializer(objectMapper);
+        primingContext = new PrimingContext(getDefaultPriming(options));
         final AppRequestFactory appRequestFactory = new AppRequestFactory(deserializer);
         final CurrentPrimingFileResponseFactory fileResponseFactory = new CurrentPrimingFileResponseFactory(objectMapper);
         primedMappingUploader = new PrimedMappingUploader(primingContext);
@@ -182,13 +187,7 @@ public class Jzonbie implements JzonbieClient {
 
     @Override
     public void prime(File file) {
-        try {
-            final String mappingsString = IoUtils.toString(new FileInputStream(file));
-            final List<PrimedMapping> primedMappings = deserializer.deserializeCollection(mappingsString, PrimedMapping.class);
-            primedMappingUploader.upload(primedMappings);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        primedMappingUploader.upload(getPrimedMappingsFromFile(file));
     }
 
     @Override
@@ -280,6 +279,34 @@ public class Jzonbie implements JzonbieClient {
         } else {
             settings.keystoreFile(keystoreLocation.get());
             keystorePassword.ifPresent(settings::keystorePassword);
+        }
+    }
+
+    private List<Priming> getDefaultPriming(JzonbieOptions options) {
+        final List<Priming> primingFromOptions = options.getPriming();
+        final List<Priming> primingFromFile = options.getDefaultPrimingFile().map(this::getDefaultPrimingFromFile).orElse(emptyList());
+        final List<Priming> priming = new ArrayList<>(primingFromOptions);
+        priming.addAll(primingFromFile);
+        return priming;
+    }
+
+    private List<Priming> getDefaultPrimingFromFile(File file) {
+        final List<Priming> priming = new ArrayList<>();
+        final List<PrimedMapping> primedMappings = getPrimedMappingsFromFile(file);
+        for (PrimedMapping primedMapping : primedMappings) {
+            final AppRequest request = primedMapping.getRequest();
+            primedMapping.getResponses().getPrimed().forEach(response -> priming.add(priming(request, response)));
+            primedMapping.getResponses().getDefault().ifPresent(defaultResponse -> priming.add(defaultPriming(request, defaultResponse)));
+        }
+        return priming;
+    }
+
+    private List<PrimedMapping> getPrimedMappingsFromFile(File file) {
+        try {
+            final String mappingsString = IoUtils.toString(new FileInputStream(file));
+            return deserializer.deserializeCollection(mappingsString, PrimedMapping.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
