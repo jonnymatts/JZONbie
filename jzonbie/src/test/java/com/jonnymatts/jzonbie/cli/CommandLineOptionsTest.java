@@ -5,7 +5,10 @@ import com.jonnymatts.jzonbie.JzonbieOptions;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
+import java.io.File;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CommandLineOptionsTest {
 
@@ -120,6 +123,12 @@ class CommandLineOptionsTest {
         final CommandLineOptions commandLineOptions = getCommandLineOptions("--failed-requests-capacity", "100");
 
         assertThat(commandLineOptions.failedRequestsCapacity).isEqualTo(100);
+    }
+
+    @Test
+    void initialPrimingFile() {
+        CommandLineOptions commandLineOptions = getCommandLineOptions("--initial-priming-file", "missing-file");
+        assertThat(commandLineOptions.initialPrimingFile).isEqualTo(new File("missing-file"));
     }
 
     @Test

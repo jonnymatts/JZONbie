@@ -22,9 +22,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.body.ArrayBodyContent.arrayBody;
@@ -44,8 +46,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(JzonbieExtension.class)
 class JzonbieTest {
@@ -54,7 +55,7 @@ class JzonbieTest {
     private HttpClient client;
 
     @BeforeEach
-    void setUp(Jzonbie jzonbie) throws Exception {
+    void setUp(Jzonbie jzonbie) {
         httpRequest = RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/").build();
 
         final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
@@ -64,7 +65,7 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimed(Jzonbie jzonbie) throws Exception {
+    void jzonbieCanBePrimed(Jzonbie jzonbie) {
         final AppRequest request = get("/");
         final AppResponse response = ok().withBody(objectBody(singletonMap("key", "val")));
         jzonbie.prime(request, response);
@@ -80,7 +81,7 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedWithStringBodyContent(Jzonbie jzonbie) throws Exception {
+    void jzonbieCanBePrimedWithStringBodyContent(Jzonbie jzonbie) {
         final AppRequest request = post("/").withBody(stringBody("<jzonbie>message</jzonbie>"));
         final AppResponse response = ok().withBody(stringBody("<response>message</response>"));
         jzonbie.prime(request, response);
@@ -96,7 +97,7 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedWithListBodyContent(Jzonbie jzonbie) throws Exception {
+    void jzonbieCanBePrimedWithListBodyContent(Jzonbie jzonbie) {
         final AppRequest request = post("/").withBody(arrayBody(singletonList("request")));
         final AppResponse response = ok().withBody(arrayBody(singletonList("response")));
         jzonbie.prime(request, response);
@@ -112,7 +113,7 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedWithJsonStringListBodyContent(Jzonbie jzonbie) throws Exception {
+    void jzonbieCanBePrimedWithJsonStringListBodyContent(Jzonbie jzonbie) {
         final AppRequest request = post("/").withBody(stringBody("request"));
         final AppResponse response = ok().withBody(stringBody("response"));
         jzonbie.prime(request, response);
@@ -128,7 +129,7 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedForStaticDefault(Jzonbie jzonbie) throws Exception {
+    void jzonbieCanBePrimedForStaticDefault(Jzonbie jzonbie) {
         final AppRequest request = get("/");
         final AppResponse response = ok();
         jzonbie.prime(request, staticDefault(response));
@@ -144,7 +145,7 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedForDynamicDefault(Jzonbie jzonbie) throws Exception {
+    void jzonbieCanBePrimedForDynamicDefault(Jzonbie jzonbie) {
         final AppRequest request = get("/");
         final DynamicDefaultAppResponse defaultResponse = dynamicDefault(() -> ok().withBody(objectBody(singletonMap("key", "val"))));
         jzonbie.prime(request, defaultResponse);
@@ -161,24 +162,32 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedWithAFile(Jzonbie jzonbie) throws Exception {
-        final File file = new File(getClass().getClassLoader().getResource("example-priming.json").getFile());
-        jzonbie.prime(file);
+    void jzonbieCanBePrimedWithAFile(Jzonbie jzonbie) {
+        jzonbie.prime(getExamplePrimingFile());
 
-        final List<PrimedMapping> got = jzonbie.getCurrentPriming();
+        final List<PrimedMapping> currentPriming = jzonbie.getCurrentPriming();
 
-        assertThat(got).hasSize(1);
-
-        final PrimedMapping primedMapping = got.get(0);
-
-        assertThat(primedMapping.getRequest().getPath()).isEqualTo("/path");
-        assertThat(primedMapping.getResponses().getDefault()).isNotEmpty();
-        assertThat(primedMapping.getResponses().getPrimed()).hasSize(1);
-        assertThat(primedMapping.getResponses().getPrimed().get(0).getStatusCode()).isEqualTo(201);
+        assertPrimingFromExamplePrimingFile(currentPriming);
     }
 
     @Test
-    void zombieHeaderNameCanBeSet() throws Exception {
+    void jzonbieCanBePrimedWithAnInitialPrimingFile() {
+        Jzonbie jzonbieWithInitialPrimings = new Jzonbie(options().withInitialPrimingFile(getExamplePrimingFile()));
+
+        final List<PrimedMapping> currentPriming = jzonbieWithInitialPrimings.getCurrentPriming();
+
+        assertPrimingFromExamplePrimingFile(currentPriming);
+    }
+
+    @Test
+    void jzonbieWithAMissingInitialPrimingFile() {
+        assertThatExceptionOfType(RuntimeException.class).isThrownBy(
+                () -> new Jzonbie(options().withInitialPrimingFile(new File("missing")))
+        ).withCauseInstanceOf(FileNotFoundException.class);
+    }
+
+    @Test
+    void zombieHeaderNameCanBeSet() {
         final String zombieHeaderName = "jzonbie";
         final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
 
@@ -244,7 +253,7 @@ class JzonbieTest {
     }
 
     @Test
-    void getFailedRequestReturnsEmptyListIfThereAreNoFailedRequests(Jzonbie jzonbie) throws Exception {
+    void getFailedRequestReturnsEmptyListIfThereAreNoFailedRequests(Jzonbie jzonbie) {
         final List<AppRequest> got = jzonbie.getFailedRequests();
 
         assertThat(got).isEmpty();
@@ -281,8 +290,6 @@ class JzonbieTest {
             final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/ready").build());
 
             assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
-        } catch(Exception e) {
-            throw e;
         } finally {
             jzonbie.stop();
         }
@@ -298,8 +305,6 @@ class JzonbieTest {
             final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/ready").build());
 
             assertThat(got.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
-        } catch(Exception e) {
-            throw e;
         } finally {
             jzonbie.stop();
         }
@@ -411,5 +416,20 @@ class JzonbieTest {
         for(int i = 0; i < times; i++) {
             client.execute(clientRequest);
         }
+    }
+
+    private File getExamplePrimingFile() {
+        return new File(Objects.requireNonNull(getClass().getClassLoader().getResource("example-priming.json")).getFile());
+    }
+
+    private void assertPrimingFromExamplePrimingFile(List<PrimedMapping> got) {
+        assertThat(got).hasSize(1);
+
+        final PrimedMapping primedMapping = got.get(0);
+
+        assertThat(primedMapping.getRequest().getPath()).isEqualTo("/path");
+        assertThat(primedMapping.getResponses().getDefault()).isNotEmpty();
+        assertThat(primedMapping.getResponses().getPrimed()).hasSize(1);
+        assertThat(primedMapping.getResponses().getPrimed().get(0).getStatusCode()).isEqualTo(201);
     }
 }

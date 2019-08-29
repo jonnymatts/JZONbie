@@ -5,6 +5,8 @@ import com.jonnymatts.jzonbie.JzonbieOptions;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
+import java.io.File;
+
 import static com.jonnymatts.jzonbie.HttpsOptions.httpsOptions;
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 
@@ -39,6 +41,9 @@ public class CommandLineOptions {
 
     @Option(names = {"--failed-requests-capacity"}, paramLabel = "SIZE", description = "maximum capacity of the stored failed requests")
     public Integer failedRequestsCapacity;
+
+    @Option(names = {"--initial-priming-file"}, paramLabel = "PATH", description = "path to initial priming file JSON")
+    public File initialPrimingFile;
 
     public static CommandLineOptions parse(String[] args) {
         final CommandLine cmd = new CommandLine(CommandLineOptions.class);
@@ -75,6 +80,9 @@ public class CommandLineOptions {
                 httpsOptions.withCommonName(commandLineOptions.commonName);
             }
             options.withHttps(httpsOptions);
+        }
+        if (commandLineOptions.initialPrimingFile != null) {
+            options.withInitialPrimingFile(commandLineOptions.initialPrimingFile);
         }
         return options;
     }

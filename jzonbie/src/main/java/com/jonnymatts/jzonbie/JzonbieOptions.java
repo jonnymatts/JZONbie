@@ -5,6 +5,7 @@ import com.jonnymatts.jzonbie.defaults.Priming;
 import com.jonnymatts.jzonbie.jackson.JzonbieObjectMapper;
 import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,7 @@ public class JzonbieOptions {
     private HttpsOptions httpsOptions;
     private int callHistoryCapacity;
     private int failedRequestsCapacity;
+    private File initialPrimingFile;
 
     private JzonbieOptions() {
         this.httpPort = DEFAULT_PORT;
@@ -213,6 +215,18 @@ public class JzonbieOptions {
         return this;
     }
 
+    /**
+     * Specifies a JSON file containing priming that will be applied on Jzonbie start-up.
+     *
+     * @param initialPrimingFile the JSON priming file
+     * @return this Jzonbie configuration with initial priming file
+     * @see Jzonbie#prime(File)
+     */
+    public JzonbieOptions withInitialPrimingFile(File initialPrimingFile) {
+        this.initialPrimingFile = initialPrimingFile;
+        return this;
+    }
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -245,5 +259,9 @@ public class JzonbieOptions {
 
     public int getFailedRequestsCapacity() {
         return failedRequestsCapacity;
+    }
+
+    public Optional<File> getInitialPrimingFile() {
+        return Optional.ofNullable(initialPrimingFile);
     }
 }
