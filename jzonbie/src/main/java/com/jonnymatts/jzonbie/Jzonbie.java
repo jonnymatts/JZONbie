@@ -141,6 +141,8 @@ public class Jzonbie implements JzonbieClient {
             httpsPort = null;
         }
 
+        options.getInitialPrimingFile().ifPresent(this::prime);
+
         LOGGER.info("Jzonbie started - HTTP port: {}{}", httpPort, httpsPort == null ? "" : ", HTTPS port: " + httpsPort);
     }
 
