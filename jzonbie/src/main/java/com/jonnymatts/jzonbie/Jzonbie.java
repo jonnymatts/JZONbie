@@ -126,10 +126,10 @@ public class Jzonbie implements JzonbieClient {
         });
 
         final Handlebars handlebars = new JzonbieHandlebars();
-        final ResponseTransformer responseTransformer = new ResponseTransformer(handlebars);
-        final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
+        final ResponseTransformer responseTransformer = new ResponseTransformer(objectMapper, handlebars);
+        final PippoResponder pippoResponder = new PippoResponder(objectMapper);
 
-        final PippoApplication application = new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder);
+        final PippoApplication application = new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder, responseTransformer);
 
         httpPippo = createPippo(application, options.getHttpPort());
         httpPippo.start();

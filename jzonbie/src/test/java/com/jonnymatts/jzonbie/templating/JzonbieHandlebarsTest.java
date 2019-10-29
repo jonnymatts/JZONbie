@@ -1,6 +1,8 @@
 package com.jonnymatts.jzonbie.templating;
 
 import com.github.jknack.handlebars.Template;
+import com.jonnymatts.jzonbie.metadata.MetaDataContext;
+import com.jonnymatts.jzonbie.metadata.MetaDataTag;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,14 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JzonbieHandlebarsTest {
 
-    private TransformationContext transformationContext;
+    private MetaDataContext metaDataContext;
 
     private JzonbieHandlebars underTest;
 
     @BeforeEach
     void setUp() throws Exception {
-        transformationContext = new TransformationContext("http", "http://hostname:8080/a/long/path", 8080, "/a/long/path", singletonMap("param1", singletonList("paramValue")), singletonMap("header1", "headerValue"), "METHOD", "{\"field\": \"value\"}");
-
+        metaDataContext = new MetaDataContext("http", "http://hostname:8080/a/long/path", 8080, "/a/long/path", singletonMap("param1", singletonList("paramValue")), singletonMap("header1", "headerValue"), "METHOD", "{\"field\": \"value\"}");
+        metaDataContext.withMetaData(MetaDataTag.ENDPOINT_REQUEST_COUNT, "123123");
         underTest = new JzonbieHandlebars();
     }
 
@@ -37,7 +39,8 @@ class JzonbieHandlebarsTest {
                 new Data("header", "{{ request.header.header1 }}", "headerValue"),
                 new Data("queryParam", "{{ request.queryParam.param1.[0] }}", "paramValue"),
                 new Data("body", "{{{ request.body }}}", "{\"field\": \"value\"}"),
-                new Data("jsonPath", "{{jsonPath request.body '$.field'}}", "value")
+                new Data("jsonPath", "{{jsonPath request.body '$.field'}}", "value"),
+                new Data("endpointRequestCount", "{{ ENDPOINT_REQUEST_COUNT }}", "123123")
         );
     }
 
@@ -47,7 +50,7 @@ class JzonbieHandlebarsTest {
         System.out.println("Running extraction: " + data.testName);
         final Template template = underTest.compileInline(data.pattern);
 
-        final String got = template.apply(transformationContext);
+        final String got = template.apply(metaDataContext.getContext());
 
         assertThat(got).isEqualTo(data.expectedValue);
     }

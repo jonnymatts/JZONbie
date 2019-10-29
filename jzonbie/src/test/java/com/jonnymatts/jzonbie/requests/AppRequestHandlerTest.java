@@ -6,6 +6,7 @@ import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.history.CallHistory;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
+import com.jonnymatts.jzonbie.metadata.MetaDataContext;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -32,6 +33,7 @@ class AppRequestHandlerTest {
     @Mock private FixedCapacityCache<AppRequest> failedRequests;
     @Mock private AppRequestFactory appRequestFactory;
     @Mock private Request request;
+    @Mock private MetaDataContext metaDataContext;
 
     private ZombiePriming zombiePriming;
     private Exchange exchange;
@@ -60,7 +62,7 @@ class AppRequestHandlerTest {
         when(primingContext.getPrimedRequest(appRequest)).thenReturn(of(appRequest));
         when(primingContext.getResponse(appRequest))
                 .thenReturn(of(appResponse));
-        final Response got = appRequestHandler.handle(request);
+        final Response got = appRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(appResponse);
     }
@@ -70,14 +72,14 @@ class AppRequestHandlerTest {
         when(primingContext.getPrimedRequest(appRequest)).thenReturn(of(appRequest));
         when(primingContext.getResponse(appRequest))
                 .thenReturn(of(appResponse));
-        appRequestHandler.handle(request);
+        appRequestHandler.handle(request, metaDataContext);
 
         verify(callHistory).add(appRequest, exchange);
     }
 
     @Test
     void handleThrowsPrimingNotFoundExceptionIfPrimingIsNotFound() throws Exception {
-        assertThatThrownBy(() -> appRequestHandler.handle(request))
+        assertThatThrownBy(() -> appRequestHandler.handle(request, metaDataContext))
                 .isExactlyInstanceOf(PrimingNotFoundException.class)
                 .hasFieldOrPropertyWithValue("request", appRequest);
     }
@@ -85,7 +87,7 @@ class AppRequestHandlerTest {
     @Test
     void handleAddsRequestToFailedRequestsIfPrimingIsNotFound() throws Exception {
         try{
-            appRequestHandler.handle(request);
+            appRequestHandler.handle(request, metaDataContext);
         } catch (Exception e) {
             verify(failedRequests).add(appRequest);
         }

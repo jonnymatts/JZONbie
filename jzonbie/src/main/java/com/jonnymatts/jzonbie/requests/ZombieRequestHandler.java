@@ -5,6 +5,7 @@ import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.history.CallHistory;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
+import com.jonnymatts.jzonbie.metadata.MetaDataContext;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -51,7 +52,7 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Response handle(Request request) {
+    public Response handle(Request request, MetaDataContext metaDataContext) {
         final String zombieHeaderValue = request.getHeaders().get(zombieHeaderName);
 
         switch(zombieHeaderValue) {

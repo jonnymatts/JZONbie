@@ -4,13 +4,13 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
-public interface Response<T extends Body<?>> {
+public interface Response {
 
     int getStatusCode();
 
     Map<String, String> getHeaders();
 
-    T getBody();
+    Body<?> getBody();
 
     default Optional<Duration> getDelay() {
         return Optional.empty();

@@ -322,11 +322,10 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedWithDefaultPriming() throws IOException {
+    void jzonbieReturns404FoundNonPrimedRequest() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withPriming(
-                        priming(get("/"), ok()),
-                        defaultPriming(get("/default"), staticDefault(ok()))
+                        priming(get("/"), ok())
                 )
         );
 
@@ -369,13 +368,13 @@ class JzonbieTest {
     void jzonbieCanBePrimedWithTemplatedResponseDefaultPriming() throws IOException {
         final Jzonbie jzonbie = new Jzonbie(
                 options().withPriming(
-                        priming(get("/templated/path"), ok().templated().withBody(literalBody("{{ request.path }}"))),
-                        defaultPriming(get("/default"), staticDefault(ok()))
+                        priming(get("/path"), ok()),
+                        defaultPriming(get("/default/templated/path"), staticDefault(ok().templated().withBody(literalBody("{{ request.path }}"))))
                 )
         );
 
         try {
-            final String path = "/templated/path";
+            final String path = "/default/templated/path";
             final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
 
             assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
@@ -383,7 +382,76 @@ class JzonbieTest {
 
             final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
 
-            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_NOT_FOUND);
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo(path);
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/path").build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEmpty();
+
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    void jzonbieCanBePrimedWithRequestSessionCountTemplateDefaultPriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withPriming(
+                        defaultPriming(get("/default/templated/path"), staticDefault(ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}"))))
+                )
+        );
+
+        try {
+            final String path = "/default/templated/path";
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo("1");
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo("2");
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEqualTo("3");
+
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    void jzonbieCanBePrimedWithRequestSessionCountTemplatePriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withPriming(
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}1"))),
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}1"))),
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}1")))
+                )
+        );
+
+        try {
+            final String path = "/default/templated/path";
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo("11");
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo("21");
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEqualTo("31");
+
         } finally {
             jzonbie.stop();
         }
