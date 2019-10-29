@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
 import static com.jonnymatts.jzonbie.responses.AppResponse.ok;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -54,12 +53,13 @@ class AppRequestHandlerTest {
         exchange = new Exchange(appRequest, appResponse);
 
         when(appRequestFactory.create(request)).thenReturn(appRequest);
-        when(primingContext.getResponse(appRequest))
-                .thenReturn(of(appResponse));
     }
 
     @Test
-    void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() throws JsonProcessingException {
+    void handleReturnsPrimedResponseIfPrimingKeyExistsInPrimingContext() {
+        when(primingContext.getPrimedRequest(appRequest)).thenReturn(of(appRequest));
+        when(primingContext.getResponse(appRequest))
+                .thenReturn(of(appResponse));
         final Response got = appRequestHandler.handle(request);
 
         assertThat(got).isEqualTo(appResponse);
@@ -67,6 +67,9 @@ class AppRequestHandlerTest {
 
     @Test
     void handleAddsPrimingRequestToCallHistory() throws JsonProcessingException {
+        when(primingContext.getPrimedRequest(appRequest)).thenReturn(of(appRequest));
+        when(primingContext.getResponse(appRequest))
+                .thenReturn(of(appResponse));
         appRequestHandler.handle(request);
 
         verify(callHistory).add(exchange);
@@ -74,8 +77,6 @@ class AppRequestHandlerTest {
 
     @Test
     void handleThrowsPrimingNotFoundExceptionIfPrimingIsNotFound() throws Exception {
-        when(primingContext.getResponse(appRequest)).thenReturn(empty());
-
         assertThatThrownBy(() -> appRequestHandler.handle(request))
                 .isExactlyInstanceOf(PrimingNotFoundException.class)
                 .hasFieldOrPropertyWithValue("request", appRequest);
@@ -83,8 +84,6 @@ class AppRequestHandlerTest {
 
     @Test
     void handleAddsRequestToFailedRequestsIfPrimingIsNotFound() throws Exception {
-        when(primingContext.getResponse(appRequest)).thenReturn(empty());
-
         try{
             appRequestHandler.handle(request);
         } catch (Exception e) {

@@ -33,17 +33,25 @@ public class AppRequestHandler implements RequestHandler {
     public Response handle(Request request) {
         final AppRequest appRequest = appRequestFactory.create(request);
 
-        final Optional<AppResponse> primedResponseOpt = primingContext.getResponse(appRequest);
+        Optional<AppRequest> primedAppRequestOpt = primingContext.getPrimedRequest(appRequest);
 
-        if(!primedResponseOpt.isPresent()) {
-            failedRequests.add(appRequest);
-            throw new PrimingNotFoundException(appRequest);
-        }
+        if(primedAppRequestOpt.isPresent()) {
+            final AppRequest primedRequest = primedAppRequestOpt.get();
+            final Optional<AppResponse> primedResponseOpt = primingContext.getResponse(primedRequest);
 
-        final AppResponse zombieResponse = primedResponseOpt.get();
+            if (!primedResponseOpt.isPresent()) {
+                failedRequests.add(appRequest);
+                throw new PrimingNotFoundException(appRequest);
+            }
+
+            final AppResponse zombieResponse = primedResponseOpt.get();
 
         callHistory.add(new Exchange(appRequest, zombieResponse));
 
-        return zombieResponse;
+            return zombieResponse;
+        } else {
+            failedRequests.add(appRequest);
+            throw new PrimingNotFoundException(appRequest);
+        }
     }
 }

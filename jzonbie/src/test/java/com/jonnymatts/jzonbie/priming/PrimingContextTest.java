@@ -188,8 +188,8 @@ class PrimingContextTest {
         primingContext.add(zombiePriming);
 
         final AppRequest copy = new AppRequest(zombiePriming.getRequest()).withHeader("extra", "header");
-
-        primingContext.getResponse(copy);
+        AppRequest foundAppRequest = primingContext.getPrimedRequest(copy).get();
+        primingContext.getResponse(foundAppRequest);
 
         final List<PrimedMapping> currentPriming = primingContext.getCurrentPriming();
 
