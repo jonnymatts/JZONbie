@@ -46,7 +46,7 @@ public class AppRequestHandler implements RequestHandler {
 
             final AppResponse zombieResponse = primedResponseOpt.get();
 
-        callHistory.add(new Exchange(appRequest, zombieResponse));
+        callHistory.add(primedRequest, new Exchange(appRequest, zombieResponse));
 
             return zombieResponse;
         } else {

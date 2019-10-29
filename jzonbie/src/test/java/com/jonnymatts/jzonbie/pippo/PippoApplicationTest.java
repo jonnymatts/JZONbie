@@ -204,7 +204,7 @@ class PippoApplicationTest {
 
     @Test
     void testHistory() throws Exception {
-        callHistory.add(exchange);
+        callHistory.add(appRequest, exchange);
 
         final Response pippoResponse = given()
                 .header("zombie", "history")
@@ -233,7 +233,7 @@ class PippoApplicationTest {
     @Test
     void testReset() throws Exception {
         primingContext.add(zombiePriming);
-        callHistory.add(exchange);
+        callHistory.add(appRequest, exchange);
         failedRequests.add(appRequest);
 
         final Response pippoResponse = given()
@@ -367,7 +367,7 @@ class PippoApplicationTest {
                 .withBody(objectBody(singletonMap("key", "val")));
         final AppResponse appResponse = ok();
 
-        callHistory.add(new Exchange(appRequest, appResponse));
+        callHistory.add(appRequest, new Exchange(appRequest, appResponse));
 
         final Response pippoResponse = given()
                 .header("zombie", "count")

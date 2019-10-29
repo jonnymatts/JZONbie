@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.history;
 
 
+import com.jonnymatts.jzonbie.requests.AppRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CallHistoryTest {
 
+    private final AppRequest primedRequest = get("1");
     private final Exchange exchange1 = new Exchange(get("1"), ok());
 
     private CallHistory underTest;
@@ -21,11 +23,24 @@ class CallHistoryTest {
 
     @Test
     void countReturnsRequestCountOfMatchingRequestWhenHistoryHasASingleRequest() throws Exception {
-        underTest.add(exchange1);
+        underTest.add(primedRequest, exchange1);
 
         final int got = underTest.count(exchange1.getRequest());
 
         assertThat(got).isEqualTo(1);
+    }
+
+    @Test
+    void countIsNotAffectedBySizeOfHistoryCache() throws Exception {
+        underTest.add(primedRequest, exchange1);
+        underTest.add(primedRequest, exchange1);
+        underTest.add(primedRequest, exchange1);
+        underTest.add(primedRequest, exchange1);
+        underTest.add(primedRequest, exchange1);
+
+        final int got = underTest.count(exchange1.getRequest());
+
+        assertThat(got).isEqualTo(5);
     }
 
     @Test

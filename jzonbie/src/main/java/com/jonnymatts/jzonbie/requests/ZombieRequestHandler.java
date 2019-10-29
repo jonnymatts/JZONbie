@@ -115,7 +115,7 @@ public class ZombieRequestHandler implements RequestHandler {
     }
 
     private ZombieResponse handleHistoryRequest() {
-        return new ZombieResponse(OK_200, callHistory);
+        return new ZombieResponse(OK_200, callHistory.getValues());
     }
 
     private ZombieResponse handleFailedRequest() {

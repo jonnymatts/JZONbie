@@ -72,7 +72,7 @@ class AppRequestHandlerTest {
                 .thenReturn(of(appResponse));
         appRequestHandler.handle(request);
 
-        verify(callHistory).add(exchange);
+        verify(callHistory).add(appRequest, exchange);
     }
 
     @Test

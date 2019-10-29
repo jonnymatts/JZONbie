@@ -97,9 +97,9 @@ class ZombieRequestHandlerTest {
         exchange3 = new Exchange(request3, response);
 
         callHistory = new CallHistory(100);
-        callHistory.add(exchange1);
-        callHistory.add(exchange2);
-        callHistory.add(exchange3);
+        callHistory.add(request1, exchange1);
+        callHistory.add(request2, exchange2);
+        callHistory.add(request3, exchange3);
 
         failedRequests = new FixedCapacityCache<>(100);
         failedRequests.add(appRequests.get(0));
@@ -219,7 +219,7 @@ class ZombieRequestHandlerTest {
 
         final Response got = zombieRequestHandler.handle(request);
 
-        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory));
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory.getValues()));
     }
 
     @Test
@@ -258,7 +258,7 @@ class ZombieRequestHandlerTest {
 
         final Response got = zombieRequestHandler.handle(request);
 
-        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory));
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory.getValues()));
     }
 
     @Test
