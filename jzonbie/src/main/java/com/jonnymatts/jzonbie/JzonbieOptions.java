@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.jonnymatts.jzonbie.HttpsOptions.httpsOptions;
+import static java.lang.System.getProperty;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -52,6 +53,7 @@ public class JzonbieOptions {
     private static final List<Priming> DEFAULT_PRIMING = emptyList();
     private static final int DEFAULT_CALL_HISTORY_CAPACITY = 1000;
     private static final int DEFAULT_FAILED_REQUESTS_CAPACITY = 1000;
+    private static final String DEFAULT_HOME_PATH = getProperty("user.home");
 
     private int httpPort;
     private String zombieHeaderName;
@@ -64,6 +66,7 @@ public class JzonbieOptions {
     private int failedRequestsCapacity;
     private File initialPrimingFile;
     private File defaultPrimingFile;
+    private String homePath;
 
     private JzonbieOptions() {
         this.httpPort = DEFAULT_PORT;
@@ -73,6 +76,7 @@ public class JzonbieOptions {
         this.priming = DEFAULT_PRIMING;
         this.callHistoryCapacity = DEFAULT_CALL_HISTORY_CAPACITY;
         this.failedRequestsCapacity = DEFAULT_FAILED_REQUESTS_CAPACITY;
+        this.homePath = DEFAULT_HOME_PATH;
     }
 
     /**
@@ -239,6 +243,19 @@ public class JzonbieOptions {
         return this;
     }
 
+    /**
+     * Specifies the location of the '.jzonbie' home folder where Jzonbie context is stored.
+     *
+     * If not specified will default to '~/'
+     *
+     * @param homePath the Jzonbie home path
+     * @return this Jzonbie configuration with configured home path
+     */
+    public JzonbieOptions withHomePath(String homePath) {
+        this.homePath = homePath;
+        return this;
+    }
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -279,5 +296,9 @@ public class JzonbieOptions {
 
     public Optional<File> getDefaultPrimingFile() {
         return Optional.ofNullable(defaultPrimingFile);
+    }
+
+    public String getHomePath() {
+        return homePath;
     }
 }

@@ -48,6 +48,10 @@ public class CommandLineOptions {
     @Option(names = {"--default-priming-file"}, paramLabel = "PATH", description = "path to default priming file JSON")
     public File defaultPrimingFile;
 
+    @Option(names = {"--home-path"}, paramLabel = "PATH", description = "path where Jzonbie home folder should be created")
+    public String homePath;
+
+
     public static CommandLineOptions parse(String[] args) {
         final CommandLine cmd = new CommandLine(CommandLineOptions.class);
         cmd.parseArgs(args);
@@ -89,6 +93,10 @@ public class CommandLineOptions {
         }
         if (commandLineOptions.defaultPrimingFile != null) {
             options.withDefaultPrimingFile(commandLineOptions.defaultPrimingFile);
+        }
+
+        if(commandLineOptions.homePath != null) {
+            options.withHomePath(commandLineOptions.homePath);
         }
         return options;
     }

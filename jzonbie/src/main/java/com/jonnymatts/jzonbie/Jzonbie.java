@@ -10,6 +10,7 @@ import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
 import com.jonnymatts.jzonbie.logging.Logging;
+import com.jonnymatts.jzonbie.persistence.JzonbieFilePersistence;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.pippo.PippoResponder;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
@@ -101,6 +102,7 @@ public class Jzonbie implements JzonbieClient {
     private PrimedMappingUploader primedMappingUploader;
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<Duration> waitAfterStop;
+    private JzonbieFilePersistence persistence;
 
     public Jzonbie() {
         this(options());
@@ -108,6 +110,7 @@ public class Jzonbie implements JzonbieClient {
 
     public Jzonbie(JzonbieOptions options) {
         this.httpsSupport = new HttpsSupport();
+        this.persistence = new JzonbieFilePersistence(options.getHomePath());
         callHistory = new CallHistory(options.getCallHistoryCapacity());
         failedRequests = new FixedCapacityCache<>(options.getFailedRequestsCapacity());
         waitAfterStop = options.getWaitAfterStopping();
@@ -273,8 +276,9 @@ public class Jzonbie implements JzonbieClient {
         final Optional<String> keystorePassword = httpsOptions.getKeystorePassword();
 
         if(!keystoreLocation.isPresent()) {
-            httpsSupport.createKeystoreAndTruststore("/tmp/jzonbie.jks", httpsOptions.getCommonName());
-            settings.keystoreFile("/tmp/jzonbie.jks");
+            File defaultJksLocation = persistence.createFileIfNotAlreadyExists("/ssl/jzonbie.jks");
+            httpsSupport.createKeystoreAndTruststore(defaultJksLocation.getPath(), httpsOptions.getCommonName());
+            settings.keystoreFile(defaultJksLocation.getPath());
             settings.keystorePassword("jzonbie");
         } else {
             settings.keystoreFile(keystoreLocation.get());

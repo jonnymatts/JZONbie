@@ -24,6 +24,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -514,6 +517,16 @@ class JzonbieTest {
         Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()).withPriming(priming(get("/"), ok())));
 
         assertThat(jzonbieWithDefaultPrimings.getCurrentPriming()).hasSize(2);
+    }
+
+    @Test
+    void canConfigureJzonbieHomePath() throws IOException {
+        Path rootPath = Files.createTempDirectory("tempDirectory");
+        new Jzonbie(options().withHomePath(rootPath.toString()));
+
+        File file = Paths.get(rootPath.toString(), ".jzonbie").toFile();
+
+        assertThat(file.exists()).isTrue();
     }
 
     void callJzonbieWithRequest(int times, Jzonbie jzonbie, AppRequest request, AppResponse response, boolean shouldPrime) throws IOException {
