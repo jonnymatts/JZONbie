@@ -103,6 +103,14 @@ public class ApacheJzonbieRequestFactory {
                 .build();
     }
 
+    public HttpUriRequest createCountRequest(AppRequest appRequest) {
+        return createPostRequest(appRequest, "count");
+    }
+
+    public HttpUriRequest createPersistentCountRequest(AppRequest appRequest) {
+        return createPostRequest(appRequest, "persistent-count");
+    }
+
     private HttpUriRequest createPostRequest(Object requestBody, String zombieHeader) {
         try {
             return RequestBuilder.post(zombieBaseUrl)

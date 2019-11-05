@@ -3,15 +3,18 @@ package com.jonnymatts.jzonbie.requests;
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.CallHistorySnapshot;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.metadata.MetaDataContext;
-import com.jonnymatts.jzonbie.metadata.MetaDataTag;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 
 import java.util.Optional;
+
+import static com.jonnymatts.jzonbie.metadata.MetaDataTag.ENDPOINT_REQUEST_COUNT;
+import static com.jonnymatts.jzonbie.metadata.MetaDataTag.ENDPOINT_REQUEST_PERSISTENT_COUNT;
 
 public class AppRequestHandler implements RequestHandler {
 
@@ -47,9 +50,9 @@ public class AppRequestHandler implements RequestHandler {
 
             final AppResponse zombieResponse = primedResponseOpt.get();
 
-            callHistory.add(primedRequest, new Exchange(appRequest, zombieResponse));
+            CallHistorySnapshot callHistorySnapshot = callHistory.add(primedRequest, new Exchange(appRequest, zombieResponse));
 
-            populateMetaData(primedRequest, metaDataContext);
+            populateMetaData(callHistorySnapshot, metaDataContext);
             return zombieResponse;
         } else {
             failedRequests.add(appRequest);
@@ -57,7 +60,8 @@ public class AppRequestHandler implements RequestHandler {
         }
     }
 
-    private void populateMetaData(AppRequest primedRequest, MetaDataContext metaDataContext) {
-        metaDataContext.withMetaData(MetaDataTag.ENDPOINT_REQUEST_COUNT, callHistory.count(primedRequest));
+    private void populateMetaData(CallHistorySnapshot callHistorySnapshot, MetaDataContext metaDataContext) {
+        metaDataContext.withMetaData(ENDPOINT_REQUEST_COUNT, callHistorySnapshot.getCount());
+        metaDataContext.withMetaData(ENDPOINT_REQUEST_PERSISTENT_COUNT, callHistorySnapshot.getPersistedCount());
     }
 }

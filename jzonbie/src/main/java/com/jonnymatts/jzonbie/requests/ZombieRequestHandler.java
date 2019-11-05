@@ -64,6 +64,8 @@ public class ZombieRequestHandler implements RequestHandler {
                 return handleFilePrimingRequest(request);
             case "count":
                 return handleCountRequest(request);
+            case "persistent-count":
+                return handlePersistentCountRequest(request);
             case "current":
                 return handleCurrentPrimingRequest();
             case "current-file":
@@ -126,6 +128,12 @@ public class ZombieRequestHandler implements RequestHandler {
     private ZombieResponse handleCountRequest(Request request) {
         final AppRequest appRequest = deserializer.deserialize(request, AppRequest.class);
         final int count = callHistory.count(appRequest);
+        return new ZombieResponse(OK_200, new CountResult(count));
+    }
+
+    private ZombieResponse handlePersistentCountRequest(Request request) {
+        final AppRequest appRequest = deserializer.deserialize(request, AppRequest.class);
+        final int count = callHistory.getPersistedCount(appRequest);
         return new ZombieResponse(OK_200, new CountResult(count));
     }
 

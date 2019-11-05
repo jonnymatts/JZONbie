@@ -18,12 +18,14 @@ import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileRe
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.verification.CountResult;
+import org.assertj.core.util.Files;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.File;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
@@ -65,6 +67,7 @@ class ZombieRequestHandlerTest {
     private Exchange exchange2;
     private Exchange exchange3;
 
+    private File persistentFile;
     private CallHistory callHistory;
     private FixedCapacityCache<AppRequest> failedRequests;
     private DefaultingQueue defaultingQueue;
@@ -98,7 +101,8 @@ class ZombieRequestHandlerTest {
         zombiePriming3 = new ZombiePriming(request3, response);
         exchange3 = new Exchange(request3, response);
 
-        callHistory = new CallHistory(100);
+        persistentFile = Files.newTemporaryFile();
+        callHistory = new CallHistory(100, persistentFile);
         callHistory.add(request1, exchange1);
         callHistory.add(request2, exchange2);
         callHistory.add(request3, exchange3);
@@ -236,6 +240,16 @@ class ZombieRequestHandlerTest {
     @Test
     void handleReturnsRequestCountForMatchingRequestResultIfZombieHeaderHasCountValue() throws Exception {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "count"));
+        when(deserializer.deserialize(request, AppRequest.class)).thenReturn(zombiePriming1.getRequest());
+
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
+
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, new CountResult(1)));
+    }
+
+    @Test
+    void handleReturnsRequestPersistentCountForMatchingRequestResultIfZombieHeaderHasPersistentCountValue() throws Exception {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "persistent-count"));
         when(deserializer.deserialize(request, AppRequest.class)).thenReturn(zombiePriming1.getRequest());
 
         final Response got = zombieRequestHandler.handle(request, metaDataContext);

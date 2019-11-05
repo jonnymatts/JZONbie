@@ -73,9 +73,12 @@ public class JzonbieFilePersistenceTest {
     }
 
     @Test
-    void findFileThrowsJzonbiePersistenceExceptionWhenErrorOccurs() {
-        assertThatThrownBy(() -> new JzonbieFilePersistence("fakePath").findFile("missingFile"))
-        .hasMessage("Could not find file at fakePath/.jzonbie/missingFile")
+    void findFileThrowsJzonbiePersistenceExceptionWhenErrorOccurs() throws IOException {
+        Path tempJzonbieHome = Files.createTempDirectory(".tempJzonbieHome");
+
+        assertThatThrownBy(() -> new JzonbieFilePersistence(tempJzonbieHome.toAbsolutePath().toString()).findFile("missingFile"))
+        .hasMessageContaining("Could not find file at")
+        .hasMessageContaining(tempJzonbieHome.toAbsolutePath().toString())
         .isInstanceOf(JzonbiePersistenceException.class);
     }
 

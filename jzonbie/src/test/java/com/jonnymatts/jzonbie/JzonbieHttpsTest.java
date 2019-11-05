@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie;
 
 import com.google.common.io.Resources;
+import com.jonnymatts.jzonbie.junit.TestJzonbie;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -34,8 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JzonbieHttpsTest {
 
-    private static final Jzonbie defaultHttpsJzonbie = new Jzonbie(options().withHttps());
-    private static final Jzonbie configuredHttpsJzonbie = new Jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(Resources.getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
+    private static final Jzonbie defaultHttpsJzonbie = new TestJzonbie(options().withHttps());
+    private static final Jzonbie configuredHttpsJzonbie = new TestJzonbie(options().withHttps(httpsOptions().withKeystoreLocation(Resources.getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
 
     private HttpUriRequest httpRequest;
     private HttpUriRequest defaultHttpsRequest;
@@ -104,7 +105,7 @@ class JzonbieHttpsTest {
     @Test
     void jzonbieCanSetCommonNameOfDefaultSslCertificate() throws Exception {
         File tempRoot = Files.temporaryFolder();
-        new Jzonbie(options().withHomePath(tempRoot.getPath()).withHttps(HttpsOptions.httpsOptions().withCommonName("notLocalHost")));
+        new TestJzonbie(options().withHttps(HttpsOptions.httpsOptions().withCommonName("notLocalHost")));
 
         final KeyStore keystore = KeyStore.getInstance("jks");
         keystore.load(new FileInputStream(get(tempRoot.getPath(), ".jzonbie", "/ssl/jzonbie.jks").toFile()), "jzonbie".toCharArray());

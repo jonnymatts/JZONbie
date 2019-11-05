@@ -88,7 +88,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Jzonbie.class);
-
+    private static final String PERSISTENT_REQUEST_COUNTER_FILE_PATH = "/store/requestCounter";
     private final PrimingContext primingContext;
     private final CallHistory callHistory;
     private final FixedCapacityCache<AppRequest> failedRequests;
@@ -110,8 +110,8 @@ public class Jzonbie implements JzonbieClient {
 
     public Jzonbie(JzonbieOptions options) {
         this.httpsSupport = new HttpsSupport();
-        this.persistence = new JzonbieFilePersistence(options.getHomePath());
-        callHistory = new CallHistory(options.getCallHistoryCapacity());
+        persistence = new JzonbieFilePersistence(options.getHomePath());
+        callHistory = new CallHistory(options.getCallHistoryCapacity(), persistence.createFileIfNotAlreadyExists(PERSISTENT_REQUEST_COUNTER_FILE_PATH));
         failedRequests = new FixedCapacityCache<>(options.getFailedRequestsCapacity());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
@@ -179,6 +179,16 @@ public class Jzonbie implements JzonbieClient {
     @Override
     public KeyStore getTruststore() {
         return httpsSupport.getTrustStore();
+    }
+
+    @Override
+    public int getCount(AppRequest request) {
+        return callHistory.count(request);
+    }
+
+    @Override
+    public int getPersistentCount(AppRequest request) {
+        return callHistory.getPersistedCount(request);
     }
 
     @Override

@@ -88,7 +88,7 @@ public class JzonbieExtension implements ParameterResolver, BeforeAllCallback, B
         if(classAnnotation != null) {
             return classAnnotation.value();
         }
-        return Jzonbie.class;
+        return TestJzonbie.class;
     }
 
     @Target(TYPE)
