@@ -28,15 +28,26 @@ public class PippoRequest implements Request {
     private final String primingFileContent;
 
     public PippoRequest(ro.pippo.core.Request request) {
-        protocol = request.getScheme();
-        url = request.getUrl();
-        port = request.getPort();
-        path = request.getPath();
-        method = request.getMethod();
-        headers = createHeaders(request);
-        body = request.getBody();
-        queryMap = createQueryMap(request);
-        primingFileContent = getPrimingFileContentFromRequest(request);
+        this(request.getScheme(),
+                request.getUrl(),
+                request.getPort(),
+                request.getPath(),
+                request.getMethod(),
+                createHeaders(request),
+                request.getBody(),
+                createQueryMap(request),
+                getPrimingFileContentFromRequest(request));
+    }
+    public PippoRequest(String protocol, String url, int port, String path, String method, Map<String, String> headers, String body, Map<String, List<String>> queryMap, String primingFileContent) {
+        this.protocol = protocol;
+        this.url = url;
+        this.port = port;
+        this.path = path;
+        this.method = method;
+        this.headers = headers;
+        this.body = body;
+        this.queryMap = queryMap;
+        this.primingFileContent = primingFileContent;
     }
 
     @Override
@@ -81,7 +92,7 @@ public class PippoRequest implements Request {
         return port;
     }
 
-    private Map<String,String> createHeaders(ro.pippo.core.Request request) {
+    private static Map<String, String> createHeaders(ro.pippo.core.Request request) {
         return list(request.getHttpServletRequest().getHeaderNames())
                 .stream()
                 .collect(
@@ -92,7 +103,7 @@ public class PippoRequest implements Request {
                 );
     }
 
-    private Map<String,List<String>> createQueryMap(ro.pippo.core.Request request) {
+    private static Map<String, List<String>> createQueryMap(ro.pippo.core.Request request) {
         return request.getQueryParameters().entrySet()
                 .stream()
                 .collect(
@@ -103,9 +114,10 @@ public class PippoRequest implements Request {
                 );
     }
 
-    private String getPrimingFileContentFromRequest(ro.pippo.core.Request request) {
+    private static String getPrimingFileContentFromRequest(ro.pippo.core.Request request) {
         final String contentType = request.getContentType();
-        if(contentType == null || !contentType.startsWith(FILE_CONTENT_TYPE) || request.getFiles().isEmpty()) return null;
+        if (contentType == null || !contentType.startsWith(FILE_CONTENT_TYPE) || request.getFiles().isEmpty())
+            return null;
         return of(request.getFile("priming"))
                 .map(fileItem -> {
                     try {

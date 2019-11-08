@@ -8,6 +8,7 @@ import com.jonnymatts.jzonbie.history.CallHistory;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
+import com.jonnymatts.jzonbie.metadata.MetaDataContext;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.priming.ZombiePriming;
@@ -17,12 +18,14 @@ import com.jonnymatts.jzonbie.responses.CurrentPrimingFileResponseFactory.FileRe
 import com.jonnymatts.jzonbie.responses.defaults.DefaultingQueue;
 import com.jonnymatts.jzonbie.ssl.HttpsSupport;
 import com.jonnymatts.jzonbie.verification.CountResult;
+import org.assertj.core.util.Files;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.File;
 import java.util.List;
 
 import static com.jonnymatts.jzonbie.requests.AppRequest.get;
@@ -51,6 +54,7 @@ class ZombieRequestHandlerTest {
     @Mock private AppResponse zombieResponse;
     @Mock private FileResponse fileResponse;
     @Mock private PrimedMappingUploader primedMappingUploader;
+    @Mock private MetaDataContext metaDataContext;
 
     private static final String primingFileContent = FIXTURE.create(String.class);
 
@@ -63,6 +67,7 @@ class ZombieRequestHandlerTest {
     private Exchange exchange2;
     private Exchange exchange3;
 
+    private File persistentFile;
     private CallHistory callHistory;
     private FixedCapacityCache<AppRequest> failedRequests;
     private DefaultingQueue defaultingQueue;
@@ -96,10 +101,11 @@ class ZombieRequestHandlerTest {
         zombiePriming3 = new ZombiePriming(request3, response);
         exchange3 = new Exchange(request3, response);
 
-        callHistory = new CallHistory(100);
-        callHistory.add(exchange1);
-        callHistory.add(exchange2);
-        callHistory.add(exchange3);
+        persistentFile = Files.newTemporaryFile();
+        callHistory = new CallHistory(100, persistentFile);
+        callHistory.add(request1, exchange1);
+        callHistory.add(request2, exchange2);
+        callHistory.add(request3, exchange3);
 
         failedRequests = new FixedCapacityCache<>(100);
         failedRequests.add(appRequests.get(0));
@@ -121,7 +127,7 @@ class ZombieRequestHandlerTest {
         when(zombieRequest.getPath()).thenReturn("path");
         when(zombieRequest.getMethod()).thenReturn("method");
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(CREATED_201, zombiePriming));
 
@@ -135,7 +141,7 @@ class ZombieRequestHandlerTest {
         when(zombieRequest.getPath()).thenReturn("path");
         when(zombieRequest.getMethod()).thenReturn("method");
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(CREATED_201, zombiePriming));
 
@@ -148,7 +154,7 @@ class ZombieRequestHandlerTest {
         when(request.getPrimingFileContent()).thenReturn(primingFileContent);
         when(deserializer.deserializeCollection(primingFileContent, PrimedMapping.class)).thenReturn(primedRequests);
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(CREATED_201, primedRequests));
 
@@ -161,7 +167,7 @@ class ZombieRequestHandlerTest {
         when(zombieRequest.getMethod()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        assertThatThrownBy(() -> zombieRequestHandler.handle(request))
+        assertThatThrownBy(() -> zombieRequestHandler.handle(request, metaDataContext))
                 .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
@@ -172,7 +178,7 @@ class ZombieRequestHandlerTest {
         when(zombieRequest.getPath()).thenReturn(null);
         when(deserializer.deserialize(request, ZombiePriming.class)).thenReturn(zombiePriming);
 
-        assertThatThrownBy(() -> zombieRequestHandler.handle(request))
+        assertThatThrownBy(() -> zombieRequestHandler.handle(request, metaDataContext))
                 .isExactlyInstanceOf(IllegalArgumentException.class);
     }
 
@@ -181,7 +187,7 @@ class ZombieRequestHandlerTest {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "current"));
         when(primingContext.getCurrentPriming()).thenReturn(primedRequests);
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, primedRequests));
     }
@@ -192,7 +198,7 @@ class ZombieRequestHandlerTest {
         when(primingContext.getCurrentPriming()).thenReturn(primedRequests);
         when(currentPrimingFileResponseFactory.create(primedRequests)).thenReturn(fileResponse);
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(fileResponse);
     }
@@ -204,7 +210,7 @@ class ZombieRequestHandlerTest {
         assertThat(callHistory.getValues()).isNotEmpty();
         assertThat(failedRequests.getValues()).isNotEmpty();
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, singletonMap("message", "Zombie Reset")));
         assertThat(callHistory.getValues()).isEmpty();
@@ -217,16 +223,16 @@ class ZombieRequestHandlerTest {
     void handleReturnsCallHistoryIfZombieHeaderHasHistoryValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "history"));
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
-        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory));
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory.getValues()));
     }
 
     @Test
     void handleReturnsFailedRequestsIfZombieHeaderHasFailedValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "failed"));
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, failedRequests));
     }
@@ -236,7 +242,17 @@ class ZombieRequestHandlerTest {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "count"));
         when(deserializer.deserialize(request, AppRequest.class)).thenReturn(zombiePriming1.getRequest());
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
+
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, new CountResult(1)));
+    }
+
+    @Test
+    void handleReturnsRequestPersistentCountForMatchingRequestResultIfZombieHeaderHasPersistentCountValue() throws Exception {
+        when(request.getHeaders()).thenReturn(singletonMap("zombie", "persistent-count"));
+        when(deserializer.deserialize(request, AppRequest.class)).thenReturn(zombiePriming1.getRequest());
+
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, new CountResult(1)));
     }
@@ -245,7 +261,7 @@ class ZombieRequestHandlerTest {
     void handleThrowsRuntimeExceptionIfZombieHeaderHasUnknownValue() throws JsonProcessingException {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "unknownValue"));
 
-        assertThatThrownBy(() -> zombieRequestHandler.handle(request))
+        assertThatThrownBy(() -> zombieRequestHandler.handle(request, metaDataContext))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("unknownValue");
     }
@@ -256,16 +272,16 @@ class ZombieRequestHandlerTest {
 
         when(request.getHeaders()).thenReturn(singletonMap("name", "history"));
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
-        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory));
+        assertThat(got).isEqualTo(new ZombieResponse(OK_200, callHistory.getValues()));
     }
 
     @Test
     void handleReturnsEmptyResponseIfZombieHeaderHasUpValue() {
         when(request.getHeaders()).thenReturn(singletonMap("zombie", "up"));
 
-        final Response got = zombieRequestHandler.handle(request);
+        final Response got = zombieRequestHandler.handle(request, metaDataContext);
 
         assertThat(got).isEqualTo(new ZombieResponse(OK_200, singletonMap("message", "Up!")));
     }

@@ -139,6 +139,12 @@ class CommandLineOptionsTest {
     }
 
     @Test
+    void canSetJzonbieHomePath() {
+        CommandLineOptions commandLineOptions = getCommandLineOptions("--home-path", "/path/this");
+        assertThat(commandLineOptions.homePath).isEqualTo("/path/this");
+    }
+
+    @Test
     void toJzonbieOptions() {
         final JzonbieOptions jzonbieOptions = CommandLineOptions.toJzonbieOptions(
                 CommandLineOptions.parse(new String[]{
@@ -153,6 +159,7 @@ class CommandLineOptionsTest {
                                 "--failed-requests-capacity", "50",
                                 "--initial-priming-file", "initial",
                                 "--default-priming-file", "default",
+                                "--home-path", "/home/path"
                         }
                 )
         );
@@ -163,6 +170,7 @@ class CommandLineOptionsTest {
         assertThat(jzonbieOptions.getFailedRequestsCapacity()).isEqualTo(50);
         assertThat(jzonbieOptions.getInitialPrimingFile()).contains(new File("initial"));
         assertThat(jzonbieOptions.getDefaultPrimingFile()).contains(new File("default"));
+        assertThat(jzonbieOptions.getHomePath()).contains("/home/path");
 
         final HttpsOptions httpsOptions = jzonbieOptions.getHttpsOptions().get();
         assertThat(httpsOptions.getPort()).isEqualTo(8001);

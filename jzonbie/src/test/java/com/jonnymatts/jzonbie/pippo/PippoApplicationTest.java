@@ -2,6 +2,7 @@ package com.jonnymatts.jzonbie.pippo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.jonnymatts.jzonbie.body.ObjectBodyContent;
 import com.jonnymatts.jzonbie.history.CallHistory;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
@@ -24,6 +25,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,40 +49,56 @@ import static java.util.Collections.singletonMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.assertj.core.util.Files.newTemporaryFile;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.startsWith;
 
 class PippoApplicationTest {
 
-    private static PrimingContext primingContext = new PrimingContext();
-    private static final CallHistory callHistory = new CallHistory(3);
-    private static final FixedCapacityCache<AppRequest> failedRequests = new FixedCapacityCache<>(3);
-    private static final ObjectMapper objectMapper = new JzonbieObjectMapper();
-    private static final Deserializer deserializer = new Deserializer(objectMapper);
-    private static final AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, new AppRequestFactory(deserializer));
-    private static final PrimedMappingUploader primedMappingUploader = new PrimedMappingUploader(primingContext);
-    private static final ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader, new HttpsSupport());
-    private static final ResponseTransformer responseTransformer = new ResponseTransformer(new JzonbieHandlebars());
-    private static final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
+    private PrimingContext primingContext = new PrimingContext();
+    private ObjectMapper objectMapper = new JzonbieObjectMapper();
+    private Deserializer deserializer = new Deserializer(objectMapper);
 
+    private FixedCapacityCache<AppRequest> failedRequests;
+    private CallHistory callHistory;
+
+    private Pippo pippo;
     private AppRequest appRequest;
     private AppResponse appResponse;
     private ZombiePriming zombiePriming;
     private Exchange exchange;
 
+    PippoApplication application;
     @BeforeAll
     static void beforeAll() {
-        final PippoApplication application = new PippoApplication("zombie", singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok())), appRequestHandler, zombieRequestHandler, pippoResponder);
-        final Pippo pippo = new Pippo(application);
-        pippo.start();
-        RestAssured.port = pippo.getServer().getPort();
+
+    }
+
+    @AfterEach
+    void tearDown() {
+        pippo.stop();
     }
 
     @BeforeEach
     void setUp() throws Exception {
-        primingContext.reset();
-        callHistory.clear();
+        callHistory = new CallHistory(3, newTemporaryFile());
+        failedRequests = new FixedCapacityCache<>(3);
+
+
+        AppRequestHandler appRequestHandler = new AppRequestHandler(primingContext, callHistory, failedRequests, new AppRequestFactory(deserializer));
+        PrimedMappingUploader primedMappingUploader = new PrimedMappingUploader(primingContext);
+        ZombieRequestHandler zombieRequestHandler = new ZombieRequestHandler("zombie", primingContext, callHistory, failedRequests, deserializer, new CurrentPrimingFileResponseFactory(objectMapper), primedMappingUploader, new HttpsSupport());
+        ResponseTransformer responseTransformer = new ResponseTransformer(objectMapper, new JzonbieHandlebars());
+        PippoResponder pippoResponder = new PippoResponder(objectMapper);
+        application = new PippoApplication("zombie", singletonList(JzonbieRoute.get("/ready", c -> c.getRouteContext().getResponse().ok())), appRequestHandler, zombieRequestHandler, pippoResponder, responseTransformer);
+        pippo = new Pippo(application);
+        pippo.start();
+        RestAssured.port = pippo.getServer().getPort();
+
+//         primingContext.reset();
+//        persistentFile = Files.newTemporaryFile();
+//        callHistory.clear();
+//        failedRequests.clear();
 
         appRequest = AppRequest.get("");
         appResponse = ok();
@@ -204,7 +222,7 @@ class PippoApplicationTest {
 
     @Test
     void testHistory() throws Exception {
-        callHistory.add(exchange);
+        callHistory.add(appRequest, exchange);
 
         final Response pippoResponse = given()
                 .header("zombie", "history")
@@ -233,7 +251,7 @@ class PippoApplicationTest {
     @Test
     void testReset() throws Exception {
         primingContext.add(zombiePriming);
-        callHistory.add(exchange);
+        callHistory.add(appRequest, exchange);
         failedRequests.add(appRequest);
 
         final Response pippoResponse = given()
@@ -367,7 +385,7 @@ class PippoApplicationTest {
                 .withBody(objectBody(singletonMap("key", "val")));
         final AppResponse appResponse = ok();
 
-        callHistory.add(new Exchange(appRequest, appResponse));
+        callHistory.add(appRequest, new Exchange(appRequest, appResponse));
 
         final Response pippoResponse = given()
                 .header("zombie", "count")
@@ -378,6 +396,31 @@ class PippoApplicationTest {
         pippoResponse.then().assertThat()
                 .statusCode(200)
                 .body("count", equalTo(1));
+    }
+
+    @Test
+    void testReturn404NotFoundWhenNoMatchingPrimingLocated() throws Exception {
+        final Response pippoResponse = given()
+                .get("/");
+
+        pippoResponse.then().assertThat()
+                .body(containsString("\"message\" : \"Priming not found for request\""))
+                .statusCode(404);
+    }
+
+    @Test
+    void testReturn500InternalErrorWhenUnexpectedErrorOccurs() throws Exception {
+        final AppRequest appRequest = AppRequest.get("/");
+        final AppResponse appResponse = ok().withBody(ObjectBodyContent.objectBody(singletonMap("{messedUpJson}", "{{{{{}} {messedUpJson = 12}"))).templated();
+
+        primingContext.add(appRequest, appResponse);
+
+        final Response pippoResponse = given()
+                .get("/");
+
+        pippoResponse.then().assertThat()
+                .body(containsString("Could not transform: {\\n  \\\"{messedUpJson}\\\" : \\\"{{{{{}} {messedUpJson = 12}\\\"\\n}\""))
+                .statusCode(500);
     }
 
     @Test
@@ -408,11 +451,82 @@ class PippoApplicationTest {
     }
 
     @Test
+    void testAppRequestWithEndpointRequestCountTemplatePriming() throws Exception {
+        final AppRequest request = AppRequest.get("/path");
+        final AppResponse response =
+                ok().withHeader("requestCounter", "{{ ENDPOINT_REQUEST_COUNT }}")
+                        .withBody(literalBody("{\"requestCounter\": \"{{ ENDPOINT_REQUEST_COUNT }}\"}"))
+                        .templated();
+
+        primingContext.add(request, response);
+        primingContext.add(request, response);
+
+        final Response pippoResponse1 = given()
+                .get("/path");
+
+        pippoResponse1.then()
+                .header("requestCounter", "1")
+                .body(equalTo("{\"requestCounter\": \"1\"}"));
+
+        final Response pippoResponse2 = given()
+                .get("/path");
+
+        pippoResponse2.then()
+                .header("requestCounter", "2")
+                .body(equalTo("{\"requestCounter\": \"2\"}"));
+    }
+
+    @Test
+    void testAppRequestWithEndpointRequestPersistedCountTemplatePriming() {
+        final AppRequest request = AppRequest.get("/path");
+        final AppResponse response =
+                ok().withHeader("requestCounter", "{{ ENDPOINT_REQUEST_PERSISTENT_COUNT }}")
+                        .withBody(literalBody("{\"requestCounter\": \"{{ ENDPOINT_REQUEST_PERSISTENT_COUNT }}\"}"))
+                        .templated();
+
+        primingContext.add(request, response);
+        primingContext.add(request, response);
+
+        final Response pippoResponse1 = given()
+                .get("/path");
+
+        pippoResponse1.then()
+                .header("requestCounter", "1")
+                .body(equalTo("{\"requestCounter\": \"1\"}"));
+
+        final Response pippoResponse2 = given()
+                .get("/path");
+
+        pippoResponse2.then()
+                .header("requestCounter", "2")
+                .body(equalTo("{\"requestCounter\": \"2\"}"));
+    }
+
+    @Test
     void testUp() {
         final Response pippoResponse = given()
                 .header("zombie", "up")
                 .get("/");
         pippoResponse.then().statusCode(200);
         pippoResponse.then().body("message", equalTo("Up!"));
+    }
+
+    @Test
+    void testPersistentCount() throws Exception {
+        final AppRequest appRequest = AppRequest.get("/")
+                .withBody(objectBody(singletonMap("key", "val")));
+        final AppResponse appResponse = ok();
+
+        callHistory.add(appRequest, new Exchange(appRequest, appResponse));
+
+        final Response pippoResponse = given()
+                .header("zombie", "persistent-count")
+                .contentType(ContentType.JSON)
+                .body(objectMapper.writeValueAsString(appRequest))
+                .post("/");
+
+        pippoResponse.then().assertThat()
+                .statusCode(200)
+                .body("count", equalTo(1));
     }
 }

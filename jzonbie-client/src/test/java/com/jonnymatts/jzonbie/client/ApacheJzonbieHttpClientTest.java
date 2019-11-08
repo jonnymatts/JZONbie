@@ -4,6 +4,7 @@ import com.jonnymatts.jzonbie.Jzonbie;
 import com.jonnymatts.jzonbie.JzonbieClient;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.junit.JzonbieExtension;
+import com.jonnymatts.jzonbie.junit.TestJzonbie;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.requests.AppRequest;
 import com.jonnymatts.jzonbie.responses.AppResponse;
@@ -112,6 +113,43 @@ class ApacheJzonbieHttpClientTest {
     }
 
     @Test
+    void getCountReturnsNumberOfSuccessfulRequestsReceivedForEndpoint() {
+        underTest.prime(REQUEST, RESPONSE);
+        underTest.prime(REQUEST, RESPONSE);
+        underTest.prime(REQUEST, RESPONSE);
+
+        testingClient.execute(REQUEST);
+        testingClient.execute(REQUEST);
+        testingClient.execute(REQUEST);
+
+        int count = underTest.getCount(REQUEST);
+
+        assertThat(count).isEqualTo(3);
+    }
+
+    @Test
+    void getPersistentCountReturnsNumberOfSuccessfulRequestsReceivedForEndpoint() {
+        Jzonbie jzonbie = new TestJzonbie();
+        final String baseUrl = "http://localhost:" + jzonbie.getHttpPort();
+        final ApacheJzonbieHttpClient underTest = new ApacheJzonbieHttpClient(baseUrl);
+        final TestingClient testingClient = new TestingClient(baseUrl);
+
+        jzonbie.prime(REQUEST, RESPONSE);
+        jzonbie.prime(REQUEST, RESPONSE);
+        jzonbie.prime(REQUEST, RESPONSE);
+        jzonbie.prime(REQUEST, RESPONSE);
+
+        testingClient.execute(REQUEST);
+        testingClient.execute(REQUEST);
+        testingClient.execute(REQUEST);
+        testingClient.execute(REQUEST);
+
+        int persistentCount = underTest.getPersistentCount(REQUEST);
+
+        assertThat(persistentCount).isEqualTo(4);
+    }
+
+    @Test
     void getFailedRequestsReturnsFailedRequests() {
         testingClient.execute(REQUEST);
 
@@ -185,7 +223,9 @@ class ApacheJzonbieHttpClientTest {
 
     @Test
     void getTruststoreThrowsExceptionIfKeystoreIsPassedIn() {
-        new Jzonbie(options().withHttps(httpsOptions().withKeystoreLocation(getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
+        new TestJzonbie(options()
+                .withHttps(
+                        httpsOptions().withKeystoreLocation(getResource("test.jks").toString()).withKeystorePassword("jzonbie")));
 
         assertThatThrownBy(() -> underTest.getTruststore())
                 .isInstanceOf(JzonbieClientException.class)
@@ -194,7 +234,7 @@ class ApacheJzonbieHttpClientTest {
 
     @Test
     void getTruststoreReturnsKeystoreIfDefaultHttpsConfigurationIsEnabled() throws Exception {
-        final Jzonbie httpsJzonbie = new Jzonbie(options().withHttps(httpsOptions()));
+        final Jzonbie httpsJzonbie = new TestJzonbie(options().withHttps(httpsOptions()));
 
         final KeyStore truststore = httpsJzonbie.getTruststore();
 
@@ -217,14 +257,14 @@ class ApacheJzonbieHttpClientTest {
 
     static Stream<ExceptionTestData> exceptionTestDataPoints() {
         return Stream.of(
-            new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),
-            new ExceptionTestData("default priming", "prime", client -> client.prime(REQUEST, DEFAULT_RESPONSE)),
-            new ExceptionTestData("current priming", "current", JzonbieClient::getCurrentPriming),
-            new ExceptionTestData("history", "history", JzonbieClient::getHistory),
-            new ExceptionTestData("failed requests", "failed", JzonbieClient::getFailedRequests),
-            new ExceptionTestData("reset", "reset", JzonbieClient::reset),
-            new ExceptionTestData("verify", "count", client -> client.verify(REQUEST)),
-            new ExceptionTestData("truststore", "truststore", JzonbieClient::getTruststore)
+                new ExceptionTestData("priming", "prime", client -> client.prime(REQUEST, RESPONSE)),
+                new ExceptionTestData("default priming", "prime", client -> client.prime(REQUEST, DEFAULT_RESPONSE)),
+                new ExceptionTestData("current priming", "current", JzonbieClient::getCurrentPriming),
+                new ExceptionTestData("history", "history", JzonbieClient::getHistory),
+                new ExceptionTestData("failed requests", "failed", JzonbieClient::getFailedRequests),
+                new ExceptionTestData("reset", "reset", JzonbieClient::reset),
+                new ExceptionTestData("verify", "count", client -> client.verify(REQUEST)),
+                new ExceptionTestData("truststore", "truststore", JzonbieClient::getTruststore)
         );
     }
 
@@ -244,7 +284,7 @@ class ApacheJzonbieHttpClientTest {
 
     private PrimedMapping createPrimedMapping(DefaultAppResponse defaultAppResponse, AppResponse... appResponses) {
         final DefaultingQueue defaultingQueue = new DefaultingQueue();
-        if(defaultAppResponse != null) {
+        if (defaultAppResponse != null) {
             defaultingQueue.setDefault(defaultAppResponse);
         }
         defaultingQueue.add(asList(appResponses));

@@ -118,4 +118,8 @@ public interface JzonbieClient {
      * @return truststore containing generated public key
      */
     KeyStore getTruststore();
+
+    int getCount(AppRequest request);
+
+    int getPersistentCount(AppRequest request);
 }

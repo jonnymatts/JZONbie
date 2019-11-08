@@ -78,7 +78,7 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
      * @return default Jzonbie rule
      */
     public static JzonbieRule<Jzonbie> jzonbie(JzonbieOptions options) {
-        return new JzonbieRule<>(() -> new Jzonbie(options));
+        return new JzonbieRule<>(() -> new TestJzonbie(options));
     }
 
     /**
@@ -155,6 +155,16 @@ public class JzonbieRule<T extends Jzonbie> extends ExternalResource implements 
     @Override
     public KeyStore getTruststore() {
         return jzonbie.getTruststore();
+    }
+
+    @Override
+    public int getCount(AppRequest request) {
+        return jzonbie.getCount(request);
+    }
+
+    @Override
+    public int getPersistentCount(AppRequest request) {
+        return jzonbie.getPersistentCount(request);
     }
 
     /**

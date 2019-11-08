@@ -1,16 +1,20 @@
 package com.jonnymatts.jzonbie.requests;
 
-
 import com.jonnymatts.jzonbie.Request;
 import com.jonnymatts.jzonbie.Response;
 import com.jonnymatts.jzonbie.history.CallHistory;
+import com.jonnymatts.jzonbie.history.CallHistorySnapshot;
 import com.jonnymatts.jzonbie.history.Exchange;
 import com.jonnymatts.jzonbie.history.FixedCapacityCache;
+import com.jonnymatts.jzonbie.metadata.MetaDataContext;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
 import com.jonnymatts.jzonbie.priming.PrimingContext;
 import com.jonnymatts.jzonbie.responses.AppResponse;
 
 import java.util.Optional;
+
+import static com.jonnymatts.jzonbie.metadata.MetaDataTag.ENDPOINT_REQUEST_COUNT;
+import static com.jonnymatts.jzonbie.metadata.MetaDataTag.ENDPOINT_REQUEST_PERSISTENT_COUNT;
 
 public class AppRequestHandler implements RequestHandler {
 
@@ -30,20 +34,34 @@ public class AppRequestHandler implements RequestHandler {
     }
 
     @Override
-    public Response handle(Request request) {
+    public Response handle(Request request, MetaDataContext metaDataContext) {
         final AppRequest appRequest = appRequestFactory.create(request);
 
-        final Optional<AppResponse> primedResponseOpt = primingContext.getResponse(appRequest);
+        Optional<AppRequest> primedAppRequestOpt = primingContext.getPrimedRequest(appRequest);
 
-        if(!primedResponseOpt.isPresent()) {
+        if (primedAppRequestOpt.isPresent()) {
+            final AppRequest primedRequest = primedAppRequestOpt.get();
+            final Optional<AppResponse> primedResponseOpt = primingContext.getResponse(primedRequest);
+
+            if (!primedResponseOpt.isPresent()) {
+                failedRequests.add(appRequest);
+                throw new PrimingNotFoundException(appRequest);
+            }
+
+            final AppResponse zombieResponse = primedResponseOpt.get();
+
+            CallHistorySnapshot callHistorySnapshot = callHistory.add(primedRequest, new Exchange(appRequest, zombieResponse));
+
+            populateMetaData(callHistorySnapshot, metaDataContext);
+            return zombieResponse;
+        } else {
             failedRequests.add(appRequest);
             throw new PrimingNotFoundException(appRequest);
         }
+    }
 
-        final AppResponse zombieResponse = primedResponseOpt.get();
-
-        callHistory.add(new Exchange(appRequest, zombieResponse));
-
-        return zombieResponse;
+    private void populateMetaData(CallHistorySnapshot callHistorySnapshot, MetaDataContext metaDataContext) {
+        metaDataContext.withMetaData(ENDPOINT_REQUEST_COUNT, callHistorySnapshot.getCount());
+        metaDataContext.withMetaData(ENDPOINT_REQUEST_PERSISTENT_COUNT, callHistorySnapshot.getPersistedCount());
     }
 }

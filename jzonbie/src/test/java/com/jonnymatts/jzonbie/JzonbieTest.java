@@ -3,6 +3,7 @@ package com.jonnymatts.jzonbie;
 import com.google.common.base.Stopwatch;
 import com.jonnymatts.jzonbie.client.ApacheJzonbieHttpClient;
 import com.jonnymatts.jzonbie.junit.JzonbieExtension;
+import com.jonnymatts.jzonbie.junit.TestJzonbie;
 import com.jonnymatts.jzonbie.pippo.JzonbieRoute;
 import com.jonnymatts.jzonbie.priming.PrimedMapping;
 import com.jonnymatts.jzonbie.requests.AppRequest;
@@ -24,6 +25,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -172,7 +176,7 @@ class JzonbieTest {
 
     @Test
     void jzonbieCanBePrimedWithAnInitialPrimingFile() {
-        Jzonbie jzonbieWithInitialPrimings = new Jzonbie(options().withInitialPrimingFile(getExamplePrimingFile()));
+        Jzonbie jzonbieWithInitialPrimings = new TestJzonbie(options().withInitialPrimingFile(getExamplePrimingFile()));
 
         final List<PrimedMapping> currentPriming = jzonbieWithInitialPrimings.getCurrentPriming();
 
@@ -181,7 +185,7 @@ class JzonbieTest {
 
     @Test
     void initialPrimingWithAFileIsRemovedOnReset() {
-        Jzonbie jzonbieWithInitialPrimings = new Jzonbie(options().withInitialPrimingFile(getExamplePrimingFile()));
+        Jzonbie jzonbieWithInitialPrimings = new TestJzonbie(options().withInitialPrimingFile(getExamplePrimingFile()));
 
         jzonbieWithInitialPrimings.reset();
 
@@ -193,14 +197,14 @@ class JzonbieTest {
     @Test
     void jzonbieWithAMissingInitialPrimingFile() {
         assertThatExceptionOfType(RuntimeException.class).isThrownBy(
-                () -> new Jzonbie(options().withInitialPrimingFile(new File("missing")))
+                () -> new TestJzonbie(options().withInitialPrimingFile(new File("missing")))
         ).withCauseInstanceOf(FileNotFoundException.class);
     }
 
     @Test
     void zombieHeaderNameCanBeSet() {
         final String zombieHeaderName = "jzonbie";
-        final Jzonbie jzonbieWithZombieHeaderNameSet = new Jzonbie(options().withZombieHeaderName(zombieHeaderName));
+        final Jzonbie jzonbieWithZombieHeaderNameSet = new TestJzonbie(options().withZombieHeaderName(zombieHeaderName));
 
         final AppRequest request = get("/");
         final AppResponse response = ok().withBody(objectBody(singletonMap("key", "val")));
@@ -272,7 +276,7 @@ class JzonbieTest {
 
     @Test
     void stopDoesNotDelayIfNotConfiguredTo() {
-        final Jzonbie jzonbie = new Jzonbie(options());
+        final Jzonbie jzonbie = new TestJzonbie();
 
         final Stopwatch stopwatch = Stopwatch.createStarted();
         jzonbie.stop();
@@ -284,7 +288,7 @@ class JzonbieTest {
     @Test
     void waitAfterStopCanBeConfigured() {
         final Duration waitAfterStopFor = Duration.ofSeconds(2);
-        final Jzonbie jzonbie = new Jzonbie(options().withWaitAfterStopping(waitAfterStopFor));
+        final Jzonbie jzonbie = new TestJzonbie(options().withWaitAfterStopping(waitAfterStopFor));
 
         final Stopwatch stopwatch = Stopwatch.createStarted();
         jzonbie.stop();
@@ -295,7 +299,7 @@ class JzonbieTest {
 
     @Test
     void additionalRoutesCanBeAdded() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
+        final Jzonbie jzonbie = new TestJzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
 
         try {
             final HttpResponse got = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/ready").build());
@@ -308,7 +312,7 @@ class JzonbieTest {
 
     @Test
     void additionalRoutesOverridePriming() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
+        final Jzonbie jzonbie = new TestJzonbie(options().withRoutes(JzonbieRoute.get("/ready", ctx -> ctx.getRouteContext().getResponse().ok())));
 
         try {
             jzonbie.prime(get("/ready"), internalServerError());
@@ -322,11 +326,10 @@ class JzonbieTest {
     }
 
     @Test
-    void jzonbieCanBePrimedWithDefaultPriming() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(
+    void jzonbieReturns404FoundNonPrimedRequest() throws IOException {
+        final Jzonbie jzonbie = new TestJzonbie(
                 options().withPriming(
-                        priming(get("/"), ok()),
-                        defaultPriming(get("/default"), staticDefault(ok()))
+                        priming(get("/"), ok())
                 )
         );
 
@@ -345,7 +348,7 @@ class JzonbieTest {
 
     @Test
     void jzonbieCanBePrimedWithDefaultResponseDefaultPriming() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(
+        final Jzonbie jzonbie = new TestJzonbie(
                 options().withPriming(
                         priming(get("/"), ok()),
                         defaultPriming(get("/default"), staticDefault(ok()))
@@ -367,15 +370,15 @@ class JzonbieTest {
 
     @Test
     void jzonbieCanBePrimedWithTemplatedResponseDefaultPriming() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(
+        final Jzonbie jzonbie = new TestJzonbie(
                 options().withPriming(
-                        priming(get("/templated/path"), ok().templated().withBody(literalBody("{{ request.path }}"))),
-                        defaultPriming(get("/default"), staticDefault(ok()))
+                        priming(get("/path"), ok()),
+                        defaultPriming(get("/default/templated/path"), staticDefault(ok().templated().withBody(literalBody("{{ request.path }}"))))
                 )
         );
 
         try {
-            final String path = "/templated/path";
+            final String path = "/default/templated/path";
             final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
 
             assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
@@ -383,7 +386,122 @@ class JzonbieTest {
 
             final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
 
-            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_NOT_FOUND);
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo(path);
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + "/path").build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEmpty();
+
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    void jzonbieCanBePrimedWithRequestSessionCountTemplateDefaultPriming() throws IOException {
+        final Jzonbie jzonbie = new TestJzonbie(
+                options().withPriming(
+                        defaultPriming(get("/default/templated/path"), staticDefault(ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}"))))
+                )
+        );
+
+        try {
+            final String path = "/default/templated/path";
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo("1");
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo("2");
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEqualTo("3");
+
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    void jzonbieCanBePrimedWithEndpointRequestCountTemplatePriming() throws IOException {
+        final Jzonbie jzonbie = new Jzonbie(
+                options().withPriming(
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}1"))),
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}1"))),
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_COUNT }}1")))
+                )
+        );
+
+        try {
+            final String path = "/default/templated/path";
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo("11");
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo("21");
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEqualTo("31");
+
+        } finally {
+            jzonbie.stop();
+        }
+    }
+
+    @Test
+    void jzonbieCanBePrimedWithEndpointRequestPersistentCountTemplatePriming() throws IOException {
+        File tempHome = org.assertj.core.util.Files.newTemporaryFolder();
+        Jzonbie jzonbie = new Jzonbie(
+                options().withHomePath(tempHome.getPath())
+                        .withPriming(
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_PERSISTENT_COUNT }}1"))),
+                        priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_PERSISTENT_COUNT }}1")))
+                )
+        );
+
+        try {
+            final String path = "/default/templated/path";
+            final HttpResponse got1 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got1.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got1.getEntity())).isEqualTo("11");
+
+            final HttpResponse got2 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got2.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got2.getEntity())).isEqualTo("21");
+
+             jzonbie = new Jzonbie(
+                    options().withHomePath(tempHome.getPath())
+                            .withPriming(
+                            priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_PERSISTENT_COUNT }}1"))),
+                            priming(get("/default/templated/path"), ok().templated().withBody(literalBody("{{ ENDPOINT_REQUEST_PERSISTENT_COUNT }}1")))
+                            )
+            );
+
+            final HttpResponse got3 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got3.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got3.getEntity())).isEqualTo("31");
+
+            final HttpResponse got4 = client.execute(RequestBuilder.get("http://localhost:" + jzonbie.getHttpPort() + path).build());
+
+            assertThat(got4.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+            assertThat(EntityUtils.toString(got4.getEntity())).isEqualTo("41");
+
         } finally {
             jzonbie.stop();
         }
@@ -398,7 +516,7 @@ class JzonbieTest {
 
     @Test
     void jzonbieCallHistoryCapacityCanBeSet() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(
+        final Jzonbie jzonbie = new TestJzonbie(
                 options().withCallHistoryCapacity(2)
         );
 
@@ -409,7 +527,7 @@ class JzonbieTest {
 
     @Test
     void jzonbieFailedRequestsCapacityCanBeSet() throws IOException {
-        final Jzonbie jzonbie = new Jzonbie(
+        final Jzonbie jzonbie = new TestJzonbie(
                 options().withFailedRequestsCapacity(2)
         );
 
@@ -420,14 +538,14 @@ class JzonbieTest {
 
     @Test
     void jzonbieCanBePrimedWithAnDefaultPrimingFile() {
-        Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()));
+        Jzonbie jzonbieWithDefaultPrimings = new TestJzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()));
 
         assertPrimingFromExamplePrimingFile(jzonbieWithDefaultPrimings.getCurrentPriming());
     }
 
     @Test
     void initialPrimingWithAFileIsNotRemovedOnReset() {
-        Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()));
+        Jzonbie jzonbieWithDefaultPrimings = new TestJzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()));
 
         jzonbieWithDefaultPrimings.reset();
 
@@ -437,15 +555,43 @@ class JzonbieTest {
     @Test
     void jzonbieWithAMissingDefaultPrimingFile() {
         assertThatExceptionOfType(RuntimeException.class).isThrownBy(
-                () -> new Jzonbie(options().withDefaultPrimingFile(new File("missing")))
+                () -> new TestJzonbie(options().withDefaultPrimingFile(new File("missing")))
         ).withCauseInstanceOf(FileNotFoundException.class);
     }
 
     @Test
     void jzonbieCanAddPrimingThroughAFileAndJavaOptions() {
-        Jzonbie jzonbieWithDefaultPrimings = new Jzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()).withPriming(priming(get("/"), ok())));
+        Jzonbie jzonbieWithDefaultPrimings = new TestJzonbie(options().withDefaultPrimingFile(getExamplePrimingFile()).withPriming(priming(get("/"), ok())));
 
         assertThat(jzonbieWithDefaultPrimings.getCurrentPriming()).hasSize(2);
+    }
+
+    @Test
+    void canConfigureJzonbieHomePath() throws IOException {
+        Path rootPath = Files.createTempDirectory("tempDirectory");
+        new Jzonbie(options().withHomePath(rootPath.toString()));
+
+        File file = Paths.get(rootPath.toString(), ".jzonbie").toFile();
+
+        assertThat(file.exists()).isTrue();
+    }
+
+    @Test
+    void jzonbieCanGetAppRequestsCount() throws IOException {
+        final Jzonbie jzonbie = new TestJzonbie();
+
+        callJzonbieWithRequest(4, jzonbie, get("/"), ok(), true);
+
+        assertThat(jzonbie.getCount(get("/"))).isEqualTo(4);
+    }
+
+    @Test
+    void jzonbieCanGetAppRequestsPersistentCount() throws IOException {
+        final Jzonbie jzonbie = new TestJzonbie();
+
+        callJzonbieWithRequest(4, jzonbie, get("/"), ok(), true);
+
+        assertThat(jzonbie.getPersistentCount(get("/"))).isEqualTo(4);
     }
 
     void callJzonbieWithRequest(int times, Jzonbie jzonbie, AppRequest request, AppResponse response, boolean shouldPrime) throws IOException {

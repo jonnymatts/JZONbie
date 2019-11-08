@@ -10,6 +10,7 @@ import com.jonnymatts.jzonbie.history.FixedCapacityCache;
 import com.jonnymatts.jzonbie.jackson.Deserializer;
 import com.jonnymatts.jzonbie.jetty.JzonbieJettyServer;
 import com.jonnymatts.jzonbie.logging.Logging;
+import com.jonnymatts.jzonbie.persistence.JzonbieFilePersistence;
 import com.jonnymatts.jzonbie.pippo.PippoApplication;
 import com.jonnymatts.jzonbie.pippo.PippoResponder;
 import com.jonnymatts.jzonbie.priming.AppRequestFactory;
@@ -87,7 +88,7 @@ public class Jzonbie implements JzonbieClient {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Jzonbie.class);
-
+    private static final String PERSISTENT_REQUEST_COUNTER_FILE_PATH = "/store/requestCounter";
     private final PrimingContext primingContext;
     private final CallHistory callHistory;
     private final FixedCapacityCache<AppRequest> failedRequests;
@@ -101,6 +102,7 @@ public class Jzonbie implements JzonbieClient {
     private PrimedMappingUploader primedMappingUploader;
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<Duration> waitAfterStop;
+    private JzonbieFilePersistence persistence;
 
     public Jzonbie() {
         this(options());
@@ -108,7 +110,8 @@ public class Jzonbie implements JzonbieClient {
 
     public Jzonbie(JzonbieOptions options) {
         this.httpsSupport = new HttpsSupport();
-        callHistory = new CallHistory(options.getCallHistoryCapacity());
+        persistence = new JzonbieFilePersistence(options.getHomePath());
+        callHistory = new CallHistory(options.getCallHistoryCapacity(), persistence.createFileIfNotAlreadyExists(PERSISTENT_REQUEST_COUNTER_FILE_PATH));
         failedRequests = new FixedCapacityCache<>(options.getFailedRequestsCapacity());
         waitAfterStop = options.getWaitAfterStopping();
         objectMapper = options.getObjectMapper();
@@ -126,10 +129,10 @@ public class Jzonbie implements JzonbieClient {
         });
 
         final Handlebars handlebars = new JzonbieHandlebars();
-        final ResponseTransformer responseTransformer = new ResponseTransformer(handlebars);
-        final PippoResponder pippoResponder = new PippoResponder(responseTransformer, objectMapper);
+        final ResponseTransformer responseTransformer = new ResponseTransformer(objectMapper, handlebars);
+        final PippoResponder pippoResponder = new PippoResponder(objectMapper);
 
-        final PippoApplication application = new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder);
+        final PippoApplication application = new PippoApplication(options.getZombieHeaderName(), options.getRoutes(), appRequestHandler, zombieRequestHandler, pippoResponder, responseTransformer);
 
         httpPippo = createPippo(application, options.getHttpPort());
         httpPippo.start();
@@ -176,6 +179,16 @@ public class Jzonbie implements JzonbieClient {
     @Override
     public KeyStore getTruststore() {
         return httpsSupport.getTrustStore();
+    }
+
+    @Override
+    public int getCount(AppRequest request) {
+        return callHistory.count(request);
+    }
+
+    @Override
+    public int getPersistentCount(AppRequest request) {
+        return callHistory.getPersistedCount(request);
     }
 
     @Override
@@ -273,8 +286,9 @@ public class Jzonbie implements JzonbieClient {
         final Optional<String> keystorePassword = httpsOptions.getKeystorePassword();
 
         if(!keystoreLocation.isPresent()) {
-            httpsSupport.createKeystoreAndTruststore("/tmp/jzonbie.jks", httpsOptions.getCommonName());
-            settings.keystoreFile("/tmp/jzonbie.jks");
+            File defaultJksLocation = persistence.createFileIfNotAlreadyExists("/ssl/jzonbie.jks");
+            httpsSupport.createKeystoreAndTruststore(defaultJksLocation.getPath(), httpsOptions.getCommonName());
+            settings.keystoreFile(defaultJksLocation.getPath());
             settings.keystorePassword("jzonbie");
         } else {
             settings.keystoreFile(keystoreLocation.get());

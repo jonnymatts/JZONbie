@@ -1,6 +1,7 @@
 package com.jonnymatts.jzonbie.junit;
 
 import com.jonnymatts.jzonbie.Jzonbie;
+import org.assertj.core.util.Files;
 
 import static com.jonnymatts.jzonbie.JzonbieOptions.options;
 import static com.jonnymatts.jzonbie.defaults.StandardPriming.priming;
@@ -12,6 +13,7 @@ public class CustomJzonbie extends Jzonbie {
         super(
                 options()
                         .withPriming(priming(get("/"), ok()))
+                        .withHomePath(Files.temporaryFolder().getPath())
         );
     }
 

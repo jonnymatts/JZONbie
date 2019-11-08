@@ -211,6 +211,22 @@ public class ApacheJzonbieHttpClient implements JzonbieClient {
         );
     }
 
+    @Override
+    public int getCount(AppRequest request) {
+        final HttpUriRequest countRequest = apacheJzonbieRequestFactory.createCountRequest(request);
+
+        return execute(countRequest, httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), CountResult.class), "Could not get request count")
+                .getCount();
+    }
+
+    @Override
+    public int getPersistentCount(AppRequest request) {
+        final HttpUriRequest countRequest = apacheJzonbieRequestFactory.createPersistentCountRequest(request);
+
+        return execute(countRequest, httpResponse -> deserializer.deserialize(getHttpResponseBody(httpResponse), CountResult.class), "Could not get persistent request count")
+                .getCount();
+    }
+
     /**
      * Checks whether the Jzonbie is ready to serve traffic.
      *
